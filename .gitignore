@@ -1,0 +1,42 @@
+# --- 가상환경 ---
+# Python 가상환경 폴더는 각자 컴퓨터에서 생성하므로 공유하지 않습니다.
+venv/
+.venv/
+env/
+
+# --- 데이터셋 ---
+# 용량이 큰 원본 데이터 및 전처리된 데이터 폴더는 공유하지 않습니다.
+datasets/
+data/
+preprocessed_data/
+*.csv
+*.zip
+
+# --- 학습된 모델 ---
+# 학습된 모델 가중치 파일은 용량이 크므로 Google Drive 등으로 공유합니다.
+models/
+weights/
+*.pt
+*.pth
+*.h5
+*.onnx
+
+# --- 파이썬 캐시 ---
+# 파이썬이 자동으로 생성하는 임시 파일들입니다.
+__pycache__/
+.pytest_cache/
+
+# --- 운영체제 및 IDE 설정 파일 ---
+# macOS, Windows, VSCode, PyCharm 등이 자동으로 생성하는 파일입니다.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# --- Jupyter Notebook ---
+# 주피터 노트북 실행 시 생기는 임시 폴더입니다.
+.ipynb_checkpoints/
+
+# --- 다른 팀원 작업 폴더 ---
+# AI 브랜치와 관련 없는 백엔드 폴더를 무시합니다.
+Capstone_back/

@@ -11,7 +11,11 @@ data/
 preprocessed_data/
 *.csv
 *.zip
-
+*.wav
+*.mp4
+*.jpg
+*.png
+*.json
 # --- 학습된 모델 ---
 # 학습된 모델 가중치 파일은 용량이 크므로 Google Drive 등으로 공유합니다.
 models/

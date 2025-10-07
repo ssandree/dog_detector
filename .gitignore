@@ -40,8 +40,7 @@ Thumbs.db
 # 주피터 노트북 실행 시 생기는 임시 폴더입니다.
 .ipynb_checkpoints/
 
-# --- 다른 팀원 작업 폴더 ---
-# AI 브랜치와 관련 없는 백엔드 폴더를 무시합니다.
-Capstone_back/
+# --- 개발/훈련 파일 ---
+# 훈련 스크립트와 큰 모델 폴더는 공유하지 않습니다.
 train_official_dog_pose.py
-DogPose_Official\yolo11n_dog24
+DogPose_Official/yolo11n_dog24

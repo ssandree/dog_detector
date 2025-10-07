@@ -18,7 +18,6 @@ preprocessed_data/
 *.json
 # --- 학습된 모델 ---
 # 학습된 모델 가중치 파일은 용량이 크므로 Google Drive 등으로 공유합니다.
-models/
 weights/
 *.pt
 *.pth
@@ -44,3 +43,5 @@ Thumbs.db
 # --- 다른 팀원 작업 폴더 ---
 # AI 브랜치와 관련 없는 백엔드 폴더를 무시합니다.
 Capstone_back/
+train_official_dog_pose.py
+DogPose_Official\yolo11n_dog24

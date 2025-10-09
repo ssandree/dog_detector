@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'screens/mode_selection/mode_select_screen.dart';
 
 // Camera Mode
-import 'screens/camera_mode/home_screen.dart' as camera_home;
+import 'screens/camera_mode/camera_home_screen.dart' as camera_home;
 
 // Manager Mode Tabs
-import 'screens/manager_mode/(tabs)/home_screen.dart' as manager_home;
+import 'screens/manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
 
 class AppRoutes {
   // 라우트 이름 정의

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../realtime/video_evidence_screen.dart';
+import '../../../widgets/cards/app_cards.dart';
+import '../../../constants/app_constants.dart';
+import '../../../theme/app_colors.dart';
 
 class RealtimeScreen extends StatelessWidget {
   const RealtimeScreen({super.key});
@@ -48,140 +51,121 @@ class _RealtimeContent extends StatelessWidget {
       body: Column(
         children: [
           // 비디오 플레이어 영역
-          Container(
-            margin: const EdgeInsets.all(16),
-            height: 250,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Stack(
-              children: [
-                // 비디오 배경 (강아지 이미지 시뮬레이션)
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
+          AppCards.videoPlayer(
+            liveBadgeText: 'LIVE',
+            overlayWidgets: [
+              // 비디오 배경 (강아지 이미지 시뮬레이션)
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.pets,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              
+              // LIVE 배지
+              Positioned(
+                bottom: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.pets,
-                      size: 80,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                
-                // LIVE 배지
-                Positioned(
-                  bottom: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.pets,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          'LIVE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // 컨트롤 버튼들
-                Positioned(
-                  bottom: 12,
-                  right: 12,
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.volume_off,
-                          color: Colors.black,
-                          size: 20,
-                        ),
+                      const Icon(
+                        Icons.pets,
+                        color: Colors.white,
+                        size: 16,
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.fullscreen,
-                          color: Colors.black,
-                          size: 20,
+                      const SizedBox(width: 4),
+                      const Text(
+                        'LIVE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              
+              // 컨트롤 버튼들
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.volume_off,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.fullscreen,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            child: const SizedBox.shrink(), // 실제 비디오 위젯이 들어갈 자리
           ),
           
           // 실시간 분석 섹션
           Expanded(
-            child: Container(
+            child: AppCards.basic(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+              backgroundColor: Colors.grey[50],
               child: Column(
                 children: [
                   // 헤더
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const Text(
-                          '실시간 분석',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                  Row(
+                    children: [
+                      const Text(
+                        '실시간 분석',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        const Spacer(),
-                        Icon(
-                          Icons.swap_vert,
-                          color: Colors.grey[600],
-                          size: 20,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.swap_vert,
+                        color: Colors.grey[600],
+                        size: 20,
+                      ),
+                    ],
                   ),
                   
                   // 분석 리스트
@@ -233,7 +217,7 @@ class _RealtimeContent extends StatelessWidget {
                   
                   // 하단 상태 요약
                   Container(
-                    margin: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(top: 16),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.grey[100],

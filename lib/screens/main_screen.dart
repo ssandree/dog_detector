@@ -1,124 +1,102 @@
 import 'package:flutter/material.dart';
 import 'mode_selection/mode_select_screen.dart';
+import '../widgets/base_scaffold.dart';
+import '../widgets/buttons/app_buttons.dart';
+import '../utils/app_utils.dart';
+import '../constants/app_constants.dart';
+import '../theme/app_colors.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BaseScaffold(
+      showAppBar: false,
+      backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6B73FF),
-              Color(0xFF9B59B6),
-            ],
+            colors: AppColors.primaryGradientColors,
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 앱 아이콘/로고
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(60),
-                  ),
-                  child: const Icon(
-                    Icons.pets,
-                    size: 60,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                
-                // 앱 타이틀
-                const Text(
-                  '멍멍이탐지',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // 서비스 설명
-                const Text(
-                  'AI 기반 강아지 통증 및 감정 탐지 서비스',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white70,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  '반려견의 건강과 행복을 위한 스마트 케어',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white60,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 60),
-                
-                // 시작하기 버튼
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ModeSelectScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF6B73FF),
-                      elevation: 8,
-                      shadowColor: Colors.black26,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: const Text(
-                      '시작하기',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                
-                // 추가 정보
-                const Text(
-                  '간편한 설정으로 바로 시작하세요',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white54,
-                  ),
-                ),
-              ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 앱 아이콘/로고
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius),
+              ),
+              child: const Icon(
+                Icons.pets,
+                size: 60,
+                color: AppColors.white,
+              ),
             ),
-          ),
+            const SizedBox(height: AppConstants.extraLargeSpacing),
+            
+            // 앱 타이틀
+            const Text(
+              '멍멍이탐지',
+              style: TextStyle(
+                fontSize: AppConstants.largeTitleFontSize,
+                fontWeight: FontWeight.bold,
+                color: AppColors.white,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: AppConstants.defaultSpacing),
+                
+            // 서비스 설명
+            Text(
+              'AI 기반 강아지 통증 및 감정 탐지 서비스',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppConstants.titleFontSize - 6,
+                color: AppColors.white.withOpacity(0.7),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppConstants.smallSpacing),
+            Text(
+              '반려견의 건강과 행복을 위한 스마트 케어',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppConstants.defaultFontSize,
+                color: AppColors.white.withOpacity(0.6),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppConstants.extraLargeSpacing * 2),
+                
+            // 시작하기 버튼
+            AppButtons.primary(
+              text: '시작하기',
+              onPressed: () {
+                AppUtils.navigateTo(
+                  context,
+                  const ModeSelectScreen(),
+                  replace: true,
+                );
+              },
+            ),
+            const SizedBox(height: AppConstants.largeSpacing),
+            
+            // 추가 정보
+            Text(
+              '간편한 설정으로 바로 시작하세요',
+              style: TextStyle(
+                fontSize: AppConstants.smallFontSize + 2,
+                color: AppColors.white.withOpacity(0.54),
+              ),
+            ),
+          ],
         ),
       ),
     );

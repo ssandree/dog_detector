@@ -1,81 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../widgets/bottom_nav.dart';
+import '../realtime/video_evidence_screen.dart';
 
-class RealtimeScreen extends StatefulWidget {
+class RealtimeScreen extends StatelessWidget {
   const RealtimeScreen({super.key});
 
   @override
-  State<RealtimeScreen> createState() => _RealtimeScreenState();
-}
-
-class _RealtimeScreenState extends State<RealtimeScreen> {
-  int _currentIndex = 1; // 실시간 탭이 두 번째
-
-  final List<Widget> _screens = [
-    const _HomeContent(),
-    const _RealtimeContent(),
-    const _ReportContent(),
-    const _CalendarContent(),
-  ];
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
-    );
+    return const _RealtimeContent();
   }
 }
 
-class _HomeContent extends StatelessWidget {
-  const _HomeContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('홈'),
-        backgroundColor: Colors.blue[100],
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.home,
-              size: 100,
-              color: Colors.blue,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'HOME',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              '강아지 통증탐지+감정탐지 앱',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _RealtimeContent extends StatelessWidget {
   const _RealtimeContent();
@@ -83,115 +17,360 @@ class _RealtimeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('실시간 분석'),
-        backgroundColor: Colors.green[100],
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.analytics,
-              size: 100,
-              color: Colors.green,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'REALTIME',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              '실시간 통증 및 감정 분석',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-      ),
-    );
-  }
-}
-
-class _ReportContent extends StatelessWidget {
-  const _ReportContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("리포트"),
-          bottom: const TabBar(
-            indicatorColor: Colors.green,
-            labelColor: Colors.green,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: "일별"),
-              Tab(text: "주별"),
-              Tab(text: "월별"),
-            ],
+        title: const Text(
+          '실시간 모니터링',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
         ),
-        body: const TabBarView(
-          children: [
-            Center(child: Text('일별 리포트')),
-            Center(child: Text('주별 리포트')),
-            Center(child: Text('월별 리포트')),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: Colors.black),
+            onPressed: () {
+              // 알림 기능
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // 비디오 플레이어 영역
+          Container(
+            margin: const EdgeInsets.all(16),
+            height: 250,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Stack(
+              children: [
+                // 비디오 배경 (강아지 이미지 시뮬레이션)
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.pets,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                
+                // LIVE 배지
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.pets,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'LIVE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // 컨트롤 버튼들
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.volume_off,
+                          color: Colors.black,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.fullscreen,
+                          color: Colors.black,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // 실시간 분석 섹션
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // 헤더
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        const Text(
+                          '실시간 분석',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.swap_vert,
+                          color: Colors.grey[600],
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // 분석 리스트
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        _buildAnalysisItem(
+                          icon: Icons.pets,
+                          iconColor: Colors.orange,
+                          text: "'편안함' 감정이 높게 나타납니다.",
+                          highlightText: '편안함',
+                          time: '14:08',
+                          onTap: () => _openEvidence(context, '편안함', '오후 2:08에 발생'),
+                        ),
+                        _buildAnalysisItem(
+                          icon: Icons.person,
+                          iconColor: Colors.grey[700]!,
+                          text: "우리 개 지금 전반적인 상태가 어때?",
+                          time: '14:08',
+                          onTap: () => _openEvidence(context, '질문', '오후 2:08에 발생'),
+                        ),
+                        _buildAnalysisItem(
+                          icon: Icons.pets,
+                          iconColor: Colors.orange,
+                          text: "'편안함' 감정이 감지되었습니다.",
+                          highlightText: '편안함',
+                          time: '11:37',
+                          onTap: () => _openEvidence(context, '편안함', '오전 11:37에 발생'),
+                        ),
+                        _buildAnalysisItem(
+                          icon: Icons.notification_important,
+                          iconColor: Colors.orange,
+                          text: "음성 메시지를 전달했습니다.",
+                          time: '11:36',
+                          onTap: () => _openEvidence(context, '메시지', '오전 11:36에 발생'),
+                        ),
+                        _buildAnalysisItem(
+                          icon: Icons.pets,
+                          iconColor: Colors.orange,
+                          text: "'불안함' 감정이 감지되었습니다.",
+                          highlightText: '불안함',
+                          time: '09:22',
+                          onTap: () => _openEvidence(context, '불안함', '오전 9:22에 발생'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // 하단 상태 요약
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text(
+                          '😊',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(width: 8),
+                        RichText(
+                          text: TextSpan(
+                            text: "현재 반려견은 '",
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: '편안함',
+                                style: TextStyle(
+                                  color: Colors.blue[400],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const TextSpan(
+                                text: "' 상태입니다.",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalysisItem({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+    required String time,
+    String? highlightText,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: iconColor.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: highlightText != null
+                ? RichText(
+                    text: TextSpan(
+                      text: text.replaceAll("'$highlightText'", ''),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "'$highlightText'",
+                          style: TextStyle(
+                            color: Colors.blue[400],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextSpan(
+                          text: " [$time]",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Text(
+                    '$text [$time]',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                    ),
+                  ),
+          ),
           ],
         ),
       ),
     );
   }
-}
 
-class _CalendarContent extends StatelessWidget {
-  const _CalendarContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('캘린더'),
-        backgroundColor: Colors.purple[100],
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.calendar_today,
-              size: 100,
-              color: Colors.purple,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'CALENDAR',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              '일정 및 기록 관리',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+  void _openEvidence(BuildContext context, String emotionName, String timeText) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black54,
+        pageBuilder: (_, __, ___) => VideoEvidenceScreen(
+          emotionName: emotionName,
+          timeText: timeText,
         ),
+        transitionsBuilder: (_, animation, __, child) {
+          final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(scale: Tween<double>(begin: 0.98, end: 1).animate(curved), child: child),
+          );
+        },
       ),
     );
   }
 }
+

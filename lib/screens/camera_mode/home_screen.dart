@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../mode_selection/mode_select_screen.dart';
+import 'camera_setting_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,11 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {
-              // 설정 화면으로 이동
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('설정 기능은 준비 중입니다'),
-                  duration: Duration(seconds: 2),
+              // 카메라 설정 화면으로 이동
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CameraSettingScreen(),
                 ),
               );
             },

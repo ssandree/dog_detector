@@ -8,89 +8,114 @@ class ModeSelectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        title: const Text('모드 선택'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            
-            const Text(
-              '모드를 선택해주세요',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 80),
+              
+              // 강아지 로고
+              Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: Image.asset(
+                    'lib/config/logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
-                  
-            // 캠모드 버튼
-            _buildModeCard(
-              context: context,
-              title: '캠모드',
-              subtitle: '실시간 카메라로\n강아지 상태 확인',
-              icon: Icons.camera_alt,
-              color: const Color(0xFF4CAF50),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const camera_home.HomeScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            
-            // 매니저모드 버튼
-            _buildModeCard(
-              context: context,
-              title: '매니저모드',
-              subtitle: '데이터 분석 및\n관리 기능',
-              icon: Icons.analytics,
-              color: const Color(0xFF2196F3),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const manager_home.HomeScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 30),
+              
+              
+              // 환영 메시지
+              const Text(
+                '민호님, 환영합니다!',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 10),
+              
+              // 안내 문구
+              const Text(
+                '시작할 모드를 선택해주세요',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF666666),
+                ),
+              ),
+              const SizedBox(height: 50),
+              
+              // 캠모드 버튼
+              _buildModeButton(
+                context: context,
+                title: '캠 모드',
+                icon: Icons.videocam,
+                backgroundColor: const Color(0xFF81C784),
+                iconColor: const Color(0xFF1976D2),
+                textColor: const Color(0xFF673AB7),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const camera_home.HomeScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 50),
+              
+              // 매니저모드 버튼
+              _buildModeButton(
+                context: context,
+                title: '매니저 모드',
+                icon: Icons.bar_chart,
+                backgroundColor: const Color(0xFFFFE082),
+                iconColor: const Color(0xFFFF9800),
+                textColor: const Color(0xFF8D6E63),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const manager_home.HomeScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildModeCard({
+  Widget _buildModeButton({
     required BuildContext context,
     required String title,
-    required String subtitle,
     required IconData icon,
-    required Color color,
+    required Color backgroundColor,
+    required Color iconColor,
+    required Color textColor,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 80,
+        height: 120,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -100,61 +125,37 @@ class ModeSelectScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              // 아이콘
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: color,
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 아이콘
+            Icon(
+              icon,
+              size: 40,
+              color: iconColor,
+            ),
+            const SizedBox(height: 10),
+            
+            // 텍스트
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
               ),
-              const SizedBox(width: 20),
-              
-              // 텍스트 정보
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        height: 1.1,
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+            const SizedBox(height: 5),
+            
+            // 설명 텍스트
+            Text(
+              title == '캠 모드' ? '강아지를 촬영하는 모드' : '견심술 탐지 결과를 보고 관리하는 모드',
+              style: TextStyle(
+                fontSize: 12,
+                color: textColor.withOpacity(0.8),
               ),
-              
-              // 화살표 아이콘
-              Icon(
-                Icons.arrow_forward_ios,
-                color: color,
-                size: 20,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

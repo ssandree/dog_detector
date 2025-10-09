@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/bottom_nav.dart';
 import '../../mode_selection/mode_select_screen.dart';
+import 'report_screen.dart';
+import 'calendar_screen.dart';
+import 'realtime_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,9 +17,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const _HomeContent(),
-    const _RealtimeContent(),
-    const _ReportContent(),
-    const _CalendarContent(),
+    const RealtimeScreen(),
+    const ReportScreen(),
+    const CalendarScreen(),
   ];
 
   @override
@@ -168,78 +171,4 @@ class _RealtimeContent extends StatelessWidget {
   }
 }
 
-class _ReportContent extends StatelessWidget {
-  const _ReportContent();
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("리포트"),
-          bottom: const TabBar(
-            indicatorColor: Colors.green,
-            labelColor: Colors.green,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: "일별"),
-              Tab(text: "주별"),
-              Tab(text: "월별"),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            Center(child: Text('일별 리포트')),
-            Center(child: Text('주별 리포트')),
-            Center(child: Text('월별 리포트')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CalendarContent extends StatelessWidget {
-  const _CalendarContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('캘린더'),
-        backgroundColor: Colors.purple[100],
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.calendar_today,
-              size: 100,
-              color: Colors.purple,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'CALENDAR',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              '일정 및 기록 관리',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

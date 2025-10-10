@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mode_selection/mode_select_screen.dart';
-import '../widgets/base_scaffold.dart';
-import '../widgets/buttons/app_buttons.dart';
-import '../utils/app_utils.dart';
-import '../constants/app_constants.dart';
-import '../theme/app_colors.dart';
+import '../core/index_export.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -79,11 +74,7 @@ class MainScreen extends StatelessWidget {
             AppButtons.primary(
               text: '시작하기',
               onPressed: () {
-                AppUtils.navigateTo(
-                  context,
-                  const ModeSelectScreen(),
-                  replace: true,
-                );
+                Navigator.pushNamed(context, AppRoutes.modeSelect);
               },
             ),
             const SizedBox(height: AppConstants.largeSpacing),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_constants.dart';
-import '../../theme/app_colors.dart';
+import '../core/index_export.dart';
 
 /// 상태를 나타내는 태그 위젯들
 class AppStatusTags {

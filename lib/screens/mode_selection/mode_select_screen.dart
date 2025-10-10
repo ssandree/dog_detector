@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import '../camera_mode/camera_home_screen.dart' as camera_home;
-import '../manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
-import '../../widgets/base_scaffold.dart';
-import '../../utils/app_utils.dart';
-import '../../constants/app_constants.dart';
-import '../../theme/app_colors.dart';
+import '../../core/index_export.dart';
 
 class ModeSelectScreen extends StatelessWidget {
   const ModeSelectScreen({super.key});
@@ -68,11 +63,7 @@ class ModeSelectScreen extends StatelessWidget {
             iconColor: AppColors.green7,
             textColor: AppColors.green8,
             onTap: () {
-              AppUtils.navigateTo(
-                context,
-                const camera_home.HomeScreen(),
-                replace: true,
-              );
+              Navigator.pushNamed(context, AppRoutes.cameraHome);
             },
           ),
           const SizedBox(height: 50),
@@ -86,11 +77,7 @@ class ModeSelectScreen extends StatelessWidget {
             iconColor: AppColors.coral5,
             textColor: AppColors.grey9,
             onTap: () {
-              AppUtils.navigateTo(
-                context,
-                const manager_home.HomeScreen(),
-                replace: true,
-              );
+              Navigator.pushNamed(context, AppRoutes.managerHome);
             },
           ),
         ],

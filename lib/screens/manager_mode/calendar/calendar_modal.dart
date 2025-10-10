@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../widgets/buttons/app_buttons.dart';
-import '../../../widgets/cards/app_cards.dart';
-import '../../../constants/app_constants.dart';
-import '../../../theme/app_colors.dart';
+import '../../../core/index_export.dart';
 
 class CalendarModal extends StatelessWidget {
    final DateTime currentDate;

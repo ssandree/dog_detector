@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../widgets/bottom_nav.dart';
-import '../../../widgets/base_scaffold.dart';
-import '../../../utils/app_utils.dart';
-import '../../../theme/app_colors.dart';
+import '../../../core/index_export.dart';
 import '../../mode_selection/mode_select_screen.dart';
 import 'report_screen.dart';
 import 'calendar_screen.dart';

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
+import 'widgets/report_widgets.dart';
+import '../../../theme/app_colors.dart';
 
 class DailyReport extends StatelessWidget {
   const DailyReport({super.key});
@@ -52,9 +55,24 @@ class DailyReport extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildEmotionChip('Top 1', '행복함', '15회', const Color(0xFFE8F5E9), const Color(0xFFC8E6C9)),
-                    _buildEmotionChip('Top 2', '불안함', '9회', const Color(0xFFFFF3E0), const Color(0xFFFFECB3)),
-                    _buildEmotionChip('Top 3', '편안함', '8회', const Color(0xFFE8F5E9), const Color(0xFFC8E6C9)),
+                    RankChip(
+                      rankLabel: 'Top 1',
+                      text: '행복함 15회',
+                      backgroundColor: const Color(0xFFE8F5E9),
+                      borderColor: const Color(0xFFC8E6C9),
+                    ),
+                    RankChip(
+                      rankLabel: 'Top 2',
+                      text: '불안함 9회',
+                      backgroundColor: const Color(0xFFFFF3E0),
+                      borderColor: const Color(0xFFFFECB3),
+                    ),
+                    RankChip(
+                      rankLabel: 'Top 3',
+                      text: '편안함 8회',
+                      backgroundColor: const Color(0xFFE8F5E9),
+                      borderColor: const Color(0xFFC8E6C9),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -65,15 +83,66 @@ class DailyReport extends StatelessWidget {
                       flex: 3,
                       child: SizedBox(
                         height: 200,
-                        child: CustomPaint(
-                          painter: DonutChartPainter(
-                            percentages: [0.12, 0.34, 0.30, 0.14, 0.10],
-                            colors: [
-                              const Color(0xFF4CAF50), // 행복함
-                              const Color(0xFFFFAB91), // 불안함
-                              const Color(0xFFA5D6A7), // 편안함
-                              const Color(0xFFE0B29F), // 불쾌함
-                              const Color(0xFFE0E0E0), // 기타
+                        child: PieChart(
+                          PieChartData(
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 40,
+                            sections: [
+                              PieChartSectionData(
+                                color: AppColors.green5,
+                                value: 12,
+                                title: '12%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.coral4,
+                                value: 34,
+                                title: '34%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.green3,
+                                value: 30,
+                                title: '30%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.coral3,
+                                value: 14,
+                                title: '14%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.grey4,
+                                value: 10,
+                                title: '10%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -85,11 +154,11 @@ class DailyReport extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildLegendItem(const Color(0xFF4CAF50), '행복함'),
-                          _buildLegendItem(const Color(0xFFFFAB91), '불안함'),
-                          _buildLegendItem(const Color(0xFFA5D6A7), '편안함'),
-                          _buildLegendItem(const Color(0xFFE0B29F), '불쾌함'),
-                          _buildLegendItem(const Color(0xFFE0E0E0), '기타'),
+                          LegendItem(color: AppColors.green5, label: '행복함'),
+                          LegendItem(color: AppColors.coral4, label: '불안함'),
+                          LegendItem(color: AppColors.green3, label: '편안함'),
+                          LegendItem(color: AppColors.coral3, label: '불쾌함'),
+                          LegendItem(color: AppColors.grey4, label: '기타'),
                         ],
                       ),
                     ),
@@ -98,47 +167,155 @@ class DailyReport extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // 감정 바
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 60,
-                      child: Container(
-                        height: 20,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE0B29F),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            bottomLeft: Radius.circular(10),
-                          ),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 10),
-                        child: const Text(
-                          '부정 60%',
-                          style: TextStyle(color: Colors.black, fontSize: 12),
+                EmotionRatioBar(
+                  negativePercent: 60,
+                  positivePercent: 40,
+                  negativeLabel: '부정 60%',
+                  positiveLabel: '긍정 40%',
+                  negativeColor: AppColors.coral3,
+                  positiveColor: AppColors.green3,
+                ),
+                const SizedBox(height: 20),
+
+                // 시간대별 감정 변화 차트
+                const Text(
+                  '시간대별 감정 변화',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 15),
+                Container(
+                  height: 200,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.grey1,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.grey3),
+                  ),
+                  child: BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: 20,
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            return BarTooltipItem(
+                              '${rod.toY.round()}회',
+                              const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                    Expanded(
-                      flex: 40,
-                      child: Container(
-                        height: 20,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFA5D6A7),
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(10),
-                            bottomRight: Radius.circular(10),
+                      titlesData: FlTitlesData(
+                        show: true,
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (double value, TitleMeta meta) {
+                              const style = TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              );
+                              Widget text;
+                              switch (value.toInt()) {
+                                case 0:
+                                  text = const Text('오전', style: style);
+                                  break;
+                                case 1:
+                                  text = const Text('오후', style: style);
+                                  break;
+                                case 2:
+                                  text = const Text('저녁', style: style);
+                                  break;
+                                default:
+                                  text = const Text('', style: style);
+                                  break;
+                              }
+                              return SideTitleWidget(
+                                axisSide: meta.axisSide,
+                                space: 16,
+                                child: text,
+                              );
+                            },
                           ),
                         ),
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 10),
-                        child: const Text(
-                          '긍정 40%',
-                          style: TextStyle(color: Colors.black, fontSize: 12),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            interval: 5,
+                            getTitlesWidget: (double value, TitleMeta meta) {
+                              return Text(
+                                value.toInt().toString(),
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
+                      borderData: FlBorderData(
+                        show: false,
+                      ),
+                      barGroups: [
+                        BarChartGroupData(
+                          x: 0,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 8,
+                              color: AppColors.green5,
+                              width: 22,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                                topRight: Radius.circular(4),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 1,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 12,
+                              color: AppColors.coral4,
+                              width: 22,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                                topRight: Radius.circular(4),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 2,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 6,
+                              color: AppColors.green3,
+                              width: 22,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                                topRight: Radius.circular(4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 20),
 
@@ -146,10 +323,10 @@ class DailyReport extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
+                    color: AppColors.green1,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFF4CAF50),
+                      color: AppColors.green5,
                       width: 1,
                     ),
                   ),
@@ -161,7 +338,7 @@ class DailyReport extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
+                              color: AppColors.green5,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Icon(
@@ -177,7 +354,7 @@ class DailyReport extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF2E7D32),
+                                color: AppColors.green8,
                               ),
                             ),
                           ),
@@ -194,7 +371,7 @@ class DailyReport extends StatelessWidget {
                                   '오늘 감지 횟수',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF666666),
+                                    color: AppColors.grey7,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -203,7 +380,7 @@ class DailyReport extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2E7D32),
+                                    color: AppColors.green8,
                                   ),
                                 ),
                               ],
@@ -217,17 +394,17 @@ class DailyReport extends StatelessWidget {
                                   '시간대별 분포',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF666666),
+                                    color: AppColors.grey7,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    _buildTimeSlot('오전', '1회', const Color(0xFFFF9800)),
+                                    _buildTimeSlot('오전', '1회', AppColors.activityStatusColor),
                                     const SizedBox(width: 12),
-                                    _buildTimeSlot('오후', '1회', const Color(0xFFFF9800)),
+                                    _buildTimeSlot('오후', '1회', AppColors.activityStatusColor),
                                     const SizedBox(width: 12),
-                                    _buildTimeSlot('저녁', '0회', Colors.grey),
+                                    _buildTimeSlot('저녁', '0회', AppColors.grey5),
                                   ],
                                 ),
                               ],
@@ -244,7 +421,7 @@ class DailyReport extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
+                    color: AppColors.grey1,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -264,7 +441,7 @@ class DailyReport extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
+                              color: AppColors.green5,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Text(
@@ -368,7 +545,7 @@ class DailyReport extends StatelessWidget {
             width: 4,
             height: 4,
             decoration: const BoxDecoration(
-              color: Color(0xFF4CAF50),
+              color: AppColors.green5,
               shape: BoxShape.circle,
             ),
           ),
@@ -388,115 +565,4 @@ class DailyReport extends StatelessWidget {
   }
 
 
-  Widget _buildEmotionChip(String top, String emotion, String count, Color bgColor, Color borderColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            top,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          Text(
-            '$emotion $count',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            color: color,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 도넛 차트를 그리는 CustomPainter
-class DonutChartPainter extends CustomPainter {
-  final List<double> percentages;
-  final List<Color> colors;
-
-  DonutChartPainter({required this.percentages, required this.colors});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) * 0.8; // 전체 크기를 80%로 줄임
-    final innerRadius = radius * 0.7; // 빈 공간을 70%로 줄임
-
-    double startAngle = -pi / 2;
-
-    for (int i = 0; i < percentages.length; i++) {
-      final sweepAngle = 2 * pi * percentages[i];
-      final paint = Paint()
-        ..color = colors[i]
-        ..style = PaintingStyle.fill;
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-
-      // 퍼센트 텍스트 그리기
-      final midAngle = startAngle + sweepAngle / 2;
-      final textRadius = radius * 0.8;
-      final textX = center.dx + textRadius * cos(midAngle);
-      final textY = center.dy + textRadius * sin(midAngle);
-
-      final textSpan = TextSpan(
-        text: '${(percentages[i] * 100).round()}%',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout(minWidth: 0, maxWidth: size.width);
-      textPainter.paint(canvas, Offset(textX - textPainter.width / 2, textY - textPainter.height / 2));
-
-      startAngle += sweepAngle;
-    }
-
-    // 도넛 구멍 그리기
-    final innerPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, innerRadius, innerPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
 }

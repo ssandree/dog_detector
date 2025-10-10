@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/base_scaffold.dart';
-import '../widgets/buttons/app_buttons.dart';
-import '../widgets/tags/app_status_tags.dart';
-import '../constants/app_constants.dart';
-import '../theme/app_colors.dart';
+import '../../core/index_export.dart';
 
 /// 버튼과 태그 컴포넌트 데모 화면
 class ComponentDemoScreen extends StatelessWidget {
@@ -13,7 +9,7 @@ class ComponentDemoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: '컴포넌트 데모',
-      appBarTheme: AppBarTheme.white,
+      appBarTheme: AppBarThemeType.white,
       body: SingleChildScrollView(
         padding: AppConstants.defaultPadding,
         child: Column(

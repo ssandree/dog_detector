@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import '../mode_selection/mode_select_screen.dart';
 import 'camera_setting_screen.dart';
-import '../../widgets/base_scaffold.dart';
-import '../../widgets/buttons/app_buttons.dart';
-import '../../widgets/cards/app_cards.dart';
-import '../../utils/app_utils.dart';
-import '../../constants/app_constants.dart';
-import '../../theme/app_colors.dart';
+import '../../core/index_export.dart';
+import '../manager_mode/realtime/widgets/analysis_item_row.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -95,35 +91,46 @@ class _HomeScreenState extends State<HomeScreen> {
             // 분석 결과 영역
             Expanded(
               flex: 2,
-              child: AppCards.analysisResult(
-                title: '분석 결과',
-                children: [
+              child: AppCards.basic(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '분석 결과',
+                      style: TextStyle(
+                        fontSize: AppConstants.titleFontSize - 4,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.analysisResultTitleColor,
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.defaultSpacing),
                   // 통증 상태
-                  _buildAnalysisItem(
+                  AnalysisItemRow(
                     icon: Icons.favorite,
                     title: '통증 상태',
                     value: '정상',
-                    color: AppColors.painStatusColor,
+                    valueColor: AppColors.painStatusColor,
                   ),
                   const SizedBox(height: AppConstants.defaultSpacing - 4),
                   
                   // 감정 상태
-                  _buildAnalysisItem(
+                  AnalysisItemRow(
                     icon: Icons.sentiment_satisfied,
                     title: '감정 상태',
                     value: '행복',
-                    color: AppColors.emotionStatusColor,
+                    valueColor: AppColors.emotionStatusColor,
                   ),
                   const SizedBox(height: AppConstants.defaultSpacing - 4),
                   
                   // 활동 수준
-                  _buildAnalysisItem(
+                  AnalysisItemRow(
                     icon: Icons.directions_run,
                     title: '활동 수준',
                     value: '활발',
-                    color: AppColors.activityStatusColor,
+                    valueColor: AppColors.activityStatusColor,
                   ),
                 ],
+              ),
               ),
             ),
             const SizedBox(height: AppConstants.largeSpacing),
@@ -142,51 +149,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAnalysisItem({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius - 30),
-          ),
-          child: Icon(
-            icon,
-            size: AppConstants.defaultIconSize - 4,
-            color: color,
-          ),
-        ),
-        const SizedBox(width: AppConstants.defaultSpacing - 4),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: AppConstants.smallFontSize + 2,
-                  color: AppColors.grey6,
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: AppConstants.defaultFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
-import '../../../widgets/cards/app_cards.dart';
-import '../../../constants/app_constants.dart';
-import '../../../theme/app_colors.dart';
+import 'widgets/report_widgets.dart';
+import '../../../core/index_export.dart';
 
 class MonthlyReport extends StatelessWidget {
   const MonthlyReport({super.key});
@@ -55,9 +55,24 @@ class MonthlyReport extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildEmotionChip('Top 1', '행복함', '342회', AppColors.green1, AppColors.green3),
-                    _buildEmotionChip('Top 2', '불안함', '267회', AppColors.coral1, AppColors.coral3),
-                    _buildEmotionChip('Top 3', '편안함', '198회', AppColors.green1, AppColors.green3),
+                    RankChip(
+                      rankLabel: 'Top 1',
+                      text: '행복함 342회',
+                      backgroundColor: AppColors.green1,
+                      borderColor: AppColors.green3,
+                    ),
+                    RankChip(
+                      rankLabel: 'Top 2',
+                      text: '불안함 267회',
+                      backgroundColor: AppColors.coral1,
+                      borderColor: AppColors.coral3,
+                    ),
+                    RankChip(
+                      rankLabel: 'Top 3',
+                      text: '편안함 198회',
+                      backgroundColor: AppColors.green1,
+                      borderColor: AppColors.green3,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppConstants.defaultSpacing + 4),
@@ -68,15 +83,66 @@ class MonthlyReport extends StatelessWidget {
                       flex: 3,
                       child: SizedBox(
                         height: 200,
-                        child: CustomPaint(
-                          painter: DonutChartPainter(
-                            percentages: [0.18, 0.25, 0.22, 0.20, 0.15],
-                            colors: [
-                              AppColors.green5, // 행복함
-                              AppColors.coral4, // 불안함
-                              AppColors.green3, // 편안함
-                              AppColors.coral3, // 불쾌함
-                              AppColors.grey4, // 기타
+                        child: PieChart(
+                          PieChartData(
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 40,
+                            sections: [
+                              PieChartSectionData(
+                                color: AppColors.green5,
+                                value: 18,
+                                title: '18%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.coral4,
+                                value: 25,
+                                title: '25%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.green3,
+                                value: 22,
+                                title: '22%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.coral3,
+                                value: 20,
+                                title: '20%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: AppColors.grey4,
+                                value: 15,
+                                title: '15%',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -88,11 +154,11 @@ class MonthlyReport extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildLegendItem(AppColors.green5, '행복함'),
-                          _buildLegendItem(AppColors.coral4, '불안함'),
-                          _buildLegendItem(AppColors.green3, '편안함'),
-                          _buildLegendItem(AppColors.coral3, '불쾌함'),
-                          _buildLegendItem(AppColors.grey4, '기타'),
+                          LegendItem(color: AppColors.green5, label: '행복함'),
+                          LegendItem(color: AppColors.coral4, label: '불안함'),
+                          LegendItem(color: AppColors.green3, label: '편안함'),
+                          LegendItem(color: AppColors.coral3, label: '불쾌함'),
+                          LegendItem(color: AppColors.grey4, label: '기타'),
                         ],
                       ),
                     ),
@@ -101,47 +167,13 @@ class MonthlyReport extends StatelessWidget {
                 const SizedBox(height: AppConstants.defaultSpacing + 4),
 
                 // 감정 바
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 52,
-                      child: Container(
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: AppColors.coral2,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(AppConstants.smallBorderRadius - 2),
-                            bottomLeft: Radius.circular(AppConstants.smallBorderRadius - 2),
-                          ),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: AppConstants.smallSpacing + 2),
-                        child: const Text(
-                          '부정 52%',
-                          style: TextStyle(color: AppColors.black, fontSize: AppConstants.smallFontSize),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 48,
-                      child: Container(
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: AppColors.green2,
-                          borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(AppConstants.smallBorderRadius - 2),
-                            bottomRight: Radius.circular(AppConstants.smallBorderRadius - 2),
-                          ),
-                        ),
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: AppConstants.smallSpacing + 2),
-                        child: const Text(
-                          '긍정 48%',
-                          style: TextStyle(color: AppColors.black, fontSize: AppConstants.smallFontSize),
-                        ),
-                      ),
-                    ),
-                  ],
+                EmotionRatioBar(
+                  negativePercent: 52,
+                  positivePercent: 48,
+                  negativeLabel: '부정 52%',
+                  positiveLabel: '긍정 48%',
+                  negativeColor: AppColors.coral2,
+                  positiveColor: AppColors.green2,
                 ),
                 const SizedBox(height: AppConstants.defaultSpacing + 4),
 
@@ -244,18 +276,46 @@ class MonthlyReport extends StatelessWidget {
                 ),
                 const SizedBox(height: AppConstants.defaultSpacing - 1),
                 Container(
+                  height: 300,
                   padding: const EdgeInsets.all(AppConstants.defaultSpacing - 1),
                   decoration: BoxDecoration(
                     color: AppColors.grey1,
                     borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius + 2),
                   ),
-                  child: Column(
-                    children: [
-                      _buildTrendItem('1주차', '감정 안정', AppColors.green5, Icons.trending_up),
-                      _buildTrendItem('2주차', '약간의 불안', AppColors.coral5, Icons.trending_flat),
-                      _buildTrendItem('3주차', '감정 안정', AppColors.green5, Icons.trending_up),
-                      _buildTrendItem('4주차', '활동 증가', AppColors.green5, Icons.trending_up),
-                    ],
+                  child: RadarChart(
+                    RadarChartData(
+                      dataSets: [
+                        RadarDataSet(
+                          fillColor: AppColors.green5.withOpacity(0.3),
+                          borderColor: AppColors.green5,
+                          entryRadius: 5,
+                          dataEntries: const [
+                            RadarEntry(value: 4), // 행복함
+                            RadarEntry(value: 2), // 불안함
+                            RadarEntry(value: 3), // 편안함
+                            RadarEntry(value: 2), // 불쾌함
+                            RadarEntry(value: 4), // 활동량
+                            RadarEntry(value: 3), // 건강상태
+                          ],
+                        ),
+                      ],
+                      radarBorderData: BorderSide(color: AppColors.grey4, width: 2),
+                      titlePositionPercentageOffset: 0.2,
+                      titleTextStyle: const TextStyle(
+                        color: AppColors.black,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      getTitle: (index, angle) {
+                        const titles = ['행복함', '불안함', '편안함', '불쾌함', '활동량', '건강상태'];
+                        return RadarChartTitle(
+                          text: titles[index],
+                          angle: angle,
+                        );
+                      },
+                      tickBorderData: BorderSide(color: AppColors.grey4),
+                      gridBorderData: BorderSide(color: AppColors.grey4, width: 1),
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppConstants.defaultSpacing + 4),
@@ -293,51 +353,6 @@ class MonthlyReport extends StatelessWidget {
   }
 
 
-  Widget _buildEmotionChip(String top, String emotion, String count, Color bgColor, Color borderColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.smallSpacing + 4, vertical: AppConstants.smallSpacing),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(AppConstants.smallBorderRadius + 2),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            top,
-            style: const TextStyle(fontSize: AppConstants.smallFontSize, color: AppColors.grey6),
-          ),
-          Text(
-            '$emotion $count',
-            style: const TextStyle(fontSize: AppConstants.defaultFontSize, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppConstants.smallSpacing - 4),
-      child: Row(
-        children: [
-          Container(
-            width: AppConstants.defaultSpacing,
-            height: AppConstants.defaultSpacing,
-            color: color,
-          ),
-          const SizedBox(width: AppConstants.smallSpacing),
-          Text(
-            text,
-            style: const TextStyle(fontSize: AppConstants.defaultFontSize - 2),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildTrendItem(String week, String trend, Color color, IconData icon) {
     return Padding(
@@ -435,71 +450,5 @@ class MonthlyReport extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-// 도넛 차트를 그리는 CustomPainter
-class DonutChartPainter extends CustomPainter {
-  final List<double> percentages;
-  final List<Color> colors;
-
-  DonutChartPainter({required this.percentages, required this.colors});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) * 0.8; // 전체 크기를 80%로 줄임
-    final innerRadius = radius * 0.7; // 빈 공간을 70%로 줄임
-
-    double startAngle = -pi / 2;
-
-    for (int i = 0; i < percentages.length; i++) {
-      final sweepAngle = 2 * pi * percentages[i];
-      final paint = Paint()
-        ..color = colors[i]
-        ..style = PaintingStyle.fill;
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-
-      // 퍼센트 텍스트 그리기
-      final midAngle = startAngle + sweepAngle / 2;
-      final textRadius = radius * 0.8;
-      final textX = center.dx + textRadius * cos(midAngle);
-      final textY = center.dy + textRadius * sin(midAngle);
-
-      final textSpan = TextSpan(
-        text: '${(percentages[i] * 100).round()}%',
-        style: const TextStyle(
-          color: AppColors.white,
-          fontSize: AppConstants.smallFontSize,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout(minWidth: 0, maxWidth: size.width);
-      textPainter.paint(canvas, Offset(textX - textPainter.width / 2, textY - textPainter.height / 2));
-
-      startAngle += sweepAngle;
-    }
-
-    // 도넛 구멍 그리기
-    final innerPaint = Paint()
-      ..color = AppColors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, innerRadius, innerPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

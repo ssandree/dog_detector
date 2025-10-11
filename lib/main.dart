@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/main_screen.dart';
-import 'app_routes.dart';
-import 'theme/app_theme.dart';
+import 'core/index_export.dart';
 
 void main() {
   runApp(const MyApp());

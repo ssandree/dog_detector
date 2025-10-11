@@ -44,31 +44,23 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaseScaffold(
-      title: '매니저모드',
-      appBarTheme: AppBarThemeType.primary,
-      onBackPressed: () {
-        AppUtils.navigateTo(
-          context,
-          const ModeSelectScreen(),
-          replace: true,
-        );
-      },
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings, color: AppColors.white),
-          onPressed: () {
-            AppUtils.showComingSoonMessage(context, feature: '설정');
-          },
-        ),
-      ],
+    return Scaffold(
+      appBar: TopNav.managerMode(
+        title: '매니저모드',
+        onBackPressed: () {
+          AppUtils.navigateTo(
+            context,
+            const ModeSelectScreen(),
+            replace: true,
+          );
+        },
+        onSettingsPressed: () {
+          AppUtils.showComingSoonMessage(context, feature: '설정');
+        },
+      ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: AppColors.managerGradientColors,
-          ),
+          color: AppColors.primaryAppBarColor,
         ),
         child: const Center(
           child: Column(

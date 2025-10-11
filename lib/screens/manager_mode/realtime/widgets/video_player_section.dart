@@ -93,7 +93,10 @@ Widget build(BuildContext context) {
         ),
       ),
   ],
-  child: const SizedBox.shrink(), // 실제 비디오 위젯이 들어갈 자리
+  child: Container(
+    height: 200, // 고정 높이 설정
+    width: double.infinity,
+  ),
   );
 }
 }

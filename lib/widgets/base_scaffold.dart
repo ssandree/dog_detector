@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_constants.dart';
+import '../core/app_constants.dart';
 import '../theme/app_colors.dart';
 
 /// 앱 전체에서 사용할 기본 Scaffold 위젯
@@ -110,30 +110,30 @@ class BaseScaffold extends StatelessWidget {
         );
     }
 
-          Color _getAppBarBackgroundColor() {
-            switch (appBarTheme) {
-              case AppBarThemeType.primary:
-                return AppColors.primaryAppBarColor;
-              case AppBarThemeType.secondary:
-                return AppColors.secondaryAppBarColor;
-              case AppBarThemeType.white:
-                return AppColors.whiteAppBarColor;
-              case AppBarThemeType.grey:
-                return AppColors.greyAppBarColor;
-            }
-          }
-
-          Color _getAppBarTextColor() {
-            switch (appBarTheme) {
-              case AppBarThemeType.primary:
-              case AppBarThemeType.secondary:
-                return AppColors.whiteAppBarTextColor;
-              case AppBarThemeType.white:
-              case AppBarThemeType.grey:
-                return AppColors.blackAppBarTextColor;
-            }
-          }
+    Color _getAppBarBackgroundColor() {
+      switch (appBarTheme) {
+        case AppBarThemeType.primary:
+          return AppColors.primaryAppBarColor;
+        case AppBarThemeType.secondary:
+          return AppColors.secondaryAppBarColor;
+        case AppBarThemeType.white:
+          return AppColors.whiteAppBarColor;
+        case AppBarThemeType.grey:
+          return AppColors.greyAppBarColor;
+      }
     }
+
+    Color _getAppBarTextColor() {
+      switch (appBarTheme) {
+        case AppBarThemeType.primary:
+        case AppBarThemeType.secondary:
+          return AppColors.whiteAppBarTextColor;
+        case AppBarThemeType.white:
+        case AppBarThemeType.grey:
+          return AppColors.blackAppBarTextColor;
+      }
+    }
+}
 
 /// AppBar 테마 열거형
 enum AppBarThemeType {

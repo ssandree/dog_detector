@@ -34,11 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: AppColors.secondaryGradientColors,
-          ),
+          color: AppColors.secondaryAppBarColor,
         ),
         child: Column(
           children: [

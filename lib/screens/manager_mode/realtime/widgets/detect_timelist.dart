@@ -54,7 +54,7 @@ class DetectTimelist extends StatelessWidget {
       );
    }
 
-   void _openEvidence(BuildContext context, String emotionName, String timeText) {
+   static void _openEvidence(BuildContext context, String emotionName, String timeText) {
       Navigator.of(context).push(
          PageRouteBuilder(
          opaque: false,

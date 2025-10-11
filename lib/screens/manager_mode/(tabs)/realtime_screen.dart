@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../realtime/video_evidence_screen.dart';
 import '../realtime/widgets/video_player_section.dart';
 import '../realtime/widgets/detect_timelist.dart';
 import '../realtime/widgets/state_summary.dart';
@@ -22,37 +21,20 @@ class _RealtimeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          '실시간 모니터링',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {
-              // 알림 기능
-            },
-          ),
-        ],
+      appBar: TopNav.withNotification(
+        title: '실시간 모니터링',
+        onNotificationPressed: () {
+          // 알림 기능
+        },
       ),
       body: Column(
         children: [
           // 비디오 플레이어 영역
-          const VideoPlayerSection(),
+          Container(
+            height: 200,
+            margin: const EdgeInsets.all(16),
+            child: const VideoPlayerSection(),
+          ),
           
           // 실시간 분석 섹션
           Expanded(

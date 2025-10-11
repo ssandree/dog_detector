@@ -11,11 +11,7 @@ class MainScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: AppColors.primaryGradientColors,
-          ),
+          color: AppColors.primaryAppBarColor,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -26,7 +22,9 @@ class MainScreen extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 color: AppColors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.circularBorderRadius,
+                ),
               ),
               child: const Icon(
                 Icons.pets,
@@ -35,10 +33,10 @@ class MainScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppConstants.extraLargeSpacing),
-            
+
             // 앱 타이틀
             const Text(
-              '멍멍이탐지',
+              '견심술',
               style: TextStyle(
                 fontSize: AppConstants.largeTitleFontSize,
                 fontWeight: FontWeight.bold,
@@ -47,10 +45,10 @@ class MainScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppConstants.defaultSpacing),
-                
+
             // 서비스 설명
             Text(
-              'AI 기반 강아지 통증 및 감정 탐지 서비스',
+              'AI 기반 강아지 감정 탐지 서비스',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppConstants.titleFontSize - 6,
@@ -59,34 +57,17 @@ class MainScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppConstants.smallSpacing),
-            Text(
-              '반려견의 건강과 행복을 위한 스마트 케어',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: AppConstants.defaultFontSize,
-                color: AppColors.white.withOpacity(0.6),
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: AppConstants.extraLargeSpacing * 2),
-                
+
             // 시작하기 버튼
-            AppButtons.primary(
-              text: '시작하기',
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.modeSelect);
-              },
-            ),
-            const SizedBox(height: AppConstants.largeSpacing),
-            
-            // 추가 정보
-            Text(
-              '간편한 설정으로 바로 시작하세요',
-              style: TextStyle(
-                fontSize: AppConstants.smallFontSize + 2,
-                color: AppColors.white.withOpacity(0.54),
+            Center(
+              child: AppButtons.primary(
+                text: '시작하기',
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.modeSelect);
+                },
               ),
             ),
+            const SizedBox(height: AppConstants.smallSpacing),
           ],
         ),
       ),

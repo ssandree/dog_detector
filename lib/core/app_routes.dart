@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 // Main Screen
-import 'screens/main_screen.dart';
+import '../screens/main_screen.dart';
 
 // Mode Selection
-import 'screens/mode_selection/mode_select_screen.dart';
+import '../screens/mode_selection/mode_select_screen.dart';
 
 // Camera Mode
-import 'screens/camera_mode/camera_home_screen.dart' as camera_home;
+import '../screens/camera_mode/camera_home_screen.dart' as camera_home;
 
 // Manager Mode Tabs
-import 'screens/manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
+import '../screens/manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
 
 class AppRoutes {
   // 라우트 이름 정의

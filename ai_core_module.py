@@ -91,7 +91,7 @@ class VideoProcessor:
         self.output_dir = Path("processed_videos")
         self.output_dir.mkdir(exist_ok=True)
     
-    def process_video_to_json(self, video_path: str, dog_id: str = None) -> Dict:
+    def process_video_to_json(self, video_path: str, dog_id: Optional[str] = None) -> Dict:
         """영상을 처리하여 JSON 데이터 생성"""
         if dog_id is None:
             dog_id = f"dog_{datetime.now().strftime('%Y%m%d_%H%M%S')}"

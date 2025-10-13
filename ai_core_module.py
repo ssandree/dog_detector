@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 AI 코어 모듈: 강아지 탐지 및 관절 추출
-백엔드와 연동하여 실시간 강아지 탐지 및 영상 처리
+프론트, 백엔드와 연동하여 실시간 강아지 탐지 및 영상 처리
 """
 
 import cv2
@@ -24,14 +24,39 @@ class DogDetectionCore:
         self.is_recording = False
         self.detection_threshold = 0.5
         
-        # 키포인트 매핑
+        # 키포인트 매핑 - Dog-Pose 공식 데이터셋 (20개 키포인트)
         self.keypoint_mapping = {
-            0: "left_f_wrist", 1: "left_f_ankle", 2: "left_f_shoulder",
-            3: "left_b_wrist", 4: "left_b_ankle", 5: "left_b_shoulder",
-            6: "right_f_wrist", 7: "right_f_ankle", 8: "right_f_shoulder",
-            9: "right_b_wrist", 10: "right_b_ankle", 11: "right_b_shoulder",
-            12: "tail_s", 13: "tail_e", 14: "left_mid_ear", 15: "right_mid_ear",
-            16: "nose", 17: "mouth", 18: "left_edge_ear", 19: "right_edge_ear"
+            # 앞다리 (Front legs)
+            0: "left_f_wrist",      # 왼쪽 앞발목  
+            1: "left_f_ankle",      # 왼쪽 앞발가락
+            2: "left_f_shoulder",   # 왼쪽 어깨
+            
+            # 뒷다리 (Back legs)  
+            3: "left_b_wrist",      # 왼쪽 뒷발목
+            4: "left_b_ankle",      # 왼쪽 뒷발가락
+            5: "left_b_shoulder",   # 왼쪽 엉덩이
+            
+            # 오른쪽 앞다리
+            6: "right_f_wrist",     # 오른쪽 앞발목
+            7: "right_f_ankle",     # 오른쪽 앞발가락  
+            8: "right_f_shoulder",  # 오른쪽 어깨
+            
+            # 오른쪽 뒷다리
+            9: "right_b_wrist",     # 오른쪽 뒷발목
+            10: "right_b_ankle",    # 오른쪽 뒷발가락
+            11: "right_b_shoulder", # 오른쪽 엉덩이
+            
+            # 꼬리
+            12: "tail_s",           # 꼬리 시작점
+            13: "tail_e",           # 꼬리 끝점
+            
+            # 머리
+            14: "left_mid_ear",     # 왼쪽 귀 중앙
+            15: "right_mid_ear",    # 오른쪽 귀 중앙
+            16: "nose",             # 코
+            17: "mouth",            # 입
+            18: "left_edge_ear",    # 왼쪽 귀 가장자리
+            19: "right_edge_ear"    # 오른쪽 귀 가장자리
         }
     
     def detect_dog_in_frame(self, frame: np.ndarray) -> Dict:
@@ -237,34 +262,10 @@ class AIModelInterface:
             "dog_id": dog_id,
             "emotion_analysis": emotion_result,
             "patella_analysis": patella_result,
-            "overall_health": self._calculate_overall_health(emotion_result, patella_result),
             "processed_at": datetime.now().isoformat()
         }
         
         return analysis_result
-    
-    def _calculate_overall_health(self, emotion: Dict, patella: Dict) -> Dict:
-        """종합 건강 점수 계산"""
-        emotion_score = emotion['confidence'] if emotion['primary_emotion'] in ['happy', 'calm'] else 1 - emotion['confidence']
-        patella_score = 1 - max(patella['details']['left_leg']['risk'], patella['details']['right_leg']['risk'])
-        
-        overall_score = (emotion_score * 0.4 + patella_score * 0.6)
-        
-        if overall_score >= 0.8:
-            health_status = "excellent"
-        elif overall_score >= 0.6:
-            health_status = "good"
-        elif overall_score >= 0.4:
-            health_status = "fair"
-        else:
-            health_status = "poor"
-        
-        return {
-            "score": overall_score,
-            "status": health_status,
-            "emotion_contribution": emotion_score,
-            "patella_contribution": patella_score
-        }
 
 def main():
     """테스트 실행"""

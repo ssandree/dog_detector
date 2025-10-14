@@ -24,39 +24,41 @@ class DogDetectionCore:
         self.is_recording = False
         self.detection_threshold = 0.5
         
-        # 키포인트 매핑 - Dog-Pose 공식 데이터셋 (20개 키포인트)
+        # 키포인트 매핑 - Dog-Pose 공식 데이터셋 (완전한 24개 키포인트)
         self.keypoint_mapping = {
-            # 앞다리 (Front legs)
-            0: "left_f_wrist",      # 왼쪽 앞발목  
-            1: "left_f_ankle",      # 왼쪽 앞발가락
-            2: "left_f_shoulder",   # 왼쪽 어깨
+            # 머리 부분 (0-4)
+            0: "nose",              # 코
+            1: "left_eye",          # 왼쪽 눈
+            2: "right_eye",         # 오른쪽 눈
+            3: "left_ear",          # 왼쪽 귀
+            4: "right_ear",         # 오른쪽 귀
             
-            # 뒷다리 (Back legs)  
-            3: "left_b_wrist",      # 왼쪽 뒷발목
-            4: "left_b_ankle",      # 왼쪽 뒷발가락
-            5: "left_b_shoulder",   # 왼쪽 엉덩이
+            # 앞다리 (5-10)
+            5: "left_shoulder",     # 왼쪽 어깨
+            6: "right_shoulder",    # 오른쪽 어깨
+            7: "left_elbow",        # 왼쪽 팔꿈치
+            8: "right_elbow",       # 오른쪽 팔꿈치
+            9: "left_front_paw",    # 왼쪽 앞발
+            10: "right_front_paw",  # 오른쪽 앞발
             
-            # 오른쪽 앞다리
-            6: "right_f_wrist",     # 오른쪽 앞발목
-            7: "right_f_ankle",     # 오른쪽 앞발가락  
-            8: "right_f_shoulder",  # 오른쪽 어깨
+            # 뒷다리 (11-16)
+            11: "left_hip",         # 왼쪽 엉덩이
+            12: "right_hip",        # 오른쪽 엉덩이
+            13: "left_knee",        # 왼쪽 무릎
+            14: "right_knee",       # 오른쪽 무릎
+            15: "left_back_paw",    # 왼쪽 뒷발
+            16: "right_back_paw",   # 오른쪽 뒷발
             
-            # 오른쪽 뒷다리
-            9: "right_b_wrist",     # 오른쪽 뒷발목
-            10: "right_b_ankle",    # 오른쪽 뒷발가락
-            11: "right_b_shoulder", # 오른쪽 엉덩이
+            # 꼬리 (17-19)
+            17: "tail_base",        # 꼬리 시작
+            18: "tail_mid",         # 꼬리 중간
+            19: "tail_end",         # 꼬리 끝
             
-            # 꼬리
-            12: "tail_s",           # 꼬리 시작점
-            13: "tail_e",           # 꼬리 끝점
-            
-            # 머리
-            14: "left_mid_ear",     # 왼쪽 귀 중앙
-            15: "right_mid_ear",    # 오른쪽 귀 중앙
-            16: "nose",             # 코
-            17: "mouth",            # 입
-            18: "left_edge_ear",    # 왼쪽 귀 가장자리
-            19: "right_edge_ear"    # 오른쪽 귀 가장자리
+            # 몸체 추가 부위 (20-23) - 기존에 누락됨!
+            20: "neck",             # 목
+            21: "chest",            # 가슴
+            22: "withers",          # 어깨 위
+            23: "back_center"       # 등 중앙
         }
     
     def detect_dog_in_frame(self, frame: np.ndarray) -> Dict:

@@ -36,7 +36,7 @@ class DogDetector:
             16: "nose", 17: "mouth", 18: "left_edge_ear", 19: "right_edge_ear"
         }
     
-    def detect(self, image: np.ndarray, conf_threshold: float = None) -> Dict:
+    def detect(self, image, conf_threshold):
         """
         이미지에서 강아지 탐지 및 키포인트 추출
         
@@ -93,11 +93,11 @@ class DogDetector:
         
         return processed_keypoints
     
-    def batch_detect(self, images: List[np.ndarray]) -> List[Dict]:
+    def batch_detect(self, images, conf_threshold):
         """여러 이미지 배치 처리"""
         results = []
         for image in images:
-            result = self.detect(image)
+            result = self.detect(image, conf_threshold)
             results.append(result)
         return results
     

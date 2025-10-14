@@ -26,8 +26,8 @@ class AIService:
     
     def __init__(self):
         """초기화"""
-        # 학습된 YOLO11 Dog-Pose 모델 경로 수정
-        full_model_path = Path(__file__).parent / "DogPose_Official/yolo11n_dog24/weights/best.pt"
+        # 학습된 YOLO11 Dog-Pose 모델 경로 (API 폴더에서 상위로)
+        full_model_path = Path(__file__).parent.parent / "DogPose_Official/yolo11n_dog24/weights/best.pt"
         
         if not full_model_path.exists():
             raise FileNotFoundError(f"AI 모델을 찾을 수 없습니다: {full_model_path}")

@@ -44,3 +44,4 @@ Thumbs.db
 # 훈련 스크립트와 큰 모델 폴더는 공유하지 않습니다.
 train_official_dog_pose.py
 DogPose_Official/yolo11n_dog24
+DogPose_Official/yolo11n_dog24_v242

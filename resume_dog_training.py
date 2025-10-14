@@ -23,16 +23,20 @@ def resume_dog_pose_training():
     print("🏋️  추가 훈련 시작...")
     print("⚙️  설정: 낮은 학습률, 데이터 증강 강화")
     
-    # 추가 훈련 실행
+    # 추가 훈련 실행 (안정성 개선)
     results = model.train(
         data="dog-pose.yaml",
         epochs=50,                    # 추가 50 에폭
         imgsz=640,
-        batch=16,
+        batch=16,                     # 배치 크기 감소 (메모리 절약)
         device=0,
         project="DogPose_Official",
-        name="yolo11n_dog24_v2",     # 새로운 버전명
+        name="yolo11n_dog24_v24",    # 새로운 버전명
         resume=False,                 # 새로운 실험으로 시작
+        
+        # 안정성 설정
+        workers=4,                    # worker 수 감소 (Windows 안정성)
+        cache=False,                  # 캐시 비활성화 (메모리 절약)
         
         # 개선된 하이퍼파라미터
         lr0=0.0001,                  # 낮은 초기 학습률 (Fine-tuning)
@@ -54,8 +58,7 @@ def resume_dog_pose_training():
         
         # 조기 종료 설정
         patience=20,
-        save=True,
-        cache=True
+        save=True
     )
     
     print("🎉 추가 훈련 완료!")

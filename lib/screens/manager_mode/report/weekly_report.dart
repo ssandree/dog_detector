@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dart:math';
 import 'widgets/report_widgets.dart';
 import '../../../theme/app_colors.dart';
 
@@ -525,8 +524,8 @@ class WeeklyReport extends StatelessWidget {
                             show: true,
                             gradient: LinearGradient(
                               colors: [
-                                const Color(0xFF4CAF50).withOpacity(0.3),
-                                const Color(0xFF4CAF50).withOpacity(0.1),
+                                const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                                const Color(0xFF4CAF50).withValues(alpha: 0.1),
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -605,33 +604,4 @@ class WeeklyReport extends StatelessWidget {
 
 
 
-  Widget _buildActivityItem(String day, String activity, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            day,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Text(
-              activity,
-              style: TextStyle(
-                fontSize: 12,
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

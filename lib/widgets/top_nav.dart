@@ -60,6 +60,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
   // 편의 생성자들
   factory TopNav.simple({
     required String title,
+    bool showBackButton = true,
     VoidCallback? onBackPressed,
     List<Widget>? actions,
     Color? backgroundColor,
@@ -69,6 +70,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
   }) {
     return TopNav(
       title: title,
+      showBackButton: showBackButton,
       onBackPressed: onBackPressed,
       actions: actions,
       backgroundColor: backgroundColor,
@@ -80,6 +82,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
 
   factory TopNav.withNotification({
     required String title,
+    bool showBackButton = true,
     VoidCallback? onBackPressed,
     VoidCallback? onNotificationPressed,
     Color? backgroundColor,
@@ -89,16 +92,9 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
   }) {
     return TopNav(
       title: title,
+      showBackButton: showBackButton,
       onBackPressed: onBackPressed,
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.notifications_none,
-            color: iconColor ?? Colors.black,
-          ),
-          onPressed: onNotificationPressed,
-        ),
-      ],
+      actions: [], // 알림 아이콘 제거
       backgroundColor: backgroundColor,
       titleColor: titleColor,
       iconColor: iconColor,
@@ -110,6 +106,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
     required String title,
     required TabController tabController,
     required List<Tab> tabs,
+    bool showBackButton = true,
     VoidCallback? onBackPressed,
     List<Widget>? actions,
     Color? backgroundColor,
@@ -119,6 +116,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
   }) {
     return TopNav(
       title: title,
+      showBackButton: showBackButton,
       onBackPressed: onBackPressed,
       actions: actions,
       backgroundColor: backgroundColor,
@@ -138,6 +136,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
 
   factory TopNav.managerMode({
     required String title,
+    bool showBackButton = true,
     VoidCallback? onBackPressed,
     VoidCallback? onSettingsPressed,
     Color? backgroundColor,
@@ -147,6 +146,7 @@ class TopNav extends StatelessWidget implements PreferredSizeWidget {
   }) {
     return TopNav(
       title: title,
+      showBackButton: showBackButton,
       onBackPressed: onBackPressed,
       actions: [
         IconButton(

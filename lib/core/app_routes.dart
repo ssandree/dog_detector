@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 
 // Main Screen
-import '../screens/main_screen.dart';
+import '../screens/main/main_screen.dart';
 
-// Mode Selection
-import '../screens/mode_selection/mode_select_screen.dart';
 
 // Camera Mode
-import '../screens/camera_mode/camera_home_screen.dart' as camera_home;
+import '../screens/camera_mode/camera_home_screen.dart' as camera;
 
 // Manager Mode Tabs
+<<<<<<< Updated upstream
 import '../screens/manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
+=======
+import '../screens/manager_mode/home/manager_home_screen.dart' as manager;
+>>>>>>> Stashed changes
 
 class AppRoutes {
   // 라우트 이름 정의
   static const String main = '/';
-  static const String modeSelect = '/mode-select';
   static const String cameraHome = '/camera/home';
   static const String managerHome = '/manager/home';
 
@@ -24,13 +25,11 @@ class AppRoutes {
         // Main Screen (첫 화면)
         main: (context) => const MainScreen(),
 
-        // Mode Selection
-        modeSelect: (context) => const ModeSelectScreen(),
 
         // Camera Mode
-        cameraHome: (context) => const camera_home.HomeScreen(),
+        cameraHome: (context) => const camera.HomeScreen(),
 
         // Manager Mode
-        managerHome: (context) => const manager_home.HomeScreen(),
+        managerHome: (context) => const manager.HomeScreen(),
       };
 }

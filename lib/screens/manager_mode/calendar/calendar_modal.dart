@@ -44,7 +44,7 @@ class CalendarModal extends StatelessWidget {
                   children: [
                      // 날짜 제목
                      Text(
-                     '${currentDate.month}월 ${day}일',
+                     '$currentDate.month월 $day일',
                      style: const TextStyle(
                         fontSize: AppConstants.titleFontSize,
                         fontWeight: FontWeight.bold,

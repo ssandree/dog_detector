@@ -46,6 +46,7 @@ class AppButtons {
                     style: const TextStyle(
                       fontSize: AppConstants.defaultFontSize,
                       fontWeight: FontWeight.w500,
+                      shadows: [],
                     ),
                   ),
                 ],
@@ -55,6 +56,7 @@ class AppButtons {
                 style: const TextStyle(
                   fontSize: AppConstants.defaultFontSize,
                   fontWeight: FontWeight.w500,
+                  shadows: [],
                 ),
               ),
       ),
@@ -103,6 +105,7 @@ class AppButtons {
                     style: const TextStyle(
                       fontSize: AppConstants.defaultFontSize,
                       fontWeight: FontWeight.w500,
+                      shadows: [],
                     ),
                   ),
                 ],
@@ -112,6 +115,7 @@ class AppButtons {
                 style: const TextStyle(
                   fontSize: AppConstants.defaultFontSize,
                   fontWeight: FontWeight.w500,
+                  shadows: [],
                 ),
               ),
       ),
@@ -212,6 +216,7 @@ class AppButtons {
                     style: const TextStyle(
                       fontSize: AppConstants.defaultFontSize,
                       fontWeight: FontWeight.w500,
+                      shadows: [],
                     ),
                   ),
                 ],
@@ -221,6 +226,7 @@ class AppButtons {
                 style: const TextStyle(
                   fontSize: AppConstants.defaultFontSize,
                   fontWeight: FontWeight.w500,
+                  shadows: [],
                 ),
               ),
       ),
@@ -235,6 +241,7 @@ class AppButtons {
     IconData? icon,
     double? width,
     double height = 56.0,
+    String? subtitle,
   }) {
     return SizedBox(
       width: width ?? double.infinity,
@@ -245,7 +252,7 @@ class AppButtons {
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.primaryButtonColor,
           elevation: 8,
-          shadowColor: AppColors.black.withOpacity(0.26),
+          shadowColor: AppColors.black.withValues(alpha: 0.26),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius - 22),
           ),
@@ -259,29 +266,34 @@ class AppButtons {
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryButtonColor),
               ),
             )
-          : icon != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
                   Icon(icon, size: AppConstants.defaultIconSize),
-                  const SizedBox(width: AppConstants.smallSpacing),
+                  const SizedBox(height: AppConstants.smallSpacing),
+                ],
+                Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: AppConstants.titleFontSize - 4,
+                    fontWeight: FontWeight.bold,
+                    shadows: [],
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
                   Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: AppConstants.titleFontSize - 6,
-                      fontWeight: FontWeight.bold,
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: AppConstants.smallFontSize + 2,
+                      color: AppColors.primaryButtonColor.withValues(alpha: 0.8),
+                      shadows: [],
                     ),
                   ),
                 ],
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: AppConstants.titleFontSize - 4,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
+              ],
+            ),
       ),
     );
   }
@@ -294,6 +306,7 @@ class AppButtons {
     IconData? icon,
     double? width,
     double height = 56.0,
+    String? subtitle,
   }) {
     return SizedBox(
       width: width ?? double.infinity,
@@ -304,7 +317,7 @@ class AppButtons {
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.secondaryButtonColor,
           elevation: 8,
-          shadowColor: AppColors.black.withOpacity(0.26),
+          shadowColor: AppColors.black.withValues(alpha: 0.26),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius - 22),
           ),
@@ -318,29 +331,45 @@ class AppButtons {
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondaryButtonColor),
               ),
             )
-          : icon != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: AppConstants.defaultIconSize),
-                  const SizedBox(width: AppConstants.smallSpacing),
-                  Text(
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min, // 최소 크기로 조정
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: AppConstants.defaultIconSize - 4), // 아이콘 크기 줄임
+                  const SizedBox(height: 2), // 간격 줄임
+                ],
+                Flexible( // 텍스트를 Flexible로 감싸서 오버플로우 방지
+                  child: Text(
                     text,
                     style: const TextStyle(
-                      fontSize: AppConstants.titleFontSize - 6,
+                      fontSize: AppConstants.titleFontSize - 6, // 폰트 크기 줄임
                       fontWeight: FontWeight.bold,
+                      shadows: [],
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2), // 간격 줄임
+                  Flexible( // subtitle도 Flexible로 감싸서 오버플로우 방지
+                    child: Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: AppConstants.smallFontSize, // 폰트 크기 줄임
+                        color: AppColors.secondaryButtonColor.withValues(alpha: 0.8),
+                        shadows: [],
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: AppConstants.titleFontSize - 4,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
+              ],
+            ),
       ),
     );
   }

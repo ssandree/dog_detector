@@ -21,11 +21,11 @@ class EmotionPieChart extends StatelessWidget {
         Expanded(
           flex: 3,
           child: SizedBox(
-            height: 200,
+            height: 150,
             child: PieChart(
               PieChartData(
                 sectionsSpace: 2,
-                centerSpaceRadius: 40,
+                centerSpaceRadius: 36,
                 sections: sections,
               ),
             ),

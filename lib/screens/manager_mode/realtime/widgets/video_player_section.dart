@@ -67,7 +67,7 @@ Widget build(BuildContext context) {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -80,7 +80,7 @@ Widget build(BuildContext context) {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -93,7 +93,7 @@ Widget build(BuildContext context) {
         ),
       ),
   ],
-  child: Container(
+  child: SizedBox(
     height: 200, // 고정 높이 설정
     width: double.infinity,
   ),

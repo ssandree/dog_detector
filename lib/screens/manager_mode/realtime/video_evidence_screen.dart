@@ -28,7 +28,7 @@ class VideoEvidenceScreen extends StatefulWidget {
    @override
    Widget build(BuildContext context) {
       return Scaffold(
-         backgroundColor: Colors.black.withOpacity(0.3),
+         backgroundColor: Colors.black.withValues(alpha: 0.3),
          body: Center(
          child: Container(
             width: MediaQuery.of(context).size.width * 0.85,
@@ -37,7 +37,7 @@ class VideoEvidenceScreen extends StatefulWidget {
                borderRadius: BorderRadius.circular(16),
                boxShadow: [
                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                ),
@@ -91,7 +91,7 @@ class VideoEvidenceScreen extends StatefulWidget {
                            width: 44,
                            height: 44,
                            decoration: BoxDecoration(
-                           color: Colors.black.withOpacity(0.6),
+                           color: Colors.black.withValues(alpha: 0.6),
                            shape: BoxShape.circle,
                            ),
                            child: const Icon(Icons.play_arrow, color: Colors.white),
@@ -103,7 +103,7 @@ class VideoEvidenceScreen extends StatefulWidget {
                         child: Container(
                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                            decoration: BoxDecoration(
-                           color: Colors.black.withOpacity(0.6),
+                           color: Colors.black.withValues(alpha: 0.6),
                            borderRadius: BorderRadius.circular(6),
                            ),
                            child: const Text(

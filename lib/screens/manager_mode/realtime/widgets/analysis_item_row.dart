@@ -24,7 +24,7 @@ class AnalysisItemRow extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: valueColor.withOpacity(0.1),
+            color: valueColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius - 30),
           ),
           child: Icon(

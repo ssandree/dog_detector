@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 class AppColors {
   // 베이지
   static const Color beige1 = Color(0xFFFFF8ED);
-  static const Color beige2 = Color(0xFFD3EAD2);
-  static const Color beige3 = Color(0xFFEEE1C1);
-  static const Color beige4 = Color(0xFFDDCEA9);
-  static const Color beige5 = Color(0xFFC7B896);
+  static const Color beige2 = Color(0xFFD9CBA8);
+  static const Color beige3 = Color(0xFFC6B58A);
+  static const Color beige4 = Color(0xFFAB9762);
+  static const Color beige5 = Color(0xFF816A36);
 
   // 코랄
-  static const Color coral1 = Color(0xFFFFF0EA);
+  static const Color coral1 = Color(0xFFFFEFEA);
   static const Color coral2 = Color(0xFFF3C9BA);
-  static const Color coral3 = Color(0xFFECAB96);
-  static const Color coral4 = Color(0xFFD9967A);
+  static const Color coral3 = Color(0xFFF3C9BA);
+  static const Color coral4 = Color(0xFFE9967A);
   static const Color coral5 = Color(0xFFDA8061);
 
   // 초록색
@@ -83,4 +83,19 @@ class AppColors {
   static const Color tagBad = coral4;             // 나쁨 - 진한 코랄색
   static const Color tagPain = coral5;            // 아픔 - 가장 진한 코랄색
   static const Color tagDefault = grey4;          // 기본 태그 - 회색
+
+  //캘린더 비율 색상
+  static const List<Color> blended = [
+    Color(0xFF71AF46), // 0%
+    Color(0xFF82B553), // 10%
+    Color(0xFF94BB60), // 20%
+    Color(0xFFA6C26E), // 30%
+    Color(0xFFB7C87B), // 40%
+    Color(0xFFC9CE88), // 50%
+    Color(0xFFDAC496), // 60%
+    Color(0xFFE0B9A0), // 70%
+    Color(0xFFE5AD9D), // 80%
+    Color(0xFFEA9F8B), // 90%
+    Color(0xFFD9967A), // 100%
+  ];
 }

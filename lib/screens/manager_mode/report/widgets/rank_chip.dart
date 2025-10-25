@@ -18,7 +18,7 @@ const RankChip({
 @override
 Widget build(BuildContext context) {
    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
       color: backgroundColor,
       borderRadius: BorderRadius.circular(10),
@@ -32,14 +32,14 @@ Widget build(BuildContext context) {
          Text(
             rankLabel,
             style: const TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             color: Colors.grey,
             ),
          ),
          Text(
             text,
             style: const TextStyle(
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
             ),
          ),

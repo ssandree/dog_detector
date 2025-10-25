@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../mode_selection/mode_select_screen.dart';
 import 'camera_setting_screen.dart';
 import '../../core/index_export.dart';
 import '../manager_mode/realtime/widgets/analysis_item_row.dart';
+import '../main/main_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onBackPressed: () {
         AppUtils.navigateTo(
           context,
-          const ModeSelectScreen(),
+          const MainScreen(),
           replace: true,
         );
       },
@@ -44,10 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppColors.black.withOpacity(0.1),
+                  color: AppColors.black.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
                   border: Border.all(
-                    color: AppColors.white.withOpacity(0.3),
+                    color: AppColors.white.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
@@ -58,14 +58,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(
                         Icons.camera_alt,
                         size: 80,
-                        color: AppColors.white.withOpacity(0.7),
+                        color: AppColors.white.withValues(alpha: 0.7),
                       ),
                       const SizedBox(height: AppConstants.defaultSpacing),
                       Text(
                         '카메라 프리뷰',
                         style: TextStyle(
                           fontSize: AppConstants.titleFontSize - 6,
-                          color: AppColors.white.withOpacity(0.7),
+                          color: AppColors.white.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         '강아지를 카메라에 비춰주세요',
                         style: TextStyle(
                           fontSize: AppConstants.smallFontSize + 2,
-                          color: AppColors.white.withOpacity(0.6),
+                          color: AppColors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ],

@@ -7,3 +7,5 @@ export 'ai_report_section.dart';
 export 'emotion_ratio_bar.dart';
 export 'legend_item.dart';
 export 'rank_chip.dart';
+export 'monthly_trend_analysis.dart';
+export 'monthly_summary.dart';

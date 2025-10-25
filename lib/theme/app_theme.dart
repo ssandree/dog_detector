@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -26,33 +27,35 @@ class AppTheme {
           ),
         ),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          fontSize: 36,
-          fontWeight: FontWeight.bold,
-          color: AppColors.black,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: AppColors.black,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: AppColors.black,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          color: AppColors.black,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: AppColors.black,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          color: AppColors.grey7,
+      textTheme: GoogleFonts.notoSansKrTextTheme(
+        const TextTheme(
+          headlineLarge: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: AppColors.black,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.black,
+          ),
+          headlineSmall: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.black,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            color: AppColors.black,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: AppColors.black,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 12,
+            color: AppColors.grey7,
+          ),
         ),
       ),
     );

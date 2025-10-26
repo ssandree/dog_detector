@@ -123,8 +123,8 @@ class AIModelInterface:
         stats = torch.load(model_dir / "dog_pose_stats.pt")
         self.mean, self.std = stats['mean'], stats['std']
         
-        self.seg_len = 60
-        self.emotion_labels = ["happy", "sad", "angry", "anxious", "calm", "excited"]
+        self.seg_len = 45
+        self.emotion_labels = ["편안/안정", "불안/슬픔", "화남/불쾌", "행복/즐거움", "공포", "공격성"]
         self.keypoint_names = list(DogDetectionCore("").keypoint_mapping.values())
         print("✅ AI 인터페이스 초기화 완료")
 

@@ -3,7 +3,6 @@
 VGGish 파인튜닝 스크립트
 (수정) 사전학습된 VGGish를 강아지 오디오 데이터로 파인튜닝
 (수정) Arousal (3-Class) / Valence (3-Class) 멀티태스크 분류
-(수정) 명시적 침묵 데이터 추가
 """
 
 import torch
@@ -17,94 +16,69 @@ from torchvggish import vggish, vggish_input
 import pickle
 from typing import List, Tuple, Dict, Optional
 import itertools # (옵티마이저 파라미터 그룹화를 위해 추가)
-import random # [추가] 데이터 셔플링 위해
 
 class DogAudioDataset(Dataset):
     """
     강아지 오디오 데이터셋 (Arousal/Valence 멀티태스크 분류용)
-    [수정] 'SILENT' 경로 처리 기능 추가
     """
     
-    def __init__(self, audio_files: List[str], arousal_labels: List[int], valence_labels: List[int], train: bool = True):
+    # [수정] 라벨을 2개의 분리된 리스트로 받음 (e.g., [0, 1, 2], [0, 1, 2])
+    def __init__(self, audio_files: List[str], arousal_labels: List[int], valence_labels: List[int]):
         """
         Args:
-            audio_files: 오디오 파일 경로 리스트 (또는 "SILENT")
+            audio_files: 오디오 파일 경로 리스트
             arousal_labels: Arousal 라벨 (e.g., 0=Low, 1=Medium, 2=High)
             valence_labels: Valence 라벨 (e.g., 0=Negative, 1=Neutral, 2=Positive)
-            train: 훈련 모드 여부 (True/False)
         """
         self.audio_files = audio_files
-        self.train = train
+        
+        # [수정] CrossEntropyLoss를 위해 LongTensor로 변환
         self.arousal_labels_tensor = torch.LongTensor(arousal_labels)
         self.valence_labels_tensor = torch.LongTensor(valence_labels)
-        
-        # [추가] 침묵 라벨 정의 (Medium=1, Neutral=1)
-        self.silence_label_arousal = 1
-        self.silence_label_valence = 1
         
     def __len__(self):
         return len(self.audio_files)
     
     def __getitem__(self, idx):
         """
-        [수정] 'SILENT' 경로 만나면 침묵 텐서와 라벨 반환
+        [수정] 2개의 라벨을 반환 (audio, label_arousal, label_valence)
         """
         audio_path = self.audio_files[idx]
         label_arousal = self.arousal_labels_tensor[idx]
         label_valence = self.valence_labels_tensor[idx]
-
-        # --- [수정] 'SILENT' 경로 처리 ---
-        if audio_path == "SILENT":
-            silent_audio = torch.zeros(1, 96, 64)
-            # 미리 정의된 침묵 라벨 사용 (LongTensor로 변환)
-            return silent_audio, torch.tensor(self.silence_label_arousal), torch.tensor(self.silence_label_valence)
-        # --- [수정 끝] ---
-            
-        # (기존 로직: 실제 오디오 파일 로드 및 처리)
+        
         try:
             audio_input = vggish_input.wavfile_to_examples(audio_path)
             
-            if len(audio_input) == 0:
-                raise ValueError("오디오 세그먼트 없음")
-
-            if self.train:
-                # 훈련 시: 랜덤 샘플링
-                if len(audio_input) > 1:
-                    frame_idx = np.random.randint(0, len(audio_input))
-                    audio_tensor = torch.from_numpy(audio_input[frame_idx]).float()
-                else:
-                    audio_tensor = torch.from_numpy(audio_input[0]).float()
+            if len(audio_input) > 1:
+                frame_idx = np.random.randint(0, len(audio_input))
+                audio_tensor = torch.from_numpy(audio_input[frame_idx]).float()
             else:
-                # 평가 시: 최대 에너지 샘플링
-                if len(audio_input) > 1:
-                    segment_energy = np.sum(np.abs(audio_input), axis=(1, 2))
-                    best_frame_idx = np.argmax(segment_energy)
-                    audio_tensor = torch.from_numpy(audio_input[best_frame_idx]).float()
-                else:
-                    audio_tensor = torch.from_numpy(audio_input[0]).float()
-
+                audio_tensor = torch.from_numpy(audio_input[0]).float()
+            
             audio_tensor = audio_tensor.unsqueeze(0) # (1, 96, 64)
+            
             return audio_tensor, label_arousal, label_valence
             
         except Exception as e:
             print(f"⚠️ 오디오 로딩 실패 {audio_path}: {e}")
-            # 기존 오류 처리 방식 유지 (0번 라벨로 학습)
             dummy_audio = torch.zeros(1, 96, 64)
-            dummy_label = 0 
-            # 오류 발생 시에도 2개 라벨 반환해야 함
-            return dummy_audio, torch.tensor(dummy_label), torch.tensor(dummy_label)
+            dummy_label = 0 # 어차피 0번 라벨로 학습됨
+            return dummy_audio, dummy_label, dummy_label
 
 class DogVGGishTrainer:
     """
     VGGish 파인튜닝 트레이너 (A/V 멀티태스크 분류용)
-    (이전 코드와 동일 - 변경 없음)
     """
     
+    # [수정] 2개의 클래스 수를 인자로 받음
     def __init__(self, num_arousal_classes: int = 3, num_valence_classes: int = 3, device: str = 'auto'):
         self.device = device if device != 'auto' else ('cuda' if torch.cuda.is_available() else 'cpu')
         
         self.vggish = vggish(postprocess=False)
         
+        # [수정] Multi-Head Classifier
+        # VGGish 출력(128) -> 공통 MLP(256) -> 2개의 분리된 Head
         self.shared_mlp = nn.Sequential(
             nn.Linear(128, 256),
             nn.ReLU(),
@@ -118,6 +92,7 @@ class DogVGGishTrainer:
         self.arousal_head = self.arousal_head.to(self.device)
         self.valence_head = self.valence_head.to(self.device)
         
+        # [수정] 2개의 분리된 손실 함수 (분류용)
         self.criterion_arousal = nn.CrossEntropyLoss()
         self.criterion_valence = nn.CrossEntropyLoss()
         
@@ -126,6 +101,7 @@ class DogVGGishTrainer:
         print(f"🎮 디바이스: {self.device}")
     
     def setup_optimizer(self, lr_vggish: float = 1e-5, lr_classifier: float = 1e-3):
+        # [수정] VGGish / 나머지(MLP+Heads) 파라미터 그룹 분리
         classifier_params = itertools.chain(self.shared_mlp.parameters(), 
                                             self.arousal_head.parameters(), 
                                             self.valence_head.parameters())
@@ -141,6 +117,7 @@ class DogVGGishTrainer:
         print(f"⚙️ 옵티마이저 설정: VGGish lr={lr_vggish}, Classifier Heads lr={lr_classifier}")
     
     def forward(self, x):
+        """[수정] 2개의 출력을 반환"""
         vggish_features = self.vggish(x)
         shared_features = self.shared_mlp(vggish_features)
         output_arousal = self.arousal_head(shared_features)
@@ -148,6 +125,7 @@ class DogVGGishTrainer:
         return output_arousal, output_valence
     
     def train_epoch(self, dataloader: DataLoader):
+        """[수정] 멀티태스크 훈련"""
         self.vggish.train(); self.shared_mlp.train()
         self.arousal_head.train(); self.valence_head.train()
         
@@ -161,9 +139,10 @@ class DogVGGishTrainer:
             
             outputs_arousal, outputs_valence = self.forward(audio)
             
+            # [수정] 2개의 손실을 계산하고 더함
             loss_arousal = self.criterion_arousal(outputs_arousal, labels_arousal)
             loss_valence = self.criterion_valence(outputs_valence, labels_valence)
-            loss = loss_arousal + loss_valence
+            loss = loss_arousal + loss_valence # 총 손실
             
             self.optimizer.zero_grad()
             loss.backward()
@@ -172,6 +151,7 @@ class DogVGGishTrainer:
             total_loss += loss.item()
             total += labels_arousal.size(0)
 
+            # [수정] 2개의 정확도 계산
             _, predicted_arousal = outputs_arousal.max(1)
             correct_arousal += predicted_arousal.eq(labels_arousal).sum().item()
             
@@ -185,9 +165,10 @@ class DogVGGishTrainer:
         acc_arousal = 100.0 * correct_arousal / total
         acc_valence = 100.0 * correct_valence / total
         
-        return avg_loss, acc_arousal, acc_valence
+        return avg_loss, acc_arousal, acc_valence # [수정] 3개 값 반환
     
     def validate(self, dataloader: DataLoader):
+        """[수정] 멀티태스크 검증"""
         self.vggish.eval(); self.shared_mlp.eval()
         self.arousal_head.eval(); self.valence_head.eval()
         
@@ -219,26 +200,29 @@ class DogVGGishTrainer:
         acc_arousal = 100.0 * correct_arousal / total
         acc_valence = 100.0 * correct_valence / total
         
-        return avg_loss, acc_arousal, acc_valence
+        return avg_loss, acc_arousal, acc_valence # [수정] 3개 값 반환
     
     def train(self, train_loader: DataLoader, val_loader: DataLoader, epochs: int = 50):
         print(f"🏋️ VGGish A/V Multi-Task Classification 훈련 시작: {epochs} 에포크")
         print("="*60)
         
-        best_val_loss = float('inf')
+        best_val_loss = float('inf') # [수정] Loss 기준으로 저장
         
         for epoch in range(epochs):
             print(f"\n📅 에포크 {epoch+1}/{epochs}")
             print("-" * 40)
             
+            # [수정] 3개 값 반환 받음
             train_loss, train_acc_A, train_acc_V = self.train_epoch(train_loader)
             val_loss, val_acc_A, val_acc_V = self.validate(val_loader)
             
             self.scheduler.step(val_loss)
             
+            # [수정] 2개 정확도 모두 출력
             print(f"훈련 - Loss: {train_loss:.4f}, Arousal Acc: {train_acc_A:.2f}%, Valence Acc: {train_acc_V:.2f}%")
             print(f"검증 - Loss: {val_loss:.4f}, Arousal Acc: {val_acc_A:.2f}%, Valence Acc: {val_acc_V:.2f}%")
             
+            # [수정] Loss가 가장 낮을 때 저장
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 avg_acc = (val_acc_A + val_acc_V) / 2
@@ -248,130 +232,93 @@ class DogVGGishTrainer:
         print(f"\n🎉 훈련 완료! 최저 검증 Loss: {best_val_loss:.4f}")
     
     def save_model(self, filename: str):
+        """[수정] 4개 state_dict 저장"""
         save_dict = {
             'vggish_state_dict': self.vggish.state_dict(),
             'shared_mlp_state_dict': self.shared_mlp.state_dict(),
             'arousal_head_state_dict': self.arousal_head.state_dict(),
             'valence_head_state_dict': self.valence_head.state_dict(),
+            # 'num_classes': self.num_classes, # (삭제)
         }
         torch.save(save_dict, filename)
         print(f"💾 모델 저장: {filename}")
     
     def load_model(self, filename: str):
+        """[수정] 4개 state_dict 로드"""
         checkpoint = torch.load(filename, map_location=self.device)
+        
         self.vggish.load_state_dict(checkpoint['vggish_state_dict'])
         self.shared_mlp.load_state_dict(checkpoint['shared_mlp_state_dict'])
         self.arousal_head.load_state_dict(checkpoint['arousal_head_state_dict'])
         self.valence_head.load_state_dict(checkpoint['valence_head_state_dict'])
+        
         print(f"📂 모델 로드: {filename}")
 
-# --- [수정] 실제 데이터 로딩 + 가상 침묵 데이터 생성 로직 ---
-def prepare_data(real_train_count=1200, real_val_count=200, 
-                 silent_train_count=200, silent_val_count=50):
+def create_sample_dataset(data_dir: str = "sample_dog_audio"):
     """
-    실제 데이터 로딩 (TODO 구현 필요) 및 가상 침묵 데이터 생성을 담당합니다.
+    [수정] Arousal/Valence 라벨을 반환하는 샘플 데이터셋
     """
-    print("📁 데이터 준비 시작...")
+    print("📁 샘플 A/V 데이터셋 생성 (실제 데이터로 교체하세요)")
     
-    # --- 1. 실제 데이터 로딩 (TODO: 이 부분을 실제 로직으로 교체) ---
-    print("  (시뮬레이션) 실제 데이터 로딩 중...")
-    real_audio_files = []
-    real_arousal_labels = []
-    real_valence_labels = []
-    # 예시: 실제 데이터 경로 스캔 및 라벨 파싱 로직 필요
-    # for path, label_a, label_v in load_real_data_from_disk():
-    #     real_audio_files.append(path)
-    #     real_arousal_labels.append(label_a)
-    #     real_valence_labels.append(label_v)
+    # [수정] 라벨 매핑 예시
+    # arousal_map = {'Low': 0, 'Medium': 1, 'High': 2}
+    # valence_map = {'Negative': 0, 'Neutral': 1, 'Positive': 2}
     
-    # 임시: 더미 실제 데이터 생성
-    num_total_real = real_train_count + real_val_count
-    for i in range(num_total_real):
-        real_audio_files.append(f"real_audio_{i}.wav") # 실제 파일 경로로 대체 필요
-        real_arousal_labels.append(random.randint(0, 2)) # 실제 라벨로 대체 필요
-        real_valence_labels.append(random.randint(0, 2)) # 실제 라벨로 대체 필요
-    print(f"  (시뮬레이션) 실제 데이터 로드 완료: {len(real_audio_files)}개")
-    # --- 실제 데이터 로딩 끝 ---
-
-    # --- 2. 가상 침묵 데이터 생성 ---
-    SILENCE_AROUSAL_LABEL = 1 # Medium
-    SILENCE_VALENCE_LABEL = 1 # Neutral
+    audio_files = []
+    arousal_labels = []
+    valence_labels = []
     
-    silent_train_paths = ["SILENT"] * silent_train_count
-    silent_train_labels_A = [SILENCE_AROUSAL_LABEL] * silent_train_count
-    silent_train_labels_V = [SILENCE_VALENCE_LABEL] * silent_train_count
+    # 더미 데이터 (실제로는 CSV 등에서 로드)
+    for i in range(100):
+        audio_files.append(f"dummy_audio_{i}.wav")
+        arousal_labels.append(i % 3) # (0, 1, 2)
+        valence_labels.append(i % 3) # (0, 1, 2)
     
-    silent_val_paths = ["SILENT"] * silent_val_count
-    silent_val_labels_A = [SILENCE_AROUSAL_LABEL] * silent_val_count
-    silent_val_labels_V = [SILENCE_VALENCE_LABEL] * silent_val_count
-    print(f"  가상 침묵 데이터 생성 완료: 훈련 {silent_train_count}개, 검증 {silent_val_count}개")
-    # --- 가상 침묵 데이터 생성 끝 ---
-
-    # --- 3. 데이터셋 분할 및 결합 ---
-    # 실제 데이터를 훈련/검증으로 분할 (개수 기반)
-    real_train_files = real_audio_files[:real_train_count]
-    real_train_labels_A = real_arousal_labels[:real_train_count]
-    real_train_labels_V = real_valence_labels[:real_train_count]
-    
-    real_val_files = real_audio_files[real_train_count:]
-    real_val_labels_A = real_arousal_labels[real_train_count:]
-    real_val_labels_V = real_valence_labels[real_train_count:]
-
-    # 실제 데이터와 침묵 데이터 결합
-    train_files = real_train_files + silent_train_paths
-    train_labels_A = real_train_labels_A + silent_train_labels_A
-    train_labels_V = real_train_labels_V + silent_train_labels_V
-    
-    val_files = real_val_files + silent_val_paths
-    val_labels_A = real_val_labels_A + silent_val_labels_A
-    val_labels_V = real_val_labels_V + silent_val_labels_V
-    
-    # 데이터 섞기
-    combined_train = list(zip(train_files, train_labels_A, train_labels_V))
-    random.shuffle(combined_train)
-    train_files, train_labels_A, train_labels_V = zip(*combined_train)
-    
-    combined_val = list(zip(val_files, val_labels_A, val_labels_V))
-    random.shuffle(combined_val)
-    val_files, val_labels_A, val_labels_V = zip(*combined_val)
-
-    print(f"🏋️ 총 훈련 데이터: {len(train_files)}개 (실제 {len(real_train_files)}, 침묵 {silent_train_count})")
-    print(f"📊 총 검증 데이터: {len(val_files)}개 (실제 {len(real_val_files)}, 침묵 {silent_val_count})")
-    print("✅ 데이터 준비 완료")
-    
-    # 리스트로 변환하여 반환
-    return list(train_files), list(train_labels_A), list(train_labels_V), \
-           list(val_files), list(val_labels_A), list(val_labels_V)
-
+    return audio_files, arousal_labels, valence_labels
 
 def main():
     """메인 함수"""
     print("🎵 VGGish 강아지 A/V 멀티태스크 분류 훈련")
     print("="*50)
     
-    # 1. 데이터셋 준비 (실제+침묵)
-    # [수정] prepare_data 함수 호출
-    train_files, train_labels_A, train_labels_V, \
-    val_files, val_labels_A, val_labels_V = prepare_data(
-        real_train_count=1200, real_val_count=200,
-        silent_train_count=200, silent_val_count=50
-    )
+    # 1. 데이터셋 준비
+    # [수정] 2개의 라벨 리스트를 받음
+    audio_files, arousal_labels, valence_labels = create_sample_dataset()
+    print(f"📊 데이터 개수: {len(audio_files)}")
     
-    # 2. 데이터셋 및 데이터로더 생성
-    train_dataset = DogAudioDataset(train_files, train_labels_A, train_labels_V, train=True)
-    val_dataset = DogAudioDataset(val_files, val_labels_A, val_labels_V, train=False)
+    # 2. 데이터셋 분할
+    split_idx = int(0.8 * len(audio_files))
+    
+    train_files = audio_files[:split_idx]
+    train_labels_A = arousal_labels[:split_idx]
+    train_labels_V = valence_labels[:split_idx]
+    
+    val_files = audio_files[split_idx:]
+    val_labels_A = arousal_labels[split_idx:]
+    val_labels_V = valence_labels[split_idx:]
+    
+    print(f"🏋️ 훈련 데이터: {len(train_files)}")
+    print(f"📊 검증 데이터: {len(val_files)}")
+    
+    # 3. 데이터셋 및 데이터로더 생성
+    # [수정] 2개의 라벨을 Dataset에 전달
+    train_dataset = DogAudioDataset(train_files, train_labels_A, train_labels_V)
+    val_dataset = DogAudioDataset(val_files, val_labels_A, val_labels_V)
     
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=2)
     val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=2)
     
-    # 3. 트레이너 생성 및 훈련
+    # 4. 트레이너 생성
+    # [수정] 클래스 개수(3, 3) 전달
     trainer = DogVGGishTrainer(num_arousal_classes=3, num_valence_classes=3)
     trainer.setup_optimizer(lr_vggish=1e-5, lr_classifier=1e-3)
-    trainer.train(train_loader, val_loader, epochs=20) # 에포크 조절 가능
+    
+    # 5. 훈련 실행
+    trainer.train(train_loader, val_loader, epochs=20)
     
     print("\n💡 실제 사용시 주의사항:")
-    print("1. prepare_data() 함수 내 TODO 부분을 실제 데이터 로딩 로직으로 교체해야 함")
-    print("2. Arousal(0,1,2)/Valence(0,1,2) 라벨이 파일과 정확히 매칭되어야 함")
+    print("1. create_sample_dataset() 함수를 수정하여 실제 오디오 파일 경로와 A/V 라벨 로드")
+    print("2. Arousal 라벨(0,1,2)과 Valence 라벨(0,1,2)이 순서대로 매칭되어야 함")
 
 if __name__ == "__main__":
     main()

@@ -89,31 +89,50 @@ class DogPoseDataset(Dataset):
         return final_tensor, label
 
     def _load_data(self, json_paths):
-        # ... (이전과 동일)
+        # 이 리스트는 train_emotion_v.py의 ALL_KEYPOINT_NAMES와
+        # 순서/이름이 100% 동일해야 합니다.
+        ALL_KEYPOINT_NAMES = [
+            "left_f_wrist", "left_f_ankle", "left_f_shoulder",
+            "left_b_wrist", "left_b_ankle", "left_b_shoulder", 
+            "right_f_wrist", "right_f_ankle", "right_f_shoulder",
+            "right_b_wrist", "right_b_ankle", "right_b_shoulder",
+            "tail_s", "tail_e", "left_mid_ear", "right_mid_ear",
+            "nose", "mouth", "left_edge_ear", "right_edge_ear"
+        ]
+
         data_list = []
         for path in json_paths:
             # ... (JSON 로딩 로직)
-            # 여기서는 간략하게 표현
-            with open(path, 'r') as f:
-                 # Simplified JSON structure: {dog_id: {frames...}}
-                json_content = json.load(f)
+            try:
+                with open(path, 'r') as f:
+                    json_content = json.load(f)
                 dog_id = list(json_content.keys())[0]
                 json_data = json_content[dog_id]
+                # (ai_core_module.py와의 호환성을 위해 'frames' 키 체크)
+                if 'frames' in json_data: 
+                    json_data = json_data['frames']
+            except Exception as e:
+                print(f"Error loading {path}: {e}")
+                continue
 
-            # frame_1, frame_2... 순서대로 정렬하여 로드
             sorted_frames = sorted(json_data.items(), key=lambda item: int(item[0].split('_')[1]))
             
             frames_data = []
             for frame_key, keypoints_dict in sorted_frames:
-                # keypoints_dict에서 좌표만 추출하여 리스트로 만듦
-                # 이 부분은 실제 keypoint 이름 리스트가 필요함
-                # ALL_KEYPOINT_NAMES = ["nose", "left_eye", ...] (20개)
-                # frame_joints = [keypoints_dict.get(name, {'x':0, 'y':0, 'confidence':0}).values() for name in ALL_KEYPOINT_NAMES]
-                # 위와 같은 방식으로 순서를 보장해야 하나, 여기서는 value만 바로 쓴다고 가정
-                frame_joints = [list(kp.values()) for kp in keypoints_dict.values()]
+                
+                # [수정된 핵심 로직] 순서를 보장하도록 ALL_KEYPOINT_NAMES 리스트로 조회
+                frame_joints = []
+                for name in ALL_KEYPOINT_NAMES:
+                    # .get()을 사용하여 키가 없어도 0으로 채움
+                    kp_data = keypoints_dict.get(name, {'x': 0, 'y': 0, 'confidence': 0})
+                    # (x, y, c) 3개 값을 리스트로 추가
+                    frame_joints.append([kp_data.get('x', 0), kp_data.get('y', 0), kp_data.get('confidence', 0)])
+                
                 frames_data.append(frame_joints)
 
-            data_list.append(np.array(frames_data))
+            if frames_data: # 데이터가 있을 때만 추가
+                data_list.append(np.array(frames_data))
+                
         return data_list
 
 

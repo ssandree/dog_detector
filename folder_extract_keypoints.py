@@ -39,7 +39,7 @@ class DogFolderExtractor:
         self.max_workers = max_workers if max_workers is not None else (os.cpu_count() or 1)
         print(f"🔧 멀티프로세싱: {self.max_workers}개 워커")
         self.input_path = Path(r"D:\반려동물 구분을 위한 동물 영상")
-        self.output_path = Path("simplified_data") # 저장 폴더명 변경
+        self.output_path = Path("pose_data") # 저장 폴더명 변경
         self.output_path.mkdir(exist_ok=True)
         self.image_extensions = {'.jpg', '.jpeg', '.png', '.bmp'}
         print(f"📁 입력: {self.input_path}")
@@ -64,8 +64,10 @@ class DogFolderExtractor:
                             if video_folder.is_dir():
                                 has_images = any(f.suffix.lower() in self.image_extensions for f in video_folder.iterdir())
                                 if has_images:
-                                    # [수정] 출력 폴더 구조 단순화
-                                    output_file = self.output_path / f"{video_folder.name}.json"
+                                    # 저장 경로를 데이터셋 타입별 하위 폴더로 분리
+                                    dataset_output_dir = self.output_path / dataset_type
+                                    dataset_output_dir.mkdir(parents=True, exist_ok=True)
+                                    output_file = dataset_output_dir / f"{video_folder.name}.json"
                                     if not output_file.exists():
                                         video_folders.append((video_folder, output_file))
         print(f"📹 처리할 비디오 폴더: {len(video_folders)}개")
@@ -94,7 +96,7 @@ def process_video_folder(folder_info: Tuple[Path, Path]) -> Dict:
     video_folder, output_file = folder_info
     
     try:
-        model_path = "DogPose_Official/yolo11n_dog24/weights/best.pt"
+        model_path = "DogPose_Official/yolo11n_dog24_v242/weights/best.pt"
         detector = DogDetectionCore(model_path)
         
         dog_id = video_folder.name

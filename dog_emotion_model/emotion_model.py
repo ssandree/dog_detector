@@ -152,7 +152,7 @@ class DogEmotionPredictor:
         features = []
         
         # 24개 키포인트의 x, y 좌표
-        for i in range(24):
+        for i in range(20):
             kpt_name = f"kpt_{i}"  # 키포인트 이름은 실제 구조에 맞게 수정
             
             if kpt_name in keypoints and keypoints[kpt_name]['confidence'] > 0.3:

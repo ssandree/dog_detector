@@ -8,6 +8,7 @@ env/
 # 용량이 큰 원본 데이터 및 전처리된 데이터 폴더는 공유하지 않습니다.
 datasets/
 data/
+pose_data
 preprocessed_data/
 *.csv
 *.zip
@@ -43,5 +44,6 @@ Thumbs.db
 # --- 개발/훈련 파일 ---
 # 훈련 스크립트와 큰 모델 폴더는 공유하지 않습니다.
 train_official_dog_pose.py
+resume_dog_training.py
 DogPose_Official/yolo11n_dog24
 DogPose_Official/yolo11n_dog24_v242

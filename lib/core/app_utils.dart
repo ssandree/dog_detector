@@ -1,28 +1,16 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< Updated upstream
+
 /// 앱 전체에서 사용할 유틸리티 함수들
 class AppUtils {
   /// 표준 SnackBar 표시
-  static void showSnackBar(
-    BuildContext context, {
-=======
-// 앱 전체에서 사용할 유틸리티 함수들
-class AppUtils{
-  // 표준 SnackBar 표시
   static Future<void> showSnackBar(
-    BuildContext context,{
->>>>>>> Stashed changes
+    BuildContext context, {
     required String message,
     Duration duration = const Duration(seconds: 2),
     Color? backgroundColor,
     Color? textColor,
-<<<<<<< Updated upstream
-  }) {
-=======
-	})
-	async{
->>>>>>> Stashed changes
+  }) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -33,10 +21,7 @@ class AppUtils{
         backgroundColor: backgroundColor,
       ),
     );
-<<<<<<< Updated upstream
-=======
     await Future.delayed(duration); // 스낵바 표시 시간만큼 대기
->>>>>>> Stashed changes
   }
 
   /// 준비 중 메시지 표시
@@ -113,18 +98,11 @@ class AppUtils{
     );
   }
 
-<<<<<<< Updated upstream
   /// 로딩 다이얼로그 숨기기
-  static void hideLoadingDialog(BuildContext context) {
-    Navigator.of(context).pop();
-=======
-  // 로딩 다이얼로그 숨기기
-  static Future<void> hideLoadingDialog(BuildContext context)
-  async{
-    if(Navigator.canPop(context)){
+  static Future<void> hideLoadingDialog(BuildContext context) async {
+    if (Navigator.canPop(context)) {
       Navigator.of(context).pop();
     }
->>>>>>> Stashed changes
   }
 
   /// 확인 다이얼로그 표시

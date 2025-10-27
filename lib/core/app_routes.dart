@@ -8,11 +8,9 @@ import '../screens/main/main_screen.dart';
 import '../screens/camera_mode/camera_home_screen.dart' as camera;
 
 // Manager Mode Tabs
-<<<<<<< Updated upstream
 import '../screens/manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
-=======
 import '../screens/manager_mode/home/manager_home_screen.dart' as manager;
->>>>>>> Stashed changes
+
 
 class AppRoutes {
   // 라우트 이름 정의

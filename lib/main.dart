@@ -12,15 +12,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-<<<<<<< Updated upstream
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '견심술',
-      theme: AppTheme.lightTheme,
-      routes: AppRoutes.routes,
-      initialRoute: '/',
-=======
-  Widget build(BuildContext context){
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => PetProvider()),
@@ -33,7 +25,6 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         debugShowCheckedModeBanner: false,
       ),
->>>>>>> Stashed changes
     );
   }
 }

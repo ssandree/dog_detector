@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/index_export.dart';
-import '../../mode_selection/mode_select_screen.dart';
+import '../../main/main_screen.dart';
 import 'report_screen.dart';
 import 'calendar_screen.dart';
 import 'realtime_screen.dart';
@@ -50,7 +50,7 @@ class _HomeContent extends StatelessWidget {
         onBackPressed: () {
           AppUtils.navigateTo(
             context,
-            const ModeSelectScreen(),
+            const MainScreen(),
             replace: true,
           );
         },

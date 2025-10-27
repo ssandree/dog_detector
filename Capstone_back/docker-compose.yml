@@ -50,14 +50,3 @@ services:
 # 데이터베이스 데이터를 영구 저장하기 위한 볼륨 정의
 volumes:
   db_data:
-```
-
-**⚠️ 중요 설정:**
-
-* **`.env` 파일 업데이트**: `docker-compose.yml`의 `db` 서비스가 사용할 MySQL 비밀번호와 데이터베이스 이름을 `.env` 파일에 추가해야 합니다.
-    ```env
-    # .env 파일에 아래 두 줄 추가
-    MYSQL_ROOT_PASSWORD=your_root_password # MySQL root 계정 비밀번호 설정 (예: 91492663)
-    MYSQL_DATABASE=gyeonsimsul_db
-    
-

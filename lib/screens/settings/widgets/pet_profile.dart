@@ -1,80 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../core/index_export.dart';
-import '../../../providers/pet_providers.dart';
 import '../../../models/pet_info.dart';
 import '../../register/pet_regi_screen.dart';
 
 class PetProfile extends StatelessWidget {
   const PetProfile({super.key});
 
+  // TODO: PetInfo를 prop으로 받거나 다른 상태 관리 방법 사용
+  PetInfo? get _petInfo => null;
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<PetProvider>(
-      builder: (context, petProvider, child) {
-        final petInfo = petProvider.petInfo;
-        
-        return GestureDetector(
-          onTap: petInfo == null ? () => _navigateToPetRegistration(context) : null,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.beige3,
-              borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-              border: petInfo == null ? Border.all(color: AppColors.white, width: 2) : null,
+    return GestureDetector(
+      onTap: _petInfo == null ? () => _navigateToPetRegistration(context) : null,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.beige3,
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+          border: _petInfo == null ? Border.all(color: AppColors.white, width: 2) : null,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: Image.asset(
+                'lib/config/logo.png',
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+              ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
-                  child: Image.asset(
-                    'lib/config/logo.png',
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _petInfo?.name ?? '강아지 등록하기',
+                    style: TextStyle(
+                      fontSize: 18, 
+                      fontWeight: FontWeight.w600,
+                      color: _petInfo == null ? AppColors.white : AppColors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        petInfo?.name ?? '강아지 등록하기',
-                        style: TextStyle(
-                          fontSize: 18, 
-                          fontWeight: FontWeight.w600,
-                          color: petInfo == null ? AppColors.white : AppColors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _buildPetInfoText(petInfo),
-                        style: TextStyle(
-                          fontSize: 12, 
-                          color: petInfo == null ? AppColors.white : AppColors.black,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 6),
+                  Text(
+                    _buildPetInfoText(_petInfo),
+                    style: TextStyle(
+                      fontSize: 12, 
+                      color: _petInfo == null ? AppColors.white : AppColors.black,
+                    ),
                   ),
-                ),
-                if (petInfo != null)
-                  TextButton(
-                    onPressed: () => _navigateToPetRegistration(context),
-                    child: const Text('정보 수정하기'),
-                  )
-                else
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: AppColors.green6,
-                    size: 16,
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+            if (_petInfo != null)
+              TextButton(
+                onPressed: () => _navigateToPetRegistration(context),
+                child: const Text('정보 수정하기'),
+              )
+            else
+              Icon(
+                Icons.arrow_forward_ios,
+                color: AppColors.green6,
+                size: 16,
+              ),
+          ],
+        ),
+      ),
     );
   }
 

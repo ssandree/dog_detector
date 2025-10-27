@@ -7,8 +7,7 @@ import '../screens/main/main_screen.dart';
 // Camera Mode
 import '../screens/camera_mode/camera_home_screen.dart' as camera;
 
-// Manager Mode Tabs
-import '../screens/manager_mode/(tabs)/manager_home_screen.dart' as manager_home;
+// Manager Mode
 import '../screens/manager_mode/home/manager_home_screen.dart' as manager;
 
 

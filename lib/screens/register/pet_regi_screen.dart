@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../core/index_export.dart';
-import '../../providers/pet_providers.dart';
 import '../../models/pet_info.dart';
 
 class PetRegiScreen extends StatefulWidget {
@@ -33,7 +31,7 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
     return BaseScaffold(
       title: '강아지 등록',
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: AppConstants.smallPadding,
         child: Form(
           key: _formKey,
           child: Column(
@@ -41,19 +39,19 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
             children: [
               // 프로필 이미지 섹션
               _buildProfileImageSection(),
-              const SizedBox(height: 24),
+              AppConstants.h24,
               
               // 기본 정보 입력 폼
               _buildBasicInfoSection(),
-              const SizedBox(height: 24),
+              AppConstants.h24,
               
               // 생일/나이 선택 섹션
               _buildAgeSection(),
-              const SizedBox(height: 24),
+              AppConstants.h24,
               
               // 몸무게 입력 섹션
               _buildWeightSection(),
-              const SizedBox(height: 32),
+              AppConstants.h32,
               
               // 등록 버튼
               _buildRegisterButton(),
@@ -82,7 +80,7 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
               color: AppColors.grey7,
             ),
           ),
-          const SizedBox(height: 12),
+          AppConstants.h12,
           TextButton(
             onPressed: () {
               // TODO: 이미지 선택 기능 구현
@@ -174,11 +172,11 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
                   });
                 },
               ),
-            ),
-          ],
         ),
-        
-        const SizedBox(height: 16),
+      ],
+      ),
+      
+      AppConstants.h16,
         
         // 생일 또는 나이 입력 필드
         if (_hasBirthday) ...[
@@ -211,7 +209,7 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
             ),
           ),
           if (_selectedBirthday != null) ...[
-            const SizedBox(height: 8),
+            AppConstants.h8,
             Text(
               '나이: ${_calculateAge(_selectedBirthday!)}살',
               style: const TextStyle(
@@ -315,7 +313,7 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
       helpText: '생일 선택',
     );
 
-    if (selectedDate != null) {
+    if (selectedDate != null && mounted) {
       setState(() {
         _selectedBirthday = selectedDate;
       });
@@ -332,7 +330,7 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
     return age;
   }
 
-  void _registerPet() {
+  Future<void> _registerPet() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -358,14 +356,22 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
       weight: weight,
     );
 
-    // Provider를 통해 상태 업데이트
-    context.read<PetProvider>().setPetInfo(petInfo);
-
-    // 성공 메시지 표시
-    _showSnack('$name이(가) 성공적으로 등록되었습니다!');
-    
-    // 이전 화면으로 돌아가기
-    Navigator.pop(context);
+    try {
+      // TODO: PetInfo를 다른 방식으로 저장 (Provider 대신 다른 상태 관리 방법 사용)
+      // 예시: await petService.createPetInfo(petInfo);
+      
+      if (mounted) {
+        // 성공 메시지 표시
+        _showSnack('$name이(가) 성공적으로 등록되었습니다!');
+        
+        // 이전 화면으로 돌아가기
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnack('등록에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
   }
 
   void _showSnack(String message) {

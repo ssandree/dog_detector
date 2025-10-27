@@ -41,9 +41,6 @@ dependencies:
   # Professional calendar widget
   table_calendar: ^3.0.9
 
-  # State management
-  provider: ^6.1.2
-
   # HTTP client for API calls
   http: ^1.1.0
 

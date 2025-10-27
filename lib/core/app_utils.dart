@@ -49,7 +49,8 @@ class AppUtils {
     );
   }
 
-  /// "곧 출시됩니다" 메시지 표시
+  /// "곧 출시됩니다" 메시지 표시 (deprecated - AppToast 사용 권장)
+  @Deprecated('Use AppToast.comingSoon() instead')
   static void showComingSoonMessage(BuildContext context, {required String feature}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

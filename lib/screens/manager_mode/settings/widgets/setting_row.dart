@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/index_export.dart';
+import '../../../../core/index_export.dart';
 
 class SettingRow extends StatelessWidget {
   final String title;
@@ -36,7 +36,7 @@ class SettingRow extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         subtitle!,
-                        style: const TextStyle(fontSize: 12, color: AppColors.grey8),
+                        style: TextStyle(fontSize: 12, color: AppColors.grey8),
                         maxLines: 3, // 최대 3줄까지 허용
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -96,7 +96,7 @@ class ActionRow extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             subtitle!,
-                            style: const TextStyle(fontSize: 12, color: AppColors.grey8),
+                            style: TextStyle(fontSize: 12, color: AppColors.grey8),
                             maxLines: 3, // 최대 3줄까지 허용
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -111,7 +111,7 @@ class ActionRow extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 16, top: 6),
                   child: Text(
                     trailingText!,
-                    style: const TextStyle(fontSize: 14, color: AppColors.grey9),
+                    style: TextStyle(fontSize: 14, color: AppColors.grey9),
                   ),
                 ),
             ],

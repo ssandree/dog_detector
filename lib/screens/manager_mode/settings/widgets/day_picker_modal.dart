@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/index_export.dart';
+import '../../../../core/index_export.dart';
 
 class DayPickerModal {
   static Future<int?> show({
@@ -29,7 +29,7 @@ class DayPickerModal {
                       return ListTile(
                         title: Text('매달 $day일'),
                         trailing: day == currentDay 
-                            ? const Icon(Icons.check, color: AppColors.green6) 
+                            ? Icon(Icons.check, color: AppColors.green6) 
                             : null,
                         onTap: () => Navigator.pop(ctx, day),
                       );

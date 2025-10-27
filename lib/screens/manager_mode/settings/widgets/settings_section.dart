@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/index_export.dart';
+import '../../../../core/index_export.dart';
 
 class SettingsSection extends StatelessWidget {
   final String title;
@@ -54,7 +54,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: AppColors.grey8,

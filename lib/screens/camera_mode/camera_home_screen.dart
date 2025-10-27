@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'camera_setting_screen.dart';
 import '../../core/index_export.dart';
 import '../manager_mode/realtime/widgets/analysis_item_row.dart';
 import '../main/main_screen.dart';
@@ -24,14 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
           replace: true,
         );
       },
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings, color: AppColors.white),
-          onPressed: () {
-            AppUtils.navigateTo(context, const CameraSettingScreen());
-          },
-        ),
-      ],
       body: Container(
         decoration: const BoxDecoration(
           color: AppColors.secondaryAppBarColor,
@@ -100,33 +91,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: AppConstants.defaultSpacing),
-                  // 통증 상태
-                  AnalysisItemRow(
-                    icon: Icons.favorite,
-                    title: '통증 상태',
-                    value: '정상',
-                    valueColor: AppColors.painStatusColor,
-                  ),
-                  const SizedBox(height: AppConstants.defaultSpacing - 4),
-                  
-                  // 감정 상태
-                  AnalysisItemRow(
-                    icon: Icons.sentiment_satisfied,
-                    title: '감정 상태',
-                    value: '행복',
-                    valueColor: AppColors.emotionStatusColor,
-                  ),
-                  const SizedBox(height: AppConstants.defaultSpacing - 4),
-                  
-                  // 활동 수준
-                  AnalysisItemRow(
-                    icon: Icons.directions_run,
-                    title: '활동 수준',
-                    value: '활발',
-                    valueColor: AppColors.activityStatusColor,
-                  ),
-                ],
-              ),
+                    // 통증 상태
+                    AnalysisItemRow(
+                      icon: Icons.favorite,
+                      title: '통증 상태',
+                      value: '정상',
+                      valueColor: AppColors.painStatusColor,
+                    ),
+                    const SizedBox(height: AppConstants.defaultSpacing - 4),
+                    
+                    // 감정 상태
+                    AnalysisItemRow(
+                      icon: Icons.sentiment_satisfied,
+                      title: '감정 상태',
+                      value: '행복',
+                      valueColor: AppColors.emotionStatusColor,
+                    ),
+                    const SizedBox(height: AppConstants.defaultSpacing - 4),
+                    
+                    // 활동 수준
+                    AnalysisItemRow(
+                      icon: Icons.directions_run,
+                      title: '활동 수준',
+                      value: '활발',
+                      valueColor: AppColors.activityStatusColor,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: AppConstants.largeSpacing),

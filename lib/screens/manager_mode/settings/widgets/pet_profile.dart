@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/index_export.dart';
-import '../../../models/pet_info.dart';
-import '../../register/pet_regi_screen.dart';
+import '../../../../core/index_export.dart';
+import '../../../../models/pet_info.dart';
+import '../../../register/pet_regi_screen.dart';
 
 class PetProfile extends StatelessWidget {
   const PetProfile({super.key});
@@ -101,7 +101,7 @@ class PetProfile extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const PetRegiScreen(),
+        builder: (context) => PetRegiScreen(),
       ),
     );
   }

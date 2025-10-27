@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/index_export.dart';
-import '../../settings/setting_screen.dart';
+import '../settings/setting_screen.dart';
 import '../report/report_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../realtime/realtime_screen.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/index_export.dart';
-import '../../../settings/setting_screen.dart';
+import '../../settings/setting_screen.dart';
 
 class PetGreetingCard extends StatelessWidget {
   const PetGreetingCard({super.key});

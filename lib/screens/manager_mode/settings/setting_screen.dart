@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/index_export.dart';
-import '../../data/settings_mock.dart';
-import '../main/main_screen.dart';
+import '../../../core/index_export.dart';
+import '../../main/main_screen.dart';
 import 'widgets/pet_profile.dart';
 import 'widgets/time_picker_modal.dart';
 import 'widgets/email_editor_modal.dart';
@@ -176,12 +175,12 @@ class _SettingScreenState extends State<SettingScreen> {
                                     child: Column(
                                        crossAxisAlignment: CrossAxisAlignment.start,
                                        children: [
-                                          Text('연결된 기기', style: const TextStyle(fontSize: 16)),
+                                          const Text('연결된 기기', style: TextStyle(fontSize: 16)),
                                           Padding(
                                              padding: const EdgeInsets.only(top: 4),
                                              child: Text(
                                                 '닉네임1(기기이름):매니저 모드\n닉네임2(기기이름):캠모드',
-                                                style: const TextStyle(fontSize: 12, color: AppColors.grey8),
+                                                style: TextStyle(fontSize: 12, color: AppColors.grey8),
                                              ),
                                           ),
                                        ],
@@ -246,7 +245,7 @@ class _SettingScreenState extends State<SettingScreen> {
    void _resetMode(BuildContext context) {
       AppUtils.navigateTo(
          context,
-         const MainScreen(),
+         MainScreen(),
          replace: true,
       );
    }

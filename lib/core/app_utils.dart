@@ -48,4 +48,15 @@ class AppUtils {
       ),
     );
   }
+
+  /// "곧 출시됩니다" 메시지 표시
+  static void showComingSoonMessage(BuildContext context, {required String feature}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$feature 기능은 곧 출시됩니다!'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }

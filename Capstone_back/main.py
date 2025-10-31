@@ -1,12 +1,15 @@
 # main.py
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import *
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List  # 리스트 형태의 응답을 위해 추가
+from datetime import *
+
 # 지금까지 만든 모든 부품들을 가져옴
 import crud, models, schemas, security
 from database import engine, get_db
+from utils import s3
 
 # DB 테이블 생성 (앱 실행 시 한번만)
 models.Base.metadata.create_all(bind=engine)
@@ -156,7 +159,79 @@ def read_user_devices(
     """
     return crud.get_devices_by_user(db=db, user_id=current_user.user_id)
 
+# =======================================================================
+# 이벤트(Event) 엔드포인트 (새로 추가/수정)
+# =======================================================================
 
+@app.post("/events/upload", response_model=schemas.EventResponse, tags=["Events"])
+async def upload_video_and_create_event(
+    # 파일과 폼 데이터를 함께 받기 위해 File과 Form을 사용합니다.
+    file: UploadFile = File(...),
+    pet_id: int = Form(...),
+    device_id: int = Form(...),
+    start_time: datetime = Form(...),
+    video_duration_sec: int = Form(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    영상 클립을 S3에 업로드하고, '분석 대기중(PENDING)' 상태의
+    이벤트 레코드를 DB에 생성합니다.
+    """
+    
+    # --- 보안 검증: pet_id와 device_id가 현재 사용자의 소유인지 확인 ---
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="해당 반려동물에 대한 업로드 권한이 없습니다.")
+
+    db_device = crud.get_device_by_id(db, device_id=device_id)
+    if not db_device or db_device.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="해당 디바이스에 대한 업로드 권한이 없습니다.")
+    
+    # 1. S3에 파일 업로드 (비동기 처리)
+    file_url = await s3.upload_file_to_s3(file, user_id=current_user.user_id)
+    if not file_url:
+        raise HTTPException(status_code=500, detail="S3 파일 업로드에 실패했습니다.")
+        
+    # (선택 사항) 썸네일 URL 생성 로직 (지금은 임시로 video_url 사용)
+    thumbnail_url = file_url 
+
+    # 2. DB에 저장할 이벤트 데이터 준비 (스키마 사용)
+    event_data = schemas.EventCreate(
+        pet_id=pet_id,
+        device_id=device_id,
+        start_time=start_time,
+        end_time=start_time + timedelta(seconds=video_duration_sec),
+        video_duration_sec=video_duration_sec,
+        video_url=file_url,
+        thumbnail_url=thumbnail_url,
+        analysis_status="PENDING" # '분석 대기' 상태로 생성
+    )
+
+    # 3. DB에 이벤트 생성 (crud 함수 호출)
+    new_event = crud.create_event(db=db, event=event_data)
+    
+    # 4. (향후 구현) Celery 워커에게 AI 분석 작업 지시
+    # celery_app.send_task('tasks.analyze_video', args=[new_event.event_id, file_url])
+    
+    return new_event
+
+@app.get("/pets/{pet_id}/events", response_model=List[schemas.EventResponse], tags=["Events"])
+def read_events_for_pet(
+    pet_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    특정 반려동물의 이벤트 기록을 시간순(최신순)으로 조회합니다.
+    """
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if db_pet is None or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="해당 반려동물의 이벤트 조회 권한이 없습니다.")
+
+    events = crud.get_events_by_pet(db=db, pet_id=pet_id, skip=skip, limit=limit)
 
 # --- 루트 주소 추가 ---
 @app.get("/", tags=["Root"])

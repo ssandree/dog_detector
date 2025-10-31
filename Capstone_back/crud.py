@@ -92,3 +92,43 @@ def create_user_device(db: Session, device: schemas.DeviceCreate, user_id: int):
 def get_devices_by_user(db: Session, user_id: int):
     """ 특정 사용자의 모든 디바이스 목록을 조회합니다. """
     return db.query(models.Device).filter(models.Device.user_id == user_id).all()
+
+
+def get_device_by_id(db: Session, device_id: int):
+    """ device_id로 특정 디바이스 정보를 조회합니다. (권한 확인용) """
+    return db.query(models.Device).filter(models.Device.device_id == device_id).first()
+
+# =======================================================================
+# 이벤트(Event) 관련 CRUD 함수 (새로 추가)
+# =======================================================================
+
+def create_event(db: Session, event: schemas.EventCreate):
+    """ S3 업로드 후 '분석 대기' 상태의 이벤트를 DB에 생성합니다. """
+    # schemas.EventCreate의 모든 필드(video_url, analysis_status 등)를 동적으로 처리
+    db_event = models.Event(**event.dict())
+    db.add(db_event)
+    db.commit()
+    db.refresh(db_event)
+    return db_event
+
+def get_events_by_pet(db: Session, pet_id: int, skip: int = 0, limit: int = 100):
+    """ 특정 반려동물의 이벤트 기록을 시간순(최신순)으로 조회합니다. """
+    return db.query(models.Event).filter(models.Event.pet_id == pet_id).order_by(models.Event.start_time.desc()).offset(skip).limit(limit).all()
+
+def get_event_by_id(db: Session, event_id: int):
+    """ event_id로 특정 이벤트 정보를 조회합니다. (AI 워커가 사용) """
+    return db.query(models.Event).filter(models.Event.event_id == event_id).first()
+
+def update_event_analysis_result(db: Session, db_event: models.Event, result: dict):
+    """
+    AI 워커가 분석을 완료한 후, 'events' 테이블의 해당 레코드를 업데이트합니다.
+    """
+    db_event.detected_features = result.get("detected_features")
+    db_event.final_emotion = result.get("final_emotion")
+    db_event.analysis_status = "COMPLETED" # 상태를 '완료'로 변경
+    
+    db.add(db_event)
+    db.commit()
+    db.refresh(db_event)
+    return db_event
+

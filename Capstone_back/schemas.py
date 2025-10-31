@@ -1,7 +1,7 @@
 #API 데이터 형식 정의
 from pydantic import BaseModel, EmailStr # pydantic은 데이터 검증 라이브러리
 from typing import List, Optional
-from datetime import date
+from datetime import *
 
 # 회원가입 시 받을 데이터 (Request Body)
 class UserCreate(BaseModel):
@@ -35,6 +35,10 @@ class UserUpdate(BaseModel):
     phone_number: Optional[str] = None
 
 # --- 로그인 기능을 위한 스키마 ---
+
+# =======================================================================
+# 인증(Authentication) 관련 스키마
+# ======================================================================
 
 # JWT 토큰 응답 모델
 class Token(BaseModel):
@@ -127,6 +131,45 @@ class DeviceResponse(DeviceBase):
     device_id: int
     user_id: int
     status: str
+
+    class Config:
+        from_attributes = True
+
+# =======================================================================
+# 이벤트(Event) 관련 스키마 (새로 추가된 부분)
+# =======================================================================
+
+class EventBase(BaseModel):
+    """
+    이벤트 생성 시점에 아는 정보들의 기본 틀
+    """
+    pet_id: int
+    device_id: int
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    video_duration_sec: Optional[int] = None
+    video_url: str  # S3 업로드 후 생성된 URL
+    thumbnail_url: Optional[str] = None
+    analysis_status: str = "PENDING"
+
+class EventCreate(EventBase):
+    """
+    이벤트 생성 시 DB에 저장하기 위한 데이터 형식
+    EventBase를 상속받아 모든 필드를 그대로 사용합니다.
+    """
+    pass
+
+class EventResponse(EventBase):
+    """
+    이벤트 조회 시 응답 모델 (AI 분석 결과 포함)
+    DB 저장 후 생성되는 event_id와
+    나중에 AI 분석이 완료되면 채워질 필드들을 포함합니다.
+    """
+    event_id: int
+    
+    # AI 분석이 완료된 후 채워질 필드들
+    detected_features: Optional[str] = None
+    final_emotion: Optional[str] = None
 
     class Config:
         from_attributes = True

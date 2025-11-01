@@ -31,21 +31,45 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # 아이콘 폰트
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_vector_icons: ^2.0.0
+  flutter_svg: ^2.0.17
+
+  # Google Fonts for Korean text support
+  google_fonts: ^6.2.1
 
   # Chart library for beautiful charts
-  fl_chart: ^0.68.0
+  fl_chart: ^1.1.1
 
   # Professional calendar widget
-  table_calendar: ^3.0.9
+  table_calendar: ^3.2.0
 
   # HTTP client for API calls
   http: ^1.1.0
 
-  # Google Fonts for Korean text support
-  google_fonts: ^6.2.1
+  # Cached network image for efficient image loading
+  cached_network_image: ^3.3.1
+
+  # Email validation package
+  email_validator: ^2.1.17
+
+  # Internationalization package
+  intl: 0.20.2
+
+  # Toast message library
+  fluttertoast: ^8.2.4
+
+  # Awesome dialog for rich dialog widgets
+  awesome_dialog: ^3.3.0
+
+  # Loading animation widgets
+  loading_animation_widget: ^1.2.0+4
+
+  # Declarative routing for Flutter
+  go_router: ^14.2.0
 
 dev_dependencies:
   flutter_test:

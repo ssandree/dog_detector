@@ -1,8 +1,76 @@
-import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../core/index_export.dart';
 
 /// 앱 전체에서 사용할 기본 버튼 위젯들
 class AppButtons {
+  // ========== 공통 헬퍼 메서드 ==========
+  
+  /// 기본 버튼 구조를 생성하는 공통 메서드
+  static Widget _buildButton({
+    required double? width,
+    required double height,
+    required VoidCallback? onPressed,
+    required ButtonStyle style,
+    required Widget child,
+  }) {
+    return SizedBox(
+      width: width ?? double.infinity,
+      height: height,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: style,
+        child: child,
+      ),
+    );
+  }
+
+  /// 로딩 인디케이터를 생성하는 공통 메서드
+  /// loading_animation_widget 패키지로 버튼 내부에서 띄우는 용도
+  static Widget _buildLoadingIndicator() {
+    return SizedBox(
+      width: 20,
+      height: 20,
+      child: LoadingAnimationWidget.threeArchedCircle(
+        color: AppColors.black,
+        size: 20,
+      ),
+    );
+  }
+
+  /// 일반 버튼용 child 콘텐츠 (Row 레이아웃)
+  static Widget _buildStandardChild({
+    required String text,
+    IconData? icon,
+    Color? textColor,
+    double? fontSize,
+    FontWeight? fontWeight,
+  }) {
+    final textWidget = Text(
+      text,
+      style: TextStyle(
+        fontSize: fontSize ?? AppConstants.defaultFontSize,
+        fontWeight: fontWeight ?? FontWeight.w500,
+        color: textColor,
+        shadows: [],
+      ),
+    );
+    if (icon != null) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: AppConstants.defaultIconSize),
+          const SizedBox(width: AppConstants.smallSpacing),
+          textWidget,
+        ],
+      );
+    }
+    return textWidget;
+  }
+
+
+// ========== 버튼 위젯들 ==========
+  /// 일반 버튼, 눌린 버튼, 비활성 버튼, 테두리만 있는 버튼 있음
+
   /// 일반 버튼 (연한 녹색 배경)
   static Widget normal({
     required String text,
@@ -13,53 +81,21 @@ class AppButtons {
     double height = 56.0,
     Color? backgroundColor,
   }) {
-    return SizedBox(
-      width: width ?? double.infinity,
+    return _buildButton(
+      width: width,
       height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.buttonNormal,
-          foregroundColor: AppColors.black,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          ),
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor ?? AppColors.buttonNormal,
+        foregroundColor: AppColors.black,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
         ),
-        child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.black),
-              ),
-            )
-          : icon != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: AppConstants.defaultIconSize),
-                  const SizedBox(width: AppConstants.smallSpacing),
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: AppConstants.defaultFontSize,
-                      fontWeight: FontWeight.w500,
-                      shadows: [],
-                    ),
-                  ),
-                ],
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: AppConstants.defaultFontSize,
-                  fontWeight: FontWeight.w500,
-                  shadows: [],
-                ),
-              ),
       ),
+      child: isLoading
+        ? _buildLoadingIndicator()
+        : _buildStandardChild(text: text, icon: icon),
     );
   }
 
@@ -72,53 +108,21 @@ class AppButtons {
     double? width,
     double height = 56.0,
   }) {
-    return SizedBox(
-      width: width ?? double.infinity,
+    return _buildButton(
+      width: width,
       height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.buttonPressed,
-          foregroundColor: AppColors.black,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          ),
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.buttonPressed,
+        foregroundColor: AppColors.black,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
         ),
-        child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.black),
-              ),
-            )
-          : icon != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: AppConstants.defaultIconSize),
-                  const SizedBox(width: AppConstants.smallSpacing),
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: AppConstants.defaultFontSize,
-                      fontWeight: FontWeight.w500,
-                      shadows: [],
-                    ),
-                  ),
-                ],
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: AppConstants.defaultFontSize,
-                  fontWeight: FontWeight.w500,
-                  shadows: [],
-                ),
-              ),
       ),
+      child: isLoading
+        ? _buildLoadingIndicator()
+        : _buildStandardChild(text: text, icon: icon),
     );
   }
 
@@ -129,42 +133,55 @@ class AppButtons {
     double? width,
     double height = 56.0,
   }) {
-    return SizedBox(
-      width: width ?? double.infinity,
+    return _buildButton(
+      width: width,
       height: height,
-      child: ElevatedButton(
-        onPressed: null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.buttonDisabled,
-          foregroundColor: AppColors.grey6,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          ),
+      onPressed: null,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.buttonDisabled,
+        foregroundColor: AppColors.grey6,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
         ),
-        child: icon != null
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: AppConstants.defaultIconSize),
-                const SizedBox(width: AppConstants.smallSpacing),
-                Text(
-                  text,
-                  style: const TextStyle(
-                    fontSize: AppConstants.defaultFontSize,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            )
-          : Text(
-              text,
-              style: const TextStyle(
-                fontSize: AppConstants.defaultFontSize,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
       ),
+      child: _buildStandardChild(
+        text: text,
+        icon: icon,
+        textColor: AppColors.grey6,
+      ),
+    );
+  }
+
+  /// Primary 버튼 (primary 색상 배경)
+  static Widget primary({
+    required String text,
+    required VoidCallback? onPressed,
+    bool isLoading = false,
+    IconData? icon,
+    double? width,
+    double height = 56.0,
+    Color? backgroundColor,
+  }) {
+    return _buildButton(
+      width: width,
+      height: height,
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor ?? AppColors.AppBarColor,
+        foregroundColor: AppColors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        ),
+      ),
+      child: isLoading
+        ? _buildLoadingIndicator()
+        : _buildStandardChild(
+            text: text,
+            icon: icon,
+            textColor: AppColors.white,
+          ),
     );
   }
 
@@ -179,198 +196,30 @@ class AppButtons {
     Color? borderColor,
     Color? textColor,
   }) {
-    return SizedBox(
-      width: width ?? double.infinity,
+    return _buildButton(
+      width: width,
       height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.white,
-          foregroundColor: textColor ?? AppColors.black,
-          side: BorderSide(
-            color: borderColor ?? AppColors.buttonOutline,
-            width: 2,
-          ),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          ),
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.white,
+        foregroundColor: textColor ?? AppColors.black,
+        side: BorderSide(
+          color: borderColor ?? AppColors.buttonOutline,
+          width: 2,
         ),
-        child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.black),
-              ),
-            )
-          : icon != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: AppConstants.defaultIconSize),
-                  const SizedBox(width: AppConstants.smallSpacing),
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: AppConstants.defaultFontSize,
-                      fontWeight: FontWeight.w500,
-                      shadows: [],
-                    ),
-                  ),
-                ],
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: AppConstants.defaultFontSize,
-                  fontWeight: FontWeight.w500,
-                  shadows: [],
-                ),
-              ),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        ),
       ),
+      child: isLoading
+        ? _buildLoadingIndicator()
+        : _buildStandardChild(
+            text: text,
+            icon: icon,
+            textColor: textColor ?? AppColors.black,
+          ),
     );
   }
 
-  /// Primary 버튼 (기존 스타일 유지)
-  static Widget primary({
-    required String text,
-    required VoidCallback onPressed,
-    bool isLoading = false,
-    IconData? icon,
-    double? width,
-    double height = 56.0,
-    String? subtitle,
-  }) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.primaryButtonColor,
-          elevation: 8,
-          shadowColor: AppColors.black.withValues(alpha: 0.26),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius - 22),
-          ),
-        ),
-        child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryButtonColor),
-              ),
-            )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: AppConstants.defaultIconSize),
-                  const SizedBox(height: AppConstants.smallSpacing),
-                ],
-                Text(
-                  text,
-                  style: const TextStyle(
-                    fontSize: AppConstants.titleFontSize - 4,
-                    fontWeight: FontWeight.bold,
-                    shadows: [],
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: AppConstants.smallFontSize + 2,
-                      color: AppColors.primaryButtonColor.withValues(alpha: 0.8),
-                      shadows: [],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-      ),
-    );
-  }
-
-  /// Secondary 버튼 (캠모드용)
-  static Widget secondary({
-    required String text,
-    required VoidCallback onPressed,
-    bool isLoading = false,
-    IconData? icon,
-    double? width,
-    double height = 56.0,
-    String? subtitle,
-  }) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.secondaryButtonColor,
-          elevation: 8,
-          shadowColor: AppColors.black.withValues(alpha: 0.26),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius - 22),
-          ),
-        ),
-        child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondaryButtonColor),
-              ),
-            )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min, // 최소 크기로 조정
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: AppConstants.defaultIconSize - 4), // 아이콘 크기 줄임
-                  const SizedBox(height: 2), // 간격 줄임
-                ],
-                Flexible( // 텍스트를 Flexible로 감싸서 오버플로우 방지
-                  child: Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: AppConstants.titleFontSize - 6, // 폰트 크기 줄임
-                      fontWeight: FontWeight.bold,
-                      shadows: [],
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2), // 간격 줄임
-                  Flexible( // subtitle도 Flexible로 감싸서 오버플로우 방지
-                    child: Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: AppConstants.smallFontSize, // 폰트 크기 줄임
-                        color: AppColors.secondaryButtonColor.withValues(alpha: 0.8),
-                        shadows: [],
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-      ),
-    );
-  }
 }

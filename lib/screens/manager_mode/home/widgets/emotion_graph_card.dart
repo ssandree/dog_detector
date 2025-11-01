@@ -1,9 +1,32 @@
-import 'package:flutter/material.dart';
 import '../../../../core/index_export.dart';
-import '../../../../data/pet_mock.dart';
+import '../../../../services/home_service.dart';
 
-class EmotionGraphCard extends StatelessWidget {
+class EmotionGraphCard extends StatefulWidget {
   const EmotionGraphCard({super.key});
+
+  @override
+  State<EmotionGraphCard> createState() => _EmotionGraphCardState();
+}
+
+class _EmotionGraphCardState extends State<EmotionGraphCard> {
+  List<Map<String, dynamic>> _emotionData = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmotionData();
+  }
+
+  Future<void> _loadEmotionData() async {
+    final data = await HomeService.getEmotionData();
+    if (mounted) {
+      setState(() {
+        _emotionData = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +44,15 @@ class EmotionGraphCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...mockEmotionData.map((data) => EmotionBarItem(
-            emotion: data['emotion'] as String,
-            percentage: data['percentage'] as int,
-            color: Color(int.parse((data['color'] as String).replaceFirst('#', '0xFF'))),
-          )),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: _emotionData.map((data) => EmotionBarItem(
+                    emotion: data['emotion'] as String,
+                    percentage: data['percentage'] as int,
+                    color: Color(int.parse((data['color'] as String).replaceFirst('#', '0xFF'))),
+                  )).toList(),
+                ),
         ],
       ),
     );

@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import '../../core/index_export.dart';
 import '../manager_mode/realtime/widgets/analysis_item_row.dart';
-import '../main/main_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,17 +13,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: '캠모드',
-      appBarTheme: AppBarThemeType.secondary,
       onBackPressed: () {
-        AppUtils.navigateTo(
-          context,
-          const MainScreen(),
-          replace: true,
-        );
+        context.go(AppRoutes.main);
       },
       body: Container(
         decoration: const BoxDecoration(
-          color: AppColors.secondaryAppBarColor,
+          color: AppColors.AppBarColor,
         ),
         child: Column(
           children: [
@@ -123,11 +116,11 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: AppConstants.largeSpacing),
                 
             // 카메라 시작 버튼
-            AppButtons.secondary(
+            AppButtons.normal(
               text: '카메라 시작',
               icon: Icons.play_arrow,
               onPressed: () {
-                AppUtils.showComingSoonMessage(context, feature: '카메라');
+                AppToast.comingSoon(context, '카메라');
               },
             ),
           ],

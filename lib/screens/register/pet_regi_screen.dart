@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../../core/index_export.dart';
 import '../../models/pet_info.dart';
 
@@ -30,9 +29,8 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: '강아지 등록',
-      body: SingleChildScrollView(
-        padding: AppConstants.smallPadding,
-        child: Form(
+      // useScrollView는 기본값 true, 내부 SingleChildScrollView 제거함
+      body: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -57,7 +55,6 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
               _buildRegisterButton(),
             ],
           ),
-        ),
       ),
     );
   }
@@ -84,7 +81,8 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
           TextButton(
             onPressed: () {
               // TODO: 이미지 선택 기능 구현
-              _showSnack('이미지 선택 기능은 추후 구현됩니다.');
+              // 정보 메시지 표시 - AppToast 사용
+              AppToast.info(context, '이미지 선택 기능은 추후 구현됩니다.');
             },
             child: const Text('프로필 사진 추가'),
           ),
@@ -288,7 +286,7 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
       onPressed: _registerPet,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.green6,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -361,23 +359,17 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
       // 예시: await petService.createPetInfo(petInfo);
       
       if (mounted) {
-        // 성공 메시지 표시
-        _showSnack('$name이(가) 성공적으로 등록되었습니다!');
+        // 성공 메시지 표시 - AppToast 사용
+        AppToast.success(context, '$name이(가) 성공적으로 등록되었습니다!');
         
         // 이전 화면으로 돌아가기
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        _showSnack('등록에 실패했습니다. 다시 시도해주세요.');
+        // 에러 메시지 표시 - AppToast 사용
+        AppToast.error(context, '등록에 실패했습니다. 다시 시도해주세요.');
       }
     }
-  }
-
-  void _showSnack(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
   }
 }

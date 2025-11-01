@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import '../../../core/index_export.dart';
 import '../report/daily_report.dart';
 import '../report/weekly_report.dart';
-import '../../../core/index_export.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -41,18 +40,15 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: TopNav.withTabBar(
-        title: '실시간 분석',
-        showBackButton: false,
-        tabController: _tabController,
-        tabs: const [
-          Tab(text: '일별'),
-          Tab(text: '주별'),
-        ],
-        backgroundColor: Colors.grey[100],
-      ),
+    // 헤더 높이 계산: 시스템 상태바 + 타이틀 영역(56) + TabBar(48)
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    final headerHeight = statusBarHeight + 56.0 + 48.0;
+
+    return BaseScaffold(
+      mode: ScaffoldMode.collapsingHeader,
+      customHeader: _buildHeader(context),
+      headerHeight: headerHeight,
+      backgroundColor: AppColors.white,
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
@@ -61,6 +57,48 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
         children: [
           const DailyReport(),
           const WeeklyReport(),
+        ],
+      ),
+    );
+  }
+
+  /// Collapsing Header 위젯 (타이틀 + TabBar)
+  /// 스크롤 시 자연스럽게 fade-out 효과가 적용됨
+  Widget _buildHeader(BuildContext context) {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    
+    return Container(
+      color: AppColors.whiteAppBarColor,
+      child: Column(
+        children: [
+          // 시스템 상태바 높이만큼 상단 여백
+          SizedBox(height: statusBarHeight),
+          // 타이틀 영역
+          SizedBox(
+            height: 56.0,
+            child: Center(
+              child: Text(
+                '실시간 분석',
+                style: TextStyle(
+                  color: AppColors.blackAppBarTextColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: AppConstants.appBarTitleFontSize,
+                ),
+              ),
+            ),
+          ),
+          // TabBar
+          TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.blackAppBarTextColor,
+            labelColor: AppColors.blackAppBarTextColor,
+            unselectedLabelColor: AppColors.blackAppBarTextColor.withValues(alpha: 0.6),
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+            tabs: const [
+              Tab(text: '일별'),
+              Tab(text: '주별'),
+            ],
+          ),
         ],
       ),
     );

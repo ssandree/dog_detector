@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../../../../core/index_export.dart';
 
 /// 분석 결과 아이템을 표시하는 행 위젯

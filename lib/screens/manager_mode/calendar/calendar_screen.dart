@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../core/index_export.dart';
 import '../report/widgets/emotion_ratio_bar.dart';
 import '../report/widgets/report_widgets.dart';
-import '../../../core/index_export.dart';
 import '../calendar/widgets/calendar_section.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -15,17 +14,15 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: TopNav.withNotification(
-        title: '캘린더',
-        showBackButton: false,
-        onNotificationPressed: () {
-          // 알림 기능
-        },
-      ),
+    return BaseScaffold(
+      title: '캘린더',
+      showBackButton: false,
+      showNotification: true,
+      onNotificationPressed: () {
+        // 알림 기능
+      },
+      backgroundColor: AppColors.white,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           children: [
             // 캘린더 섹션
@@ -83,7 +80,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 PieChartSectionData(
@@ -94,7 +91,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 PieChartSectionData(
@@ -105,7 +102,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 PieChartSectionData(
@@ -116,7 +113,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 PieChartSectionData(
@@ -127,7 +124,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.black,
                   ),
                 ),
               ],

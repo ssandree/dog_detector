@@ -1,14 +1,37 @@
-import 'package:flutter/material.dart';
 import '../../../../core/index_export.dart';
-import '../../../../data/pet_mock.dart';
+import '../../../../services/home_service.dart';
 
-class WeatherCard extends StatelessWidget {
+class WeatherCard extends StatefulWidget {
   const WeatherCard({super.key});
+
+  @override
+  State<WeatherCard> createState() => _WeatherCardState();
+}
+
+class _WeatherCardState extends State<WeatherCard> {
+  List<Map<String, dynamic>> _weatherData = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeatherData();
+  }
+
+  Future<void> _loadWeatherData() async {
+    final data = await HomeService.getWeatherData();
+    if (mounted) {
+      setState(() {
+        _weatherData = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // 어제 날씨를 제외하고 오늘, 내일, 모레만 표시
-    final filteredWeatherData = mockWeatherData.skip(1).take(3).toList();
+    final filteredWeatherData = _weatherData.skip(1).take(3).toList();
     
     return AppCards.basic(
       padding: const EdgeInsets.all(16),
@@ -34,7 +57,9 @@ class WeatherCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Column(
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
             children: filteredWeatherData.map((weather) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: WeatherItem(
@@ -46,7 +71,7 @@ class WeatherCard extends StatelessWidget {
                 color: Color(int.parse((weather['color'] as String).replaceFirst('#', '0xFF'))),
               ),
             )).toList(),
-          ),
+                ),
         ],
       ),
     );

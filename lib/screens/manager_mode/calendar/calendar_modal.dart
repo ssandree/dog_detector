@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../../../core/index_export.dart';
 
 class CalendarModal extends StatelessWidget {
@@ -113,8 +112,8 @@ class CalendarModal extends StatelessWidget {
                         text: '일일 분석 바로가기',
                         onPressed: () {
                            Navigator.pop(context);
-                           // 일일 분석 화면으로 이동
-                           Navigator.pushNamed(context, '/daily-report');
+                           // 매니저 홈으로 이동 (사용자가 리포트 탭 선택 필요)
+                           context.go(AppRoutes.managerHome);
                         },
                         height: 50,
                      ),

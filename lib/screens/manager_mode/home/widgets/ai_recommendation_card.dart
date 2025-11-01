@@ -1,9 +1,32 @@
-import 'package:flutter/material.dart';
 import '../../../../core/index_export.dart';
-import '../../../../data/pet_mock.dart';
+import '../../../../services/home_service.dart';
 
-class AIRecommendationCard extends StatelessWidget {
+class AIRecommendationCard extends StatefulWidget {
   const AIRecommendationCard({super.key});
+
+  @override
+  State<AIRecommendationCard> createState() => _AIRecommendationCardState();
+}
+
+class _AIRecommendationCardState extends State<AIRecommendationCard> {
+  List<Map<String, dynamic>> _recommendations = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecommendations();
+  }
+
+  Future<void> _loadRecommendations() async {
+    final data = await HomeService.getAIRecommendations();
+    if (mounted) {
+      setState(() {
+        _recommendations = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +54,16 @@ class AIRecommendationCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...mockAIRecommendations.map((recommendation) => RecommendationItem(
-            title: recommendation['title'] as String,
-            description: recommendation['description'] as String,
-            priority: recommendation['priority'] as String,
-            icon: recommendation['icon'] as String,
-          )),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: _recommendations.map((recommendation) => RecommendationItem(
+                    title: recommendation['title'] as String,
+                    description: recommendation['description'] as String,
+                    priority: recommendation['priority'] as String,
+                    icon: recommendation['icon'] as String,
+                  )).toList(),
+                ),
         ],
       ),
     );

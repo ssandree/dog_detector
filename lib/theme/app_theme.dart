@@ -2,62 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
+/// 앱 전체 테마 설정
+/// Flutter MaterialApp에 필요한 최소 설정만 포함했음
+/// 실제 UI 요소는 AppColors, AppButtons, BaseScaffold 등에서 관리
+
 class AppTheme {
+  /// 라이트 테마 설정
   static ThemeData get lightTheme {
     return ThemeData(
+      // Material 3 디자인 시스템 사용
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryAppBarColor,
-        brightness: Brightness.light,
-      ),
+      
+      // 기본 배경색 (BaseScaffold에서도 사용 가능)
       scaffoldBackgroundColor: AppColors.defaultBackgroundColor,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primaryAppBarColor,
-        foregroundColor: AppColors.whiteAppBarTextColor,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryButtonColor,
-          foregroundColor: AppColors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-      textTheme: GoogleFonts.notoSansKrTextTheme(
-        const TextTheme(
-          headlineLarge: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.bold,
-            color: AppColors.black,
-          ),
-          headlineMedium: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.black,
-          ),
-          headlineSmall: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.black,
-          ),
-          bodyLarge: TextStyle(
-            fontSize: 16,
-            color: AppColors.black,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 14,
-            color: AppColors.black,
-          ),
-          bodySmall: TextStyle(
-            fontSize: 12,
-            color: AppColors.grey7,
-          ),
-        ),
-      ),
+      
+      // 폰트 설정 - Google Fonts Noto Sans KR 사용
+      textTheme: GoogleFonts.notoSansKrTextTheme(),
+      fontFamily: GoogleFonts.notoSansKr().fontFamily,
     );
   }
 }

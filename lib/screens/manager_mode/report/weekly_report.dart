@@ -1,16 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../core/index_export.dart';
 import 'widgets/report_widgets.dart';
-import '../../../theme/app_colors.dart';
 
 class WeeklyReport extends StatelessWidget {
   const WeeklyReport({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
                 // 주간 선택기
@@ -441,7 +438,7 @@ class WeeklyReport extends StatelessWidget {
                                   break;
                               }
                               return SideTitleWidget(
-                                axisSide: meta.axisSide,
+                                meta: meta,
                                 space: 8,
                                 child: text,
                               );
@@ -536,8 +533,7 @@ class WeeklyReport extends StatelessWidget {
                     ),
                   ),
                 ),
-        ],
-      ),
+      ],
     );
   }
 

@@ -1,16 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../core/index_export.dart';
 import 'widgets/report_widgets.dart';
-import '../../../theme/app_colors.dart';
 
 class DailyReport extends StatelessWidget {
   const DailyReport({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
                 // 날짜 선택기
@@ -241,7 +238,7 @@ class DailyReport extends StatelessWidget {
                                   break;
                               }
                               return SideTitleWidget(
-                                axisSide: meta.axisSide,
+                                meta: meta,
                                 space: 16,
                                 child: text,
                               );
@@ -497,8 +494,7 @@ class DailyReport extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-        ],
-      ),
+      ],
     );
   }
 

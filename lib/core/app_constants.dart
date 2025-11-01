@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// 앱 전체에서 사용하는 상수값들을 정의합니다.
 class AppConstants {
   // AppBar 관련 상수
-    static const double appBarHeight = 60.0;
+    static const double appBarHeight = 65.0;
     static const double appBarElevation = 0.0;
     static const bool appBarCenterTitle = true;
     static const double appBarTitleFontSize = 18.0;
@@ -65,17 +65,4 @@ class AppConstants {
     static const SizedBox w16 = SizedBox(width: 16);
     static const SizedBox w20 = SizedBox(width: 20);
     static const SizedBox w24 = SizedBox(width: 24);
-
-    // 라우트 이름 상수
-    static const String routeMain = '/';
-    static const String routeModeSelect = '/mode-select';
-    static const String routeCameraHome = '/camera-home';
-    static const String routeCameraSetting = '/camera-setting';
-    static const String routeManagerHome = '/manager-home';
-    static const String routeRealtime = '/realtime';
-    static const String routeReport = '/report';
-    static const String routeCalendar = '/calendar';
-    static const String routeDailyReport = '/daily-report';
-    static const String routeWeeklyReport = '/weekly-report';
-    static const String routeMonthlyReport = '/monthly-report';
 }

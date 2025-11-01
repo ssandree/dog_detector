@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'core/index_export.dart';
 
 void main() {
@@ -10,11 +9,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: '견심술',
       theme: AppTheme.lightTheme,
-      routes: AppRoutes.routes,
-      initialRoute: '/',
+      routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
     );
   }

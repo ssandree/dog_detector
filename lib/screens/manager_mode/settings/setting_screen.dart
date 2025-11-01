@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import '../../../core/index_export.dart';
-import '../../main/main_screen.dart';
 import 'widgets/pet_profile.dart';
 import 'widgets/time_picker_modal.dart';
 import 'widgets/email_editor_modal.dart';
@@ -26,12 +24,12 @@ class _SettingScreenState extends State<SettingScreen> {
 
    // 포맷된 시간 문자열
    String get _formattedPushTime {
-     return '${_pushTime.hour.toString().padLeft(2, '0')}:${_pushTime.minute.toString().padLeft(2, '0')}';
+      return '${_pushTime.hour.toString().padLeft(2, '0')}:${_pushTime.minute.toString().padLeft(2, '0')}';
    }
 
    // 포맷된 리포트 발송일 문자열
    String get _formattedReportDay {
-     return '매월 $_reportDay일';
+      return '매월 $_reportDay일';
    }
 
    @override
@@ -43,20 +41,20 @@ class _SettingScreenState extends State<SettingScreen> {
 
    // 알림 설정 로드 (로컬 저장소나 서버에서)
    Future<void> _loadAlarmSettings() async {
-     // TODO: 실제 저장소에서 설정 로드
-     await Future.delayed(const Duration(milliseconds: 500)); // 로딩 시뮬레이션
-     
-     // Mock 데이터로 초기화
-     if (mounted) {
-       setState(() {
-         _instantAlert = true;
-         _dailySummary = true;
-         _pushTime = const TimeOfDay(hour: 20, minute: 0);
-         _monthlyReport = true;
-         _reportEmail = 'user@example.com';
-         _reportDay = 1;
-       });
-     }
+      // TODO: 실제 저장소에서 설정 로드
+      await Future.delayed(const Duration(milliseconds: 500)); // 로딩 시뮬레이션
+         
+      // Mock 데이터로 초기화
+         if (mounted) {
+         setState(() {
+            _instantAlert = true;
+            _dailySummary = true;
+            _pushTime = const TimeOfDay(hour: 20, minute: 0);
+            _monthlyReport = true;
+            _reportEmail = 'user@example.com';
+            _reportDay = 1;
+         });
+      }
    }
 
    // 알림 설정 저장
@@ -70,9 +68,8 @@ class _SettingScreenState extends State<SettingScreen> {
       return BaseScaffold(
          title: '환경설정',
          appBarTheme: AppBarThemeType.white,
-         body: SingleChildScrollView(
-         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-         child: Column(
+        // useScrollView는 기본값 true, 내부 SingleChildScrollView 제거함
+        body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
                const PetProfile(),
@@ -87,10 +84,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         trailing: OnOffButton(
                            value: _instantAlert,
                            onChanged: (v) async {
-                             setState(() {
-                               _instantAlert = v;
-                             });
-                             await _saveAlarmSettings();
+                              setState(() {
+                                 _instantAlert = v;
+                              });
+                              await _saveAlarmSettings();
                            },
                         ),
                      ),
@@ -100,10 +97,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         trailing: OnOffButton(
                            value: _dailySummary,
                            onChanged: (v) async {
-                             setState(() {
-                               _dailySummary = v;
-                             });
-                             await _saveAlarmSettings();
+                              setState(() {
+                                 _dailySummary = v;
+                              });
+                              await _saveAlarmSettings();
                            },
                         ),
                      ),
@@ -118,10 +115,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         trailing: OnOffButton(
                            value: _monthlyReport,
                            onChanged: (v) async {
-                             setState(() {
-                               _monthlyReport = v;
-                             });
-                             await _saveAlarmSettings();
+                              setState(() {
+                                 _monthlyReport = v;
+                              });
+                              await _saveAlarmSettings();
                            },
                         ),
                      ),
@@ -195,7 +192,6 @@ class _SettingScreenState extends State<SettingScreen> {
                const SizedBox(height: 16),
             ],
          ),
-         ),
       );
    }
 
@@ -207,7 +203,7 @@ class _SettingScreenState extends State<SettingScreen> {
       );
       if (result != null) {
          setState(() {
-           _pushTime = result;
+            _pushTime = result;
          });
          await _saveAlarmSettings();
       }
@@ -222,7 +218,7 @@ class _SettingScreenState extends State<SettingScreen> {
       );
       if (result != null) {
          setState(() {
-           _reportEmail = result;
+            _reportEmail = result;
          });
          await _saveAlarmSettings();
       }
@@ -236,18 +232,14 @@ class _SettingScreenState extends State<SettingScreen> {
       );
       if (result != null) {
          setState(() {
-           _reportDay = result;
+            _reportDay = result;
          });
          await _saveAlarmSettings();
       }
    }
 
    void _resetMode(BuildContext context) {
-      AppUtils.navigateTo(
-         context,
-         MainScreen(),
-         replace: true,
-      );
+      context.go(AppRoutes.main);
    }
 
    void _showSnack(BuildContext context, String message) {

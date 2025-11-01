@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../calendar_modal.dart';
-import 'package:dog_detect/data/report_mock.dart';
-import 'package:dog_detect/utils/emotion_ratio_calculator.dart';
+import '../../../../services/report_service.dart';
+import '../../../../utils/emotion_ratio_calculator.dart';
 
 class CalendarSection extends StatefulWidget {
   const CalendarSection({super.key});
@@ -18,20 +18,41 @@ class _CalendarSectionState extends State<CalendarSection> {
   DateTime? _selectedDay;
   // 오늘 날짜
   late final DateTime _today = DateTime.now();
+  // 주간 리포트 데이터
+  Map<String, dynamic> _weeklyReport = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeeklyReport();
+  }
+
+  Future<void> _loadWeeklyReport() async {
+    final data = await ReportService.getWeeklyReport();
+    if (mounted) {
+      setState(() {
+        _weeklyReport = data;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // 주간 감정 비율 계산
-    final weeklyRatios = calculateWeeklyRatios(mockWeeklyReport);
+    final weeklyRatios = _isLoading 
+        ? <String, double>{} 
+        : calculateWeeklyRatios(_weeklyReport);
     
     return Container(
-      height: 380, // 높이를 더 늘려서 오버플로우 방지
+      height: 410, // 오버플로우 방지를 위해 높이 증가 (380 + 30)
       margin: const EdgeInsets.symmetric(vertical: 10.0),
       child: TableCalendar<dynamic>(
         firstDay: DateTime.utc(2016, 1, 1),
         lastDay: _today,
         focusedDay: _focusedDay,
-        rowHeight: 55.0, // 행 높이를 줄여서 공간 확보
+        rowHeight: 52.0, // 행 높이를 약간 줄여서 공간 확보
 
         // ✅ 선택된 날짜 표시 로직
         selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
@@ -78,8 +99,8 @@ class _CalendarSectionState extends State<CalendarSection> {
               color: Colors.amber,
               shape: BoxShape.circle,
             ),
-            cellPadding: const EdgeInsets.all(8), // 패딩 증가
-            cellMargin: const EdgeInsets.all(2), // 마진 추가로 셀 간격 확보
+            cellPadding: const EdgeInsets.all(6), // 패딩 조정
+            cellMargin: const EdgeInsets.all(1.5), // 마진 조정
           ),
           
          // 주말과 공휴일 스타일 적용을 위한 추가 설정

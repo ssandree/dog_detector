@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:email_validator/email_validator.dart';
 import '../core/index_export.dart';
 
 /// 앱 전체에서 사용할 Input 필드 컴포넌트
@@ -18,6 +18,9 @@ class AppInputField extends StatelessWidget {
   
   /// 접미사 텍스트 (예: "kg", "살")
   final String? suffixText;
+  
+  /// 접미사 아이콘 (예: 비밀번호 표시/숨김 버튼)
+  final Widget? suffixIcon;
   
   /// 키보드 타입
   final TextInputType? keyboardType;
@@ -50,6 +53,7 @@ class AppInputField extends StatelessWidget {
     this.hint,
     this.icon,
     this.suffixText,
+    this.suffixIcon,
     this.keyboardType,
     this.obscureText = false,
     this.enabled = true,
@@ -77,6 +81,7 @@ class AppInputField extends StatelessWidget {
         hintText: hint,
         prefixIcon: icon != null ? Icon(icon) : null,
         suffixText: suffixText,
+        suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
           borderSide: BorderSide(color: AppColors.grey4),
@@ -91,11 +96,11 @@ class AppInputField extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: AppColors.errorRed),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
         ),
         filled: true,
         fillColor: enabled ? AppColors.white : AppColors.grey2,
@@ -115,10 +120,15 @@ class AppInputValidator {
   }
 
   /// 이메일 검증
+  /// email_validator 패키지를 사용하여 이메일 형식을 검증합니다.
+  /// RFC 5322 표준을 준수하는 정확한 검증을 제공합니다.
   static String? email(String? value) {
+    // 값이 없으면 검증하지 않음 (required와 함께 사용)
     if (value == null || value.isEmpty) return null;
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
+    
+    // email_validator 패키지의 validate 함수 사용
+    // 수동 RegExp 대신 표준 라이브러리를 사용하여 더 정확한 검증
+    if (!EmailValidator.validate(value)) {
       return '올바른 이메일 주소를 입력해주세요.';
     }
     return null;

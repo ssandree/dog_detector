@@ -24,5 +24,27 @@ linter:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 
+    # 코드 스타일 및 구조 관련 규칙
+    prefer_single_quotes: true # 작은따옴표 사용 권장
+    require_trailing_commas: true # trailing comma 사용 권장
+    avoid_unnecessary_containers: true # 불필요한 Container 사용 방지
+    sized_box_for_whitespace: true # SizedBox를 적절히 사용
+    use_key_in_widget_constructors: true # 위젯 생성 시 key 사용
+
+    # 네이밍 규칙
+    non_constant_identifier_names: true
+    constant_identifier_names: true
+
+    # 성능 관련
+    prefer_const_constructors: true # const 생성자 사용 권장
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+
+    # 에러 방지
+    always_declare_return_types: true # return 타입 명시
+    avoid_empty_else: true
+    avoid_returning_null_for_future: true
+    avoid_slow_async_io: true
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

@@ -1,4 +1,5 @@
 import '../../../../core/index_export.dart';
+import '../../../../models/calendar_data.dart';
 
 class HealthAlertCard extends StatelessWidget {
   final String message;
@@ -150,14 +151,3 @@ class HealthAlertCard extends StatelessWidget {
   }
 }
 
-class TimeSlotData {
-  final String time;
-  final String count;
-  final Color color;
-
-  TimeSlotData({
-    required this.time,
-    required this.count,
-    required this.color,
-  });
-}

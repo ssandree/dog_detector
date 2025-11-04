@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'rank_chip.dart';
 import '../../../../core/index_export.dart';
+import '../../../../models/calendar_data.dart';
 
 class EmotionStatsSection extends StatelessWidget {
   final String title;
@@ -37,18 +38,4 @@ class EmotionStatsSection extends StatelessWidget {
       ],
     );
   }
-}
-
-class RankChipData {
-  final String rankLabel;
-  final String text;
-  final Color backgroundColor;
-  final Color borderColor;
-
-  RankChipData({
-    required this.rankLabel,
-    required this.text,
-    required this.backgroundColor,
-    required this.borderColor,
-  });
 }

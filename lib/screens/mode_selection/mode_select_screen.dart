@@ -10,7 +10,7 @@ class ModeSelectScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AppColors.beige2,
+      backgroundColor: AppColors.white,
       body: Column(
         children: [
           // 중앙 섹션

@@ -3,6 +3,10 @@ import '../core/index_export.dart';
 
 /// 앱 전체에서 사용할 기본 버튼 위젯들
 class AppButtons {
+  // ========== 상수 ==========
+  static const double _loadingIndicatorSize = 20.0;
+  static const double _buttonBorderWidth = 2.0;
+  
   // ========== 공통 헬퍼 메서드 ==========
   
   /// 기본 버튼 구조를 생성하는 공통 메서드
@@ -28,11 +32,11 @@ class AppButtons {
   /// loading_animation_widget 패키지로 버튼 내부에서 띄우는 용도
   static Widget _buildLoadingIndicator() {
     return SizedBox(
-      width: 20,
-      height: 20,
+      width: _loadingIndicatorSize,
+      height: _loadingIndicatorSize,
       child: LoadingAnimationWidget.threeArchedCircle(
         color: AppColors.black,
-        size: 20,
+        size: _loadingIndicatorSize,
       ),
     );
   }
@@ -48,7 +52,7 @@ class AppButtons {
     final textWidget = Text(
       text,
       style: TextStyle(
-        fontSize: fontSize ?? AppConstants.defaultFontSize,
+        fontSize: fontSize ?? AppConstants.buttonFontSize,
         fontWeight: fontWeight ?? FontWeight.w500,
         color: textColor,
         shadows: [],
@@ -80,6 +84,7 @@ class AppButtons {
     double? width,
     double height = 56.0,
     Color? backgroundColor,
+    double? fontSize,
   }) {
     return _buildButton(
       width: width,
@@ -95,7 +100,7 @@ class AppButtons {
       ),
       child: isLoading
         ? _buildLoadingIndicator()
-        : _buildStandardChild(text: text, icon: icon),
+        : _buildStandardChild(text: text, icon: icon, fontSize: fontSize),
     );
   }
 
@@ -107,6 +112,7 @@ class AppButtons {
     IconData? icon,
     double? width,
     double height = 56.0,
+    double? fontSize,
   }) {
     return _buildButton(
       width: width,
@@ -122,7 +128,7 @@ class AppButtons {
       ),
       child: isLoading
         ? _buildLoadingIndicator()
-        : _buildStandardChild(text: text, icon: icon),
+        : _buildStandardChild(text: text, icon: icon, fontSize: fontSize),
     );
   }
 
@@ -132,6 +138,7 @@ class AppButtons {
     IconData? icon,
     double? width,
     double height = 56.0,
+    double? fontSize,
   }) {
     return _buildButton(
       width: width,
@@ -149,6 +156,7 @@ class AppButtons {
         text: text,
         icon: icon,
         textColor: AppColors.grey6,
+        fontSize: fontSize,
       ),
     );
   }
@@ -162,13 +170,14 @@ class AppButtons {
     double? width,
     double height = 56.0,
     Color? backgroundColor,
+    double? fontSize,
   }) {
     return _buildButton(
       width: width,
       height: height,
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.AppBarColor,
+        backgroundColor: backgroundColor ?? AppColors.appBarColor,
         foregroundColor: AppColors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -181,6 +190,7 @@ class AppButtons {
             text: text,
             icon: icon,
             textColor: AppColors.white,
+            fontSize: fontSize,
           ),
     );
   }
@@ -195,6 +205,7 @@ class AppButtons {
     double height = 56.0,
     Color? borderColor,
     Color? textColor,
+    double? fontSize,
   }) {
     return _buildButton(
       width: width,
@@ -205,7 +216,7 @@ class AppButtons {
         foregroundColor: textColor ?? AppColors.black,
         side: BorderSide(
           color: borderColor ?? AppColors.buttonOutline,
-          width: 2,
+          width: _buttonBorderWidth,
         ),
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -218,6 +229,7 @@ class AppButtons {
             text: text,
             icon: icon,
             textColor: textColor ?? AppColors.black,
+            fontSize: fontSize,
           ),
     );
   }

@@ -16,11 +16,13 @@ class SettingsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
         _SectionHeader(title: title),
         AppCards.basic(
           padding: padding ?? const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: _buildChildrenWithDividers(),
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'legend_item.dart';
 import '../../../../core/index_export.dart';
+import '../../../../models/calendar_data.dart';
 
 class EmotionPieChart extends StatelessWidget {
   final List<PieChartSectionData> sections;
@@ -45,14 +46,4 @@ class EmotionPieChart extends StatelessWidget {
       ],
     );
   }
-}
-
-class LegendItemData {
-  final Color color;
-  final String label;
-
-  LegendItemData({
-    required this.color,
-    required this.label,
-  });
 }

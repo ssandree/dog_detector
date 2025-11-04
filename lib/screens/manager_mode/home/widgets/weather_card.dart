@@ -1,38 +1,12 @@
 import '../../../../core/index_export.dart';
-import '../../../../services/home_service.dart';
 
-class WeatherCard extends StatefulWidget {
+class WeatherCard extends ConsumerWidget {
   const WeatherCard({super.key});
 
   @override
-  State<WeatherCard> createState() => _WeatherCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weatherDataAsync = ref.watch(weatherDataProvider);
 
-class _WeatherCardState extends State<WeatherCard> {
-  List<Map<String, dynamic>> _weatherData = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadWeatherData();
-  }
-
-  Future<void> _loadWeatherData() async {
-    final data = await HomeService.getWeatherData();
-    if (mounted) {
-      setState(() {
-        _weatherData = data;
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 어제 날씨를 제외하고 오늘, 내일, 모레만 표시
-    final filteredWeatherData = _weatherData.skip(1).take(3).toList();
-    
     return AppCards.basic(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -57,21 +31,32 @@ class _WeatherCardState extends State<WeatherCard> {
             ],
           ),
           const SizedBox(height: 12),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-            children: filteredWeatherData.map((weather) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: WeatherItem(
-                date: weather['date'] as String,
-                temperature: weather['temperature'] as String,
-                condition: weather['condition'] as String,
-                icon: weather['icon'] as String,
-                comment: weather['comment'] as String,
-                color: Color(int.parse((weather['color'] as String).replaceFirst('#', '0xFF'))),
+          weatherDataAsync.when(
+            data: (weatherData) {
+              // 어제 날씨를 제외하고 오늘, 내일, 모레만 표시
+              final filteredWeatherData = weatherData.skip(1).take(3).toList();
+              return Column(
+                children: filteredWeatherData.map((weather) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: WeatherItem(
+                    date: weather['date'] as String,
+                    temperature: weather['temperature'] as String,
+                    condition: weather['condition'] as String,
+                    icon: weather['icon'] as String,
+                    comment: weather['comment'] as String,
+                    color: Color(int.parse((weather['color'] as String).replaceFirst('#', '0xFF'))),
+                  ),
+                )).toList(),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Text(
+                '데이터를 불러오는데 실패했습니다: $error',
+                style: const TextStyle(color: AppColors.grey8),
               ),
-            )).toList(),
-                ),
+            ),
+          ),
         ],
       ),
     );

@@ -1,19 +1,19 @@
 import '../../core/index_export.dart';
+import 'widgets/bottom_linkto.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _nameController = TextEditingController();
-  bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -29,7 +29,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.defaultBackgroundColor,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         title: const Text('회원가입'),
         backgroundColor: AppColors.whiteAppBarColor,
@@ -37,13 +37,15 @@ class _SignupScreenState extends State<SignupScreen> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: AppConstants.smallPadding,
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: AppConstants.smallPadding,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 const SizedBox(height: 20),
                 
                 // 이름 입력
@@ -69,15 +71,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   hint: '이메일을 입력해주세요',
                   icon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return '이메일을 입력해주세요';
-                    }
-                    if (!value.contains('@')) {
-                      return '올바른 이메일 형식이 아닙니다';
-                    }
-                    return null;
-                  },
+                  validator: AppInputValidator.combine([
+                    AppInputValidator.required,
+                    AppInputValidator.email,
+                  ]),
                 ),
                 
                 const SizedBox(height: 20),
@@ -193,46 +190,40 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 32),
                 
                 // 회원가입 버튼
-                AppButtons.primary(
-                  text: '회원가입',
-                  onPressed: _isLoading ? null : _handleSignup,
-                  isLoading: _isLoading,
-                ),
+                _buildSignupButton(),
                 
+                const SizedBox(height: 32),
+                
+                // 하단 링크 (로그인)
+                const BottomLinkTo(),
                 const SizedBox(height: 16),
-                
-                // 로그인 링크
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '이미 계정이 있으신가요? ',
-                      style: TextStyle(
-                        fontSize: AppConstants.smallFontSize,
-                        color: AppColors.grey8,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        context.pop();
-                      },
-                      child: Text(
-                        '로그인',
-                        style: TextStyle(
-                          fontSize: AppConstants.smallFontSize,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.AppBarColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const Spacer(),
               ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSignupButton() {
+    final authAsync = ref.watch(authProvider);
+    
+    return authAsync.when(
+      data: (authInfo) => AppButtons.primary(
+        text: '회원가입',
+        onPressed: () => _handleSignup(),
+        isLoading: false,
+      ),
+      loading: () => AppButtons.primary(
+        text: '회원가입',
+        onPressed: null,
+        isLoading: true,
+      ),
+      error: (error, stack) => AppButtons.primary(
+        text: '회원가입',
+        onPressed: () => _handleSignup(),
+        isLoading: false,
       ),
     );
   }
@@ -242,27 +233,31 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final name = _nameController.text.trim();
 
     try {
-      // TODO: 실제 회원가입 API 호출
-      await Future.delayed(const Duration(seconds: 1)); // 로딩 시뮬레이션
+      await ref.read(authProvider.notifier).signup(email, password, name);
       
       if (mounted) {
-        AppToast.success(context, '회원가입이 완료되었습니다!');
-        context.pop();
+        final authState = ref.read(authProvider);
+        authState.when(
+          data: (authInfo) {
+            if (authInfo != null) {
+              AppToast.success(context, '회원가입이 완료되었습니다!');
+              context.pop();
+            }
+          },
+          loading: () {},
+          error: (error, stack) {
+            AppToast.error(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
+          },
+        );
       }
     } catch (e) {
       if (mounted) {
         AppToast.error(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }

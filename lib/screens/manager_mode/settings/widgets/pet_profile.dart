@@ -2,22 +2,20 @@ import '../../../../core/index_export.dart';
 import '../../../../models/pet_info.dart';
 import '../../../register/pet_regi_screen.dart';
 
-class PetProfile extends StatelessWidget {
+class PetProfile extends ConsumerWidget {
   const PetProfile({super.key});
 
-  // TODO: PetInfo를 prop으로 받거나 다른 상태 관리 방법 사용
-  PetInfo? get _petInfo => null;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final petInfo = ref.watch(currentPetProvider);
     return GestureDetector(
-      onTap: _petInfo == null ? () => _navigateToPetRegistration(context) : null,
+      onTap: petInfo == null ? () => _navigateToPetRegistration(context) : null,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.beige3,
           borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          border: _petInfo == null ? Border.all(color: AppColors.white, width: 2) : null,
+          border: petInfo == null ? Border.all(color: AppColors.white, width: 2) : null,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -35,27 +33,30 @@ class PetProfile extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _petInfo?.name ?? '강아지 등록하기',
+                    petInfo?.name ?? '강아지 등록하기',
                     style: TextStyle(
                       fontSize: 18, 
                       fontWeight: FontWeight.w600,
-                      color: _petInfo == null ? AppColors.white : AppColors.black,
+                      color: petInfo == null ? AppColors.white : AppColors.black,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _buildPetInfoText(_petInfo),
+                    _buildPetInfoText(petInfo),
                     style: TextStyle(
                       fontSize: 12, 
-                      color: _petInfo == null ? AppColors.white : AppColors.black,
+                      color: petInfo == null ? AppColors.white : AppColors.black,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            if (_petInfo != null)
+            if (petInfo != null)
               TextButton(
                 onPressed: () => _navigateToPetRegistration(context),
                 child: const Text('정보 수정하기'),

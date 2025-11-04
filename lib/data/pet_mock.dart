@@ -1,5 +1,5 @@
 final mockPet = [
-   {
+    {
       'id': 1,
       'name': '도도',
       'breed': '말티푸',
@@ -7,8 +7,8 @@ final mockPet = [
       'gender': 'male',
       'photoUrl': 'https://your-s3-url.com/pets/dodo_profile.png',
       'registeredAt': '2025-10-11T09:00:00Z'
-   },
-   {
+    },
+    {
       'id': 2,
       'name': '말랑이',
       'breed': '비숑프리제',
@@ -16,7 +16,7 @@ final mockPet = [
       'gender': 'female',
       'photoUrl': 'https://your-s3-url.com/pets/dodo_profile.png',
       'registeredAt': '2025-10-23T10:10:00Z'
-   }
+    }
 ];
 
 // 홈 대시보드용 mock 데이터

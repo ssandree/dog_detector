@@ -1,12 +1,137 @@
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/index_export.dart';
+import '../../../widgets/error_widget.dart';
 import 'widgets/report_widgets.dart';
 
-class DailyReport extends StatelessWidget {
+class DailyReport extends ConsumerStatefulWidget {
   const DailyReport({super.key});
 
   @override
+  ConsumerState<DailyReport> createState() => _DailyReportState();
+}
+
+class _DailyReportState extends ConsumerState<DailyReport> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final dailyReportAsync = ref.watch(dailyReportProvider(_selectedDate));
+
+    return AsyncValueWidget<Map<String, dynamic>>(
+      asyncValue: dailyReportAsync,
+      data: (context, reportData) => _buildContent(reportData),
+      onRetry: () => ref.invalidate(dailyReportProvider(_selectedDate)),
+    );
+  }
+
+  Widget _buildContent(Map<String, dynamic> reportData) {
+    final date = reportData['date'] as String? ?? '2025-10-11';
+    final dateTime = DateTime.tryParse(date) ?? DateTime.now();
+    final dateStr = '${dateTime.year.toString().substring(2)}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}';
+
+    // 감정 통계 계산 (mock 데이터 구조에 맞게)
+    final events = reportData['events'] as List<dynamic>? ?? [];
+    final emotionCounts = <String, int>{};
+    for (var event in events) {
+      final emotion = event['emotion'] as String? ?? '';
+      emotionCounts[emotion] = (emotionCounts[emotion] ?? 0) + 1;
+    }
+    final sortedEmotions = emotionCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    
+    final topEmotions = sortedEmotions.take(3).toList();
+    final rankChips = [
+      if (topEmotions.isNotEmpty)
+        RankChip(
+          rankLabel: 'Top 1',
+          text: '${topEmotions[0].key} ${topEmotions[0].value}회',
+          backgroundColor: const Color(0xFFE8F5E9),
+          borderColor: const Color(0xFFC8E6C9),
+        ),
+      if (topEmotions.length > 1)
+        RankChip(
+          rankLabel: 'Top 2',
+          text: '${topEmotions[1].key} ${topEmotions[1].value}회',
+          backgroundColor: const Color(0xFFFFF3E0),
+          borderColor: const Color(0xFFFFECB3),
+        ),
+      if (topEmotions.length > 2)
+        RankChip(
+          rankLabel: 'Top 3',
+          text: '${topEmotions[2].key} ${topEmotions[2].value}회',
+          backgroundColor: const Color(0xFFE8F5E9),
+          borderColor: const Color(0xFFC8E6C9),
+        ),
+    ];
+
+    // 파이 차트 데이터 계산
+    final totalCount = emotionCounts.values.fold(0, (sum, count) => sum + count);
+    final pieChartSections = <PieChartSectionData>[];
+    if (totalCount > 0) {
+      final emotionColors = {
+        '행복': AppColors.green5,
+        '불안': AppColors.coral4,
+        '편안': AppColors.green3,
+        '불쾌': AppColors.coral3,
+      };
+      final defaultColor = AppColors.grey4;
+      
+      for (var entry in sortedEmotions.take(5)) {
+        final percentage = (entry.value / totalCount * 100).round();
+        final color = emotionColors[entry.key] ?? defaultColor;
+        pieChartSections.add(
+          PieChartSectionData(
+            color: color,
+            value: percentage.toDouble(),
+            title: '$percentage%',
+            radius: 50,
+            titleStyle: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color == AppColors.grey4 ? Colors.black : Colors.white,
+            ),
+          ),
+        );
+      }
+    }
+
+    // 감정 비율 계산 (긍정/부정)
+    final positiveEmotions = ['행복', '편안'];
+    final negativeEmotions = ['불안', '불쾌'];
+    int positiveCount = 0;
+    int negativeCount = 0;
+    for (var entry in emotionCounts.entries) {
+      if (positiveEmotions.contains(entry.key)) {
+        positiveCount += entry.value;
+      } else if (negativeEmotions.contains(entry.key)) {
+        negativeCount += entry.value;
+      }
+    }
+    final totalEmotionCount = positiveCount + negativeCount;
+    final negativePercent = totalEmotionCount > 0 ? (negativeCount / totalEmotionCount * 100).round() : 0;
+    final positivePercent = totalEmotionCount > 0 ? (positiveCount / totalEmotionCount * 100).round() : 0;
+
+    // 시간대별 차트 데이터
+    final chartData = reportData['chartData'] as List<dynamic>? ?? [];
+    final timeSlotData = chartData.map((item) {
+      final hour = item['hour'] as String? ?? '00';
+      final activity = item['activity'] as int? ?? 0;
+      return {'hour': hour, 'activity': activity};
+    }).toList();
+
+    // 건강 알림 데이터 (mock 데이터 기반)
+    final healthAlertCount = events.length;
+    final healthAlertMessage = '오늘은 슬개골 탈구 의심 행동이 $healthAlertCount회 감지되었습니다.';
+
+    // AI 리포트 텍스트
+    final aiComment = reportData['aiComment'] as String? ?? '오늘 도도의 하루를 AI가 요약했어요!';
+
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -17,25 +142,29 @@ class DailyReport extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.arrow_back_ios, size: 20),
                       onPressed: () {
-                        // 이전 날
+                        setState(() {
+                          _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                        });
                       },
                     ),
                     Column(
-                      children: const [
-                        Text(
+                      children: [
+                        const Text(
                           '오늘',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '25.10.01',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          dateStr,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ),
                     IconButton(
                       icon: const Icon(Icons.arrow_forward_ios, size: 20),
                       onPressed: () {
-                        // 다음 날
+                        setState(() {
+                          _selectedDate = _selectedDate.add(const Duration(days: 1));
+                        });
                       },
                     ),
                   ],
@@ -50,26 +179,12 @@ class DailyReport extends StatelessWidget {
                 const SizedBox(height: 15),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    RankChip(
-                      rankLabel: 'Top 1',
-                      text: '행복함 15회',
-                      backgroundColor: const Color(0xFFE8F5E9),
-                      borderColor: const Color(0xFFC8E6C9),
-                    ),
-                    RankChip(
-                      rankLabel: 'Top 2',
-                      text: '불안함 9회',
-                      backgroundColor: const Color(0xFFFFF3E0),
-                      borderColor: const Color(0xFFFFECB3),
-                    ),
-                    RankChip(
-                      rankLabel: 'Top 3',
-                      text: '편안함 8회',
-                      backgroundColor: const Color(0xFFE8F5E9),
-                      borderColor: const Color(0xFFC8E6C9),
-                    ),
-                  ],
+                  children: rankChips.length >= 3 
+                    ? rankChips
+                    : [
+                        ...rankChips,
+                        ...List.generate(3 - rankChips.length, (index) => const SizedBox()),
+                      ],
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -79,69 +194,15 @@ class DailyReport extends StatelessWidget {
                       flex: 3,
                       child: SizedBox(
                         height: 200,
-                        child: PieChart(
-                          PieChartData(
-                            sectionsSpace: 2,
-                            centerSpaceRadius: 40,
-                            sections: [
-                              PieChartSectionData(
-                                color: AppColors.green5,
-                                value: 12,
-                                title: '12%',
-                                radius: 50,
-                                titleStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                        child: pieChartSections.isNotEmpty
+                          ? PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 40,
+                                sections: pieChartSections,
                               ),
-                              PieChartSectionData(
-                                color: AppColors.coral4,
-                                value: 34,
-                                title: '34%',
-                                radius: 50,
-                                titleStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              PieChartSectionData(
-                                color: AppColors.green3,
-                                value: 30,
-                                title: '30%',
-                                radius: 50,
-                                titleStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              PieChartSectionData(
-                                color: AppColors.coral3,
-                                value: 14,
-                                title: '14%',
-                                radius: 50,
-                                titleStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              PieChartSectionData(
-                                color: AppColors.grey4,
-                                value: 10,
-                                title: '10%',
-                                radius: 50,
-                                titleStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                            )
+                          : const Center(child: Text('데이터가 없습니다')),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -149,13 +210,18 @@ class DailyReport extends StatelessWidget {
                       flex: 2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          LegendItem(color: AppColors.green5, label: '행복함'),
-                          LegendItem(color: AppColors.coral4, label: '불안함'),
-                          LegendItem(color: AppColors.green3, label: '편안함'),
-                          LegendItem(color: AppColors.coral3, label: '불쾌함'),
-                          LegendItem(color: AppColors.grey4, label: '기타'),
-                        ],
+                        children: sortedEmotions.take(5).map((entry) {
+                          final emotionColors = {
+                            '행복': AppColors.green5,
+                            '불안': AppColors.coral4,
+                            '편안': AppColors.green3,
+                            '불쾌': AppColors.coral3,
+                          };
+                          return LegendItem(
+                            color: emotionColors[entry.key] ?? AppColors.grey4,
+                            label: entry.key,
+                          );
+                        }).toList(),
                       ),
                     ),
                   ],
@@ -164,10 +230,10 @@ class DailyReport extends StatelessWidget {
 
                 // 감정 바
                 EmotionRatioBar(
-                  negativePercent: 60,
-                  positivePercent: 40,
-                  negativeLabel: '부정 60%',
-                  positiveLabel: '긍정 40%',
+                  negativePercent: negativePercent,
+                  positivePercent: positivePercent,
+                  negativeLabel: '부정 $negativePercent%',
+                  positiveLabel: '긍정 $positivePercent%',
                   negativeColor: AppColors.coral3,
                   positiveColor: AppColors.green3,
                 ),
@@ -266,13 +332,25 @@ class DailyReport extends StatelessWidget {
                       borderData: FlBorderData(
                         show: false,
                       ),
-                      barGroups: [
-                        BarChartGroupData(
-                          x: 0,
+                      barGroups: timeSlotData.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final data = entry.value;
+                        final activity = data['activity'] as int? ?? 0;
+                        final hour = int.tryParse(data['hour'] as String? ?? '0') ?? 0;
+                        final isMorning = hour < 12;
+                        final isAfternoon = hour >= 12 && hour < 18;
+                        final color = isMorning 
+                          ? AppColors.green5 
+                          : isAfternoon 
+                            ? AppColors.coral4 
+                            : AppColors.green3;
+                        
+                        return BarChartGroupData(
+                          x: index,
                           barRods: [
                             BarChartRodData(
-                              toY: 8,
-                              color: AppColors.green5,
+                              toY: activity.toDouble(),
+                              color: color,
                               width: 22,
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(4),
@@ -280,36 +358,8 @@ class DailyReport extends StatelessWidget {
                               ),
                             ),
                           ],
-                        ),
-                        BarChartGroupData(
-                          x: 1,
-                          barRods: [
-                            BarChartRodData(
-                              toY: 12,
-                              color: AppColors.coral4,
-                              width: 22,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4),
-                                topRight: Radius.circular(4),
-                              ),
-                            ),
-                          ],
-                        ),
-                        BarChartGroupData(
-                          x: 2,
-                          barRods: [
-                            BarChartRodData(
-                              toY: 6,
-                              color: AppColors.green3,
-                              width: 22,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4),
-                                topRight: Radius.circular(4),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
@@ -344,10 +394,10 @@ class DailyReport extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              '오늘은 슬개골 탈구 의심 행동이 2회 감지되었습니다.',
-                              style: TextStyle(
+                              healthAlertMessage,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.green8,
@@ -371,9 +421,9 @@ class DailyReport extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
-                                  '2회',
-                                  style: TextStyle(
+                                Text(
+                                  '$healthAlertCount회',
+                                  style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.green8,
@@ -452,26 +502,26 @@ class DailyReport extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        '오늘 도도의 하루를 AI가 요약했어요!',
-                        style: TextStyle(
+                      Text(
+                        aiComment,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF666666),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        '하루 중 불안·불쾌한 감정이 60%로 긍정적인 감정 40% 보다 약간 더 높았습니다.',
-                        style: TextStyle(
+                      Text(
+                        '하루 중 불안·불쾌한 감정이 $negativePercent%로 긍정적인 감정 $positivePercent%보다 ${negativePercent > positivePercent ? '높았습니다' : '낮았습니다'}.',
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,
                           height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        '오늘 슬개골 탈구 의심 행동이 총 2회 감지되었습니다. 현재 단계는 \'관심\'에 해당하며, 무릎 관절에 부담이 있었을 수 있으니 보호자의 관찰이 필요합니다.',
-                        style: TextStyle(
+                      Text(
+                        '오늘 슬개골 탈구 의심 행동이 총 $healthAlertCount회 감지되었습니다. 현재 단계는 \'관심\'에 해당하며, 무릎 관절에 부담이 있었을 수 있으니 보호자의 관찰이 필요합니다.',
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,
                           height: 1.4,

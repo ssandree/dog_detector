@@ -1,7 +1,15 @@
 import 'package:fluttertoast/fluttertoast.dart';
 import '../core/index_export.dart';
+import '../core/exceptions.dart';
 
 /// Toast 메시지 통합 관리
+/// 
+/// 표준화된 Toast 메시지 표시 규칙:
+/// - success: 성공 작업 (녹색)
+/// - error: 에러 발생 (빨간색) - AppException을 자동으로 처리
+/// - warning: 경고 메시지 (주황색)
+/// - info: 정보 메시지 (기본 색상)
+/// 
 /// fluttertoast 패키지를 사용하여 간단하고 효율적인 토스트 메시지를 제공합니다.
 class AppToast {
   /// 성공 메시지 표시
@@ -11,7 +19,7 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.green,
+      backgroundColor: AppColors.green5,
       textColor: Colors.white,
       fontSize: 14.0,
       timeInSecForIosWeb: 2,
@@ -19,13 +27,28 @@ class AppToast {
   }
 
   /// 에러 메시지 표시
-  /// 빨간색 배경의 에러 토스트 메시지를 표시합니다.
-  static void error(BuildContext context, String message) {
+  /// 
+  /// [error]: 에러 객체 (AppException 또는 일반 Exception)
+  /// [message]: 커스텀 메시지 (null이면 error에서 자동 추출)
+  /// 
+  /// AppException인 경우 메시지를 자동으로 추출하고,
+  /// 일반 Exception인 경우 기본 메시지를 표시합니다.
+  static void error(BuildContext context, dynamic error, [String? message]) {
+    String errorMessage;
+    
+    if (error is AppException) {
+      errorMessage = message ?? error.message;
+    } else if (message != null) {
+      errorMessage = message;
+    } else {
+      errorMessage = '오류가 발생했습니다. 다시 시도해주세요.';
+    }
+    
     Fluttertoast.showToast(
-      msg: message,
+      msg: errorMessage,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.red,
+      backgroundColor: AppColors.error,
       textColor: Colors.white,
       fontSize: 14.0,
       timeInSecForIosWeb: 2,
@@ -53,7 +76,7 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppColors.AppBarColor,
+      backgroundColor: AppColors.appBarColor,
       textColor: Colors.white,
       fontSize: 14.0,
       timeInSecForIosWeb: 2,

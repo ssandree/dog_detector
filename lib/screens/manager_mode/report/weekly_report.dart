@@ -1,12 +1,40 @@
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/index_export.dart';
+import '../../../widgets/error_widget.dart';
 import 'widgets/report_widgets.dart';
 
-class WeeklyReport extends StatelessWidget {
+class WeeklyReport extends ConsumerWidget {
   const WeeklyReport({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weeklyReportAsync = ref.watch(weeklyReportProvider);
+
+    return AsyncValueWidget<Map<String, dynamic>>(
+      asyncValue: weeklyReportAsync,
+      data: (context, reportData) => _buildContent(context, reportData),
+      onRetry: () => ref.invalidate(weeklyReportProvider),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, Map<String, dynamic> reportData) {
+    final startDate = reportData['startDate'] as String? ?? '2025-10-06';
+    final endDate = reportData['endDate'] as String? ?? '2025-10-12';
+    final startDateTime = DateTime.tryParse(startDate) ?? DateTime.now();
+    final endDateTime = DateTime.tryParse(endDate) ?? DateTime.now();
+    final dateRangeStr = '${startDateTime.year.toString().substring(2)}.${startDateTime.month.toString().padLeft(2, '0')}.${startDateTime.day.toString().padLeft(2, '0')} - ${endDateTime.year.toString().substring(2)}.${endDateTime.month.toString().padLeft(2, '0')}.${endDateTime.day.toString().padLeft(2, '0')}';
+
+    // 주간 통계 계산 (mock 데이터 기반)
+    final dailyStats = reportData['dailyStats'] as List<dynamic>? ?? [];
+    final emotionBreakdown = reportData['emotionBreakdown'] as Map<String, dynamic>? ?? {};
+    final emotionCounts = <String, int>{};
+    emotionBreakdown.forEach((key, value) {
+      emotionCounts[key] = (value as num?)?.toInt() ?? 0;
+    });
+
+    final sortedEmotions = emotionCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -21,14 +49,14 @@ class WeeklyReport extends StatelessWidget {
                       },
                     ),
                     Column(
-                      children: const [
-                        Text(
+                      children: [
+                        const Text(
                           '이번 주',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '25.09.30 - 25.10.06',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          dateRangeStr,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -51,24 +79,27 @@ class WeeklyReport extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    RankChip(
-                      rankLabel: 'Top 1',
-                      text: '행복함 89회',
-                      backgroundColor: AppColors.green1,
-                      borderColor: AppColors.green3,
-                    ),
-                    RankChip(
-                      rankLabel: 'Top 2',
-                      text: '불안함 67회',
-                      backgroundColor: AppColors.coral1,
-                      borderColor: AppColors.coral3,
-                    ),
-                    RankChip(
-                      rankLabel: 'Top 3',
-                      text: '편안함 54회',
-                      backgroundColor: AppColors.green1,
-                      borderColor: AppColors.green3,
-                    ),
+                    if (sortedEmotions.isNotEmpty)
+                      RankChip(
+                        rankLabel: 'Top 1',
+                        text: '${sortedEmotions[0].key} ${sortedEmotions[0].value}회',
+                        backgroundColor: AppColors.green1,
+                        borderColor: AppColors.green3,
+                      ),
+                    if (sortedEmotions.length > 1)
+                      RankChip(
+                        rankLabel: 'Top 2',
+                        text: '${sortedEmotions[1].key} ${sortedEmotions[1].value}회',
+                        backgroundColor: AppColors.coral1,
+                        borderColor: AppColors.coral3,
+                      ),
+                    if (sortedEmotions.length > 2)
+                      RankChip(
+                        rankLabel: 'Top 3',
+                        text: '${sortedEmotions[2].key} ${sortedEmotions[2].value}회',
+                        backgroundColor: AppColors.green1,
+                        borderColor: AppColors.green3,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -162,15 +193,8 @@ class WeeklyReport extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // 감정 바
-                EmotionRatioBar(
-                  negativePercent: 55,
-                  positivePercent: 45,
-                  negativeLabel: '부정 55%',
-                  positiveLabel: '긍정 45%',
-                  negativeColor: AppColors.coral3,
-                  positiveColor: AppColors.green3,
-                ),
+                // 감정 바 (주간 데이터 계산)
+                _buildEmotionRatioBar(sortedEmotions),
                 const SizedBox(height: 20),
 
                 // 슬개골 탈구 의심 행동 감지 알림
@@ -202,10 +226,10 @@ class WeeklyReport extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              '이번 주 슬개골 탈구 의심 행동이 8회 감지되었습니다.',
-                              style: TextStyle(
+                              '이번 주 슬개골 탈구 의심 행동이 ${dailyStats.length}회 감지되었습니다.',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF2E7D32),
@@ -229,9 +253,9 @@ class WeeklyReport extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
-                                  '8회',
-                                  style: TextStyle(
+                                Text(
+                                  '${dailyStats.length}회',
+                                  style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF2E7D32),
@@ -314,26 +338,26 @@ class WeeklyReport extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        '이번 주 도도의 패턴을 AI가 분석했어요!',
-                        style: TextStyle(
+                      Text(
+                        reportData['trend'] as String? ?? '이번 주 도도의 패턴을 AI가 분석했어요!',
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF666666),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        '주간 감정 분석 결과 불안·불쾌한 감정이 55%로 긍정적인 감정 45%보다 높았습니다.',
-                        style: TextStyle(
+                      Text(
+                        _buildEmotionAnalysisText(sortedEmotions),
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,
                           height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        '이번 주 슬개골 탈구 의심 행동이 총 8회 감지되었습니다. 월요일과 수요일, 금요일에 집중적으로 나타났으며, 현재 단계는 \'주의\'에 해당합니다.',
-                        style: TextStyle(
+                      Text(
+                        '이번 주 슬개골 탈구 의심 행동이 총 ${dailyStats.length}회 감지되었습니다. 월요일과 수요일, 금요일에 집중적으로 나타났으며, 현재 단계는 \'주의\'에 해당합니다.',
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,
                           height: 1.4,
@@ -535,6 +559,51 @@ class WeeklyReport extends StatelessWidget {
                 ),
       ],
     );
+  }
+
+  Widget _buildEmotionRatioBar(List<MapEntry<String, int>> sortedEmotions) {
+    final positiveEmotions = ['행복', '편안'];
+    final negativeEmotions = ['불안', '불쾌'];
+    int positiveCount = 0;
+    int negativeCount = 0;
+    for (var entry in sortedEmotions) {
+      if (positiveEmotions.contains(entry.key)) {
+        positiveCount += entry.value;
+      } else if (negativeEmotions.contains(entry.key)) {
+        negativeCount += entry.value;
+      }
+    }
+    final totalEmotionCount = positiveCount + negativeCount;
+    final negativePercent = totalEmotionCount > 0 ? (negativeCount / totalEmotionCount * 100).round() : 0;
+    final positivePercent = totalEmotionCount > 0 ? (positiveCount / totalEmotionCount * 100).round() : 0;
+
+    return EmotionRatioBar(
+      negativePercent: negativePercent,
+      positivePercent: positivePercent,
+      negativeLabel: '부정 $negativePercent%',
+      positiveLabel: '긍정 $positivePercent%',
+      negativeColor: AppColors.coral3,
+      positiveColor: AppColors.green3,
+    );
+  }
+
+  String _buildEmotionAnalysisText(List<MapEntry<String, int>> sortedEmotions) {
+    final positiveEmotions = ['행복', '편안'];
+    final negativeEmotions = ['불안', '불쾌'];
+    int positiveCount = 0;
+    int negativeCount = 0;
+    for (var entry in sortedEmotions) {
+      if (positiveEmotions.contains(entry.key)) {
+        positiveCount += entry.value;
+      } else if (negativeEmotions.contains(entry.key)) {
+        negativeCount += entry.value;
+      }
+    }
+    final totalEmotionCount = positiveCount + negativeCount;
+    final negativePercent = totalEmotionCount > 0 ? (negativeCount / totalEmotionCount * 100).round() : 0;
+    final positivePercent = totalEmotionCount > 0 ? (positiveCount / totalEmotionCount * 100).round() : 0;
+
+    return '주간 감정 분석 결과 불안·불쾌한 감정이 $negativePercent%로 긍정적인 감정 $positivePercent%보다 ${negativePercent > positivePercent ? '높았습니다' : '낮았습니다'}.';
   }
 
   Widget _buildTimeSlot(String time, String count, Color color) {

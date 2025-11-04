@@ -1,14 +1,14 @@
 import '../../core/index_export.dart';
 import '../../models/pet_info.dart';
 
-class PetRegiScreen extends StatefulWidget {
+class PetRegiScreen extends ConsumerStatefulWidget {
   const PetRegiScreen({super.key});
 
   @override
-  State<PetRegiScreen> createState() => _PetRegiScreenState();
+  ConsumerState<PetRegiScreen> createState() => _PetRegiScreenState();
 }
 
-class _PetRegiScreenState extends State<PetRegiScreen> {
+class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
@@ -29,11 +29,13 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: '강아지 등록',
-      // useScrollView는 기본값 true, 내부 SingleChildScrollView 제거함
-      body: Form(
-          key: _formKey,
-          child: Column(
+      body: SingleChildScrollView(
+        child: HorizontalPadding(
+          child: Form(
+            key: _formKey,
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // 프로필 이미지 섹션
               _buildProfileImageSection(),
@@ -55,7 +57,9 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
               _buildRegisterButton(),
             ],
           ),
+        ),
       ),
+    ),
     );
   }
 
@@ -355,15 +359,15 @@ class _PetRegiScreenState extends State<PetRegiScreen> {
     );
 
     try {
-      // TODO: PetInfo를 다른 방식으로 저장 (Provider 대신 다른 상태 관리 방법 사용)
-      // 예시: await petService.createPetInfo(petInfo);
+      // Riverpod provider를 사용하여 반려동물 정보 저장
+      await ref.read(petProvider.notifier).createPetInfo(petInfo);
       
       if (mounted) {
         // 성공 메시지 표시 - AppToast 사용
         AppToast.success(context, '$name이(가) 성공적으로 등록되었습니다!');
         
         // 이전 화면으로 돌아가기
-        Navigator.pop(context);
+        context.pop();
       }
     } catch (e) {
       if (mounted) {

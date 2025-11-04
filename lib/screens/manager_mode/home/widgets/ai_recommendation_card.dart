@@ -1,35 +1,12 @@
 import '../../../../core/index_export.dart';
-import '../../../../services/home_service.dart';
 
-class AIRecommendationCard extends StatefulWidget {
+class AIRecommendationCard extends ConsumerWidget {
   const AIRecommendationCard({super.key});
 
   @override
-  State<AIRecommendationCard> createState() => _AIRecommendationCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recommendationsAsync = ref.watch(aiRecommendationsProvider);
 
-class _AIRecommendationCardState extends State<AIRecommendationCard> {
-  List<Map<String, dynamic>> _recommendations = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRecommendations();
-  }
-
-  Future<void> _loadRecommendations() async {
-    final data = await HomeService.getAIRecommendations();
-    if (mounted) {
-      setState(() {
-        _recommendations = data;
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return AppCards.basic(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -54,16 +31,23 @@ class _AIRecommendationCardState extends State<AIRecommendationCard> {
             ],
           ),
           const SizedBox(height: 12),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: _recommendations.map((recommendation) => RecommendationItem(
-                    title: recommendation['title'] as String,
-                    description: recommendation['description'] as String,
-                    priority: recommendation['priority'] as String,
-                    icon: recommendation['icon'] as String,
-                  )).toList(),
-                ),
+          recommendationsAsync.when(
+            data: (recommendations) => Column(
+              children: recommendations.map((recommendation) => RecommendationItem(
+                title: recommendation['title'] as String,
+                description: recommendation['description'] as String,
+                priority: recommendation['priority'] as String,
+                icon: recommendation['icon'] as String,
+              )).toList(),
+            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Text(
+                '데이터를 불러오는데 실패했습니다: $error',
+                style: const TextStyle(color: AppColors.grey8),
+              ),
+            ),
+          ),
         ],
       ),
     );

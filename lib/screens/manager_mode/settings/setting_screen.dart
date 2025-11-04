@@ -6,72 +6,23 @@ import 'widgets/day_picker_modal.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/setting_row.dart';
 
-class SettingScreen extends StatefulWidget {
+class SettingScreen extends ConsumerWidget {
    const SettingScreen({super.key});
 
    @override
-   State<SettingScreen> createState() => _SettingScreenState();
-}
+   Widget build(BuildContext context, WidgetRef ref) {
+      final alarmInfo = ref.watch(alarmProvider);
+      final alarmNotifier = ref.read(alarmProvider.notifier);
 
-class _SettingScreenState extends State<SettingScreen> {
-   // 알림 설정 상태
-   bool _instantAlert = true;
-   bool _dailySummary = true;
-   TimeOfDay _pushTime = const TimeOfDay(hour: 20, minute: 0);
-   bool _monthlyReport = true;
-   String _reportEmail = 'user@example.com';
-   int _reportDay = 1;
-
-   // 포맷된 시간 문자열
-   String get _formattedPushTime {
-      return '${_pushTime.hour.toString().padLeft(2, '0')}:${_pushTime.minute.toString().padLeft(2, '0')}';
-   }
-
-   // 포맷된 리포트 발송일 문자열
-   String get _formattedReportDay {
-      return '매월 $_reportDay일';
-   }
-
-   @override
-   void initState() {
-      super.initState();
-      // 알림 설정 로드
-      _loadAlarmSettings();
-   }
-
-   // 알림 설정 로드 (로컬 저장소나 서버에서)
-   Future<void> _loadAlarmSettings() async {
-      // TODO: 실제 저장소에서 설정 로드
-      await Future.delayed(const Duration(milliseconds: 500)); // 로딩 시뮬레이션
-         
-      // Mock 데이터로 초기화
-         if (mounted) {
-         setState(() {
-            _instantAlert = true;
-            _dailySummary = true;
-            _pushTime = const TimeOfDay(hour: 20, minute: 0);
-            _monthlyReport = true;
-            _reportEmail = 'user@example.com';
-            _reportDay = 1;
-         });
-      }
-   }
-
-   // 알림 설정 저장
-   Future<void> _saveAlarmSettings() async {
-     // TODO: 실제 저장소에 설정 저장
-     await Future.delayed(const Duration(milliseconds: 500)); // 저장 시뮬레이션
-   }
-
-   @override
-   Widget build(BuildContext context) {
       return BaseScaffold(
          title: '환경설정',
-         appBarTheme: AppBarThemeType.white,
-        // useScrollView는 기본값 true, 내부 SingleChildScrollView 제거함
-        body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        body: SingleChildScrollView(
+          child: HorizontalPadding(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+               // PetProfile은 높이 제약이 있으므로 그대로 사용
                const PetProfile(),
                AppConstants.h12,
 
@@ -82,55 +33,40 @@ class _SettingScreenState extends State<SettingScreen> {
                         title: '즉시 알림 받기',
                         subtitle: '강아지의 감정이 감지되면 즉시 알림을 받을 수 있어요',
                         trailing: OnOffButton(
-                           value: _instantAlert,
-                           onChanged: (v) async {
-                              setState(() {
-                                 _instantAlert = v;
-                              });
-                              await _saveAlarmSettings();
-                           },
+                           value: alarmInfo.instantAlert,
+                           onChanged: (v) => alarmNotifier.setInstantAlert(v),
                         ),
                      ),
                      SettingRow(
                         title: '하루 요약 알림 받기',
                         subtitle: '오늘 하루 강아지 리포트를 받을 수 있어요',
                         trailing: OnOffButton(
-                           value: _dailySummary,
-                           onChanged: (v) async {
-                              setState(() {
-                                 _dailySummary = v;
-                              });
-                              await _saveAlarmSettings();
-                           },
+                           value: alarmInfo.dailySummary,
+                           onChanged: (v) => alarmNotifier.setDailySummary(v),
                         ),
                      ),
                      ActionRow(
                         title: '푸시 알림 시간',
-                        trailingText: _formattedPushTime,
-                        onTap: () => _pickTime(context),
+                        trailingText: alarmInfo.formattedPushTime,
+                        onTap: () => _pickTime(context, alarmInfo.pushTime, alarmNotifier),
                      ),
                      SettingRow(
                         title: '월간 리포트 받기',
                         subtitle: '한 달에 한 번 강아지 리포트를 받을 수 있어요',
                         trailing: OnOffButton(
-                           value: _monthlyReport,
-                           onChanged: (v) async {
-                              setState(() {
-                                 _monthlyReport = v;
-                              });
-                              await _saveAlarmSettings();
-                           },
+                           value: alarmInfo.monthlyReport,
+                           onChanged: (v) => alarmNotifier.setMonthlyReport(v),
                         ),
                      ),
                      ActionRow(
                         title: '리포트 전송 이메일',
-                        trailingText: _reportEmail,
-                        onTap: () => _editEmail(context),
+                        trailingText: alarmInfo.reportEmail,
+                        onTap: () => _editEmail(context, alarmInfo.reportEmail, alarmNotifier),
                      ),
                      ActionRow(
                         title: '리포트 전송 날짜',
-                        trailingText: _formattedReportDay,
-                        onTap: () => _pickDay(context),
+                        trailingText: alarmInfo.formattedReportDay,
+                        onTap: () => _pickDay(context, alarmInfo.reportDay, alarmNotifier),
                      ),
                   ],
                ),
@@ -158,11 +94,15 @@ class _SettingScreenState extends State<SettingScreen> {
                      ActionRow(
                         title: '현재 기기 모드 재설정',
                         subtitle: '매니저모드와 캠모드 중 선택',
-                        onTap: () => _resetMode(context),
+                        onTap: () => _resetMode(context, ref),
                      ),
                      // 연결된 기기는 높이 제한 없이 표시
                      Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        constraints: const BoxConstraints(
+                          minHeight: 60,
+                          maxHeight: double.infinity,
+                        ),
                         child: Row(
                            crossAxisAlignment: CrossAxisAlignment.start,
                            children: [
@@ -171,6 +111,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                     padding: const EdgeInsets.only(left: 0),
                                     child: Column(
                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                       mainAxisSize: MainAxisSize.min,
                                        children: [
                                           const Text('연결된 기기', style: TextStyle(fontSize: 16)),
                                           Padding(
@@ -178,6 +119,8 @@ class _SettingScreenState extends State<SettingScreen> {
                                              child: Text(
                                                 '닉네임1(기기이름):매니저 모드\n닉네임2(기기이름):캠모드',
                                                 style: TextStyle(fontSize: 12, color: AppColors.grey8),
+                                                maxLines: 5,
+                                                overflow: TextOverflow.ellipsis,
                                              ),
                                           ),
                                        ],
@@ -191,59 +134,53 @@ class _SettingScreenState extends State<SettingScreen> {
                ),
                const SizedBox(height: 16),
             ],
-         ),
+          ),
+        ),
+      ),
       );
    }
 
-   Future<void> _pickTime(BuildContext context) async {
+   Future<void> _pickTime(BuildContext context, TimeOfDay initialTime, AlarmNotifier notifier) async {
       final result = await TimePickerModal.show(
          context: context,
-         initialTime: _pushTime,
+         initialTime: initialTime,
          helpText: '푸시 알림 시간',
       );
       if (result != null) {
-         setState(() {
-            _pushTime = result;
-         });
-         await _saveAlarmSettings();
+         await notifier.setPushTime(result);
       }
    }
 
-   Future<void> _editEmail(BuildContext context) async {
+   Future<void> _editEmail(BuildContext context, String initialEmail, AlarmNotifier notifier) async {
       final result = await EmailEditorModal.show(
          context: context,
-         initialEmail: _reportEmail,
+         initialEmail: initialEmail,
          title: '리포트 전송 이메일',
          hintText: '이메일 입력',
       );
       if (result != null) {
-         setState(() {
-            _reportEmail = result;
-         });
-         await _saveAlarmSettings();
+         await notifier.setReportEmail(result);
       }
    }
 
-   Future<void> _pickDay(BuildContext context) async {
+   Future<void> _pickDay(BuildContext context, int currentDay, AlarmNotifier notifier) async {
       final result = await DayPickerModal.show(
          context: context,
-         currentDay: _reportDay,
+         currentDay: currentDay,
          title: '리포트 전송 날짜 선택',
       );
       if (result != null) {
-         setState(() {
-            _reportDay = result;
-         });
-         await _saveAlarmSettings();
+         await notifier.setReportDay(result);
       }
    }
 
-   void _resetMode(BuildContext context) {
-      context.go(AppRoutes.main);
+   void _resetMode(BuildContext context, WidgetRef ref) {
+      // 모드 리셋 후 메인 화면으로 이동
+      ref.read(appModeProvider.notifier).resetMode();
+      context.go(AppRoutes.modeSelect);
    }
 
    void _showSnack(BuildContext context, String message) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
          SnackBar(content: Text(message)),
       );

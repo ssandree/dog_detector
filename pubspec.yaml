@@ -35,8 +35,6 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  flutter_vector_icons: ^2.0.0
-  flutter_svg: ^2.0.17
 
   # Google Fonts for Korean text support
   google_fonts: ^6.2.1
@@ -48,7 +46,7 @@ dependencies:
   table_calendar: ^3.2.0
 
   # HTTP client for API calls
-  http: ^1.1.0
+  dio: ^5.9.0
 
   # Cached network image for efficient image loading
   cached_network_image: ^3.3.1
@@ -57,7 +55,7 @@ dependencies:
   email_validator: ^2.1.17
 
   # Internationalization package
-  intl: 0.20.2
+  intl: ^0.20.2
 
   # Toast message library
   fluttertoast: ^8.2.4
@@ -70,6 +68,33 @@ dependencies:
 
   # Declarative routing for Flutter
   go_router: ^14.2.0
+
+  # State management
+  hooks_riverpod: ^3.0.3
+
+  # Camera
+  camera: ^0.11.0+2
+
+  # Path utilities
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # Logging
+  logger: ^2.4.1
+
+  # Network connectivity
+  connectivity_plus: ^6.1.2
+
+  # WebSocket
+  web_socket_channel: ^3.0.1
+
+  # Permissions
+  permission_handler: ^11.3.1
+
+  # Local storage
+  shared_preferences: ^2.3.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:

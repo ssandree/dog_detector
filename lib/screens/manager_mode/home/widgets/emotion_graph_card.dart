@@ -1,35 +1,12 @@
 import '../../../../core/index_export.dart';
-import '../../../../services/home_service.dart';
 
-class EmotionGraphCard extends StatefulWidget {
+class EmotionGraphCard extends ConsumerWidget {
   const EmotionGraphCard({super.key});
 
   @override
-  State<EmotionGraphCard> createState() => _EmotionGraphCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final emotionDataAsync = ref.watch(emotionDataProvider);
 
-class _EmotionGraphCardState extends State<EmotionGraphCard> {
-  List<Map<String, dynamic>> _emotionData = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadEmotionData();
-  }
-
-  Future<void> _loadEmotionData() async {
-    final data = await HomeService.getEmotionData();
-    if (mounted) {
-      setState(() {
-        _emotionData = data;
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return AppCards.basic(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -44,15 +21,22 @@ class _EmotionGraphCardState extends State<EmotionGraphCard> {
             ),
           ),
           const SizedBox(height: 16),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: _emotionData.map((data) => EmotionBarItem(
-                    emotion: data['emotion'] as String,
-                    percentage: data['percentage'] as int,
-                    color: Color(int.parse((data['color'] as String).replaceFirst('#', '0xFF'))),
-                  )).toList(),
-                ),
+          emotionDataAsync.when(
+            data: (emotionData) => Column(
+              children: emotionData.map((data) => EmotionBarItem(
+                emotion: data['emotion'] as String,
+                percentage: data['percentage'] as int,
+                color: Color(int.parse((data['color'] as String).replaceFirst('#', '0xFF'))),
+              )).toList(),
+            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Text(
+                '데이터를 불러오는데 실패했습니다: $error',
+                style: const TextStyle(color: AppColors.grey8),
+              ),
+            ),
+          ),
         ],
       ),
     );

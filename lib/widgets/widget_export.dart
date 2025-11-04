@@ -10,3 +10,4 @@ export '../widgets/app_loading_overlay.dart';
 export '../widgets/app_toast.dart';
 export '../widgets/app_profile_image.dart';
 export '../widgets/app_dialog.dart';
+export '../widgets/error_widget.dart';

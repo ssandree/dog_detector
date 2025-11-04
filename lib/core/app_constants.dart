@@ -10,7 +10,7 @@ class AppConstants {
     static const double appBarIconSize = 20.0;
     
     // SafeArea 및 Padding 관련 상수
-    static const EdgeInsets defaultPadding = EdgeInsets.zero;
+    static const EdgeInsets defaultPadding = EdgeInsets.all(24.0);
     static const EdgeInsets horizontalPadding = EdgeInsets.symmetric(horizontal: 24.0);
     static const EdgeInsets verticalPadding = EdgeInsets.symmetric(vertical: 24.0);
     static const EdgeInsets smallPadding = EdgeInsets.all(16.0);
@@ -19,8 +19,8 @@ class AppConstants {
     static const EdgeInsets cameraSettingPadding = EdgeInsets.all(20.0);
     
     // 간격 상수
-    static const double defaultSpacing = 16.0;
     static const double smallSpacing = 8.0;
+    static const double defaultSpacing = 16.0;
     static const double largeSpacing = 24.0;
     static const double extraLargeSpacing = 32.0;
     
@@ -30,10 +30,11 @@ class AppConstants {
     static const double largeIconSize = 32.0;
     
     // 텍스트 스타일 관련
+    static const double smallFontSize = 12.0;
     static const double defaultFontSize = 16.0;
+    static const double buttonFontSize = 16.0;
     static const double titleFontSize = 24.0;
     static const double largeTitleFontSize = 36.0;
-    static const double smallFontSize = 12.0;
     
     // 애니메이션 지속시간
     static const Duration defaultAnimationDuration = Duration(milliseconds: 300);

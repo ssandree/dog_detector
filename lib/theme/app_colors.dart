@@ -49,7 +49,7 @@ class AppColors {
   static const Color error = Color(0xFFC74B21);
 
   // AppBar 색상
-  static const Color AppBarColor = beige4;    // 매니저모드
+  static const Color appBarColor = beige4;    // 매니저모드
   static const Color whiteAppBarColor = white;
   static const Color greyAppBarColor = grey2;
   
@@ -58,11 +58,10 @@ class AppColors {
   static const Color blackAppBarTextColor = black;
   
   // 배경색
-  static const Color defaultBackgroundColor = grey2;
   static const Color whiteBackgroundColor = white;
   
   // BottomNavigationBar 색상
-  static const Color bottomNavSelectedColor = AppBarColor;
+  static const Color bottomNavSelectedColor = appBarColor;
   static const Color bottomNavUnselectedColor = grey6;
   
   // 에러/경고 색상 (표준 색상)

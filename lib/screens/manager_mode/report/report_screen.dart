@@ -44,20 +44,22 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     final statusBarHeight = MediaQuery.of(context).padding.top;
     final headerHeight = statusBarHeight + 56.0 + 48.0;
 
-    return BaseScaffold(
-      mode: ScaffoldMode.collapsingHeader,
-      customHeader: _buildHeader(context),
-      headerHeight: headerHeight,
+    return Scaffold(
       backgroundColor: AppColors.white,
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          _tabController.animateTo(index);
-        },
-        children: [
-          const DailyReport(),
-          const WeeklyReport(),
-        ],
+      body: buildCollapsingScrollView(
+        headerHeight: headerHeight,
+        customHeader: _buildHeader(context),
+        fillRemaining: true,
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (index) {
+            _tabController.animateTo(index);
+          },
+          children: [
+            const DailyReport(),
+            const WeeklyReport(),
+          ],
+        ),
       ),
     );
   }
@@ -69,37 +71,42 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     
     return Container(
       color: AppColors.whiteAppBarColor,
-      child: Column(
-        children: [
-          // 시스템 상태바 높이만큼 상단 여백
-          SizedBox(height: statusBarHeight),
-          // 타이틀 영역
-          SizedBox(
-            height: 56.0,
-            child: Center(
-              child: Text(
-                '실시간 분석',
-                style: TextStyle(
-                  color: AppColors.blackAppBarTextColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppConstants.appBarTitleFontSize,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppConstants.smallPadding.horizontal,
+        ),
+        child: Column(
+          children: [
+            // 시스템 상태바 높이만큼 상단 여백
+            SizedBox(height: statusBarHeight),
+            // 타이틀 영역
+            SizedBox(
+              height: 56.0,
+              child: Center(
+                child: Text(
+                  '실시간 분석',
+                  style: TextStyle(
+                    color: AppColors.blackAppBarTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: AppConstants.appBarTitleFontSize,
+                  ),
                 ),
               ),
             ),
-          ),
-          // TabBar
-          TabBar(
-            controller: _tabController,
-            indicatorColor: AppColors.blackAppBarTextColor,
-            labelColor: AppColors.blackAppBarTextColor,
-            unselectedLabelColor: AppColors.blackAppBarTextColor.withValues(alpha: 0.6),
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            tabs: const [
-              Tab(text: '일별'),
-              Tab(text: '주별'),
-            ],
-          ),
-        ],
+            // TabBar
+            TabBar(
+              controller: _tabController,
+              indicatorColor: AppColors.blackAppBarTextColor,
+              labelColor: AppColors.blackAppBarTextColor,
+              unselectedLabelColor: AppColors.blackAppBarTextColor.withValues(alpha: 0.6),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              tabs: const [
+                Tab(text: '일별'),
+                Tab(text: '주별'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

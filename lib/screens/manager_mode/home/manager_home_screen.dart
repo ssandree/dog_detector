@@ -28,33 +28,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentScreen = _buildScreens()[_currentIndex];
+    final bottomNav = BottomNavBar(
+      currentIndex: _currentIndex,
+      onTap: (index) => setState(() => _currentIndex = index),
+    );
+
+    // 홈 화면(_currentIndex == 0)일 때만 CustomScrollView 사용
+    if (_currentIndex == 0) {
+      final statusBarHeight = MediaQuery.of(context).padding.top;
+      final headerHeight = statusBarHeight + 80.0;
+      
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        bottomNavigationBar: bottomNav,
+        body: buildCollapsingScrollView(
+          headerHeight: headerHeight,
+          customHeader: _buildHeader(context),
+          child: currentScreen,
+        ),
+      );
+    }
+
+    // 다른 화면들은 BaseScaffold 사용
     return BaseScaffold(
-      mode: _currentIndex == 0 
-          ? ScaffoldMode.collapsingHeader 
-          : ScaffoldMode.normal,
-      customHeader: _currentIndex == 0 ? _buildHeader(context) : null,
-      headerHeight: 80.0, // 실제 콘텐츠 높이에 맞게 조정
-      body: _buildScreens()[_currentIndex],
-      backgroundColor: AppColors.white,
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-      ),
+      body: currentScreen,
+      bottomNavigationBar: bottomNav,
     );
   }
 
   /// 🐶 Collapsing Header 위젯
-  /// BaseScaffold의 SliverAppBar에 flexibleSpace로 들어가며
+  /// CustomScrollView의 SliverAppBar에 flexibleSpace로 들어가며
   /// 스크롤 시 자연스럽게 fade-out 효과가 적용됨.
   Widget _buildHeader(BuildContext context) {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
     return Container(
       color: AppColors.white,
-      // SafeArea 제거하고 padding만 사용하여 상단 간격 제거
       child: Padding(
         padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: MediaQuery.of(context).padding.top, // 시스템 상태바 높이만큼만
+          left: AppConstants.smallPadding.horizontal,
+          right: AppConstants.smallPadding.horizontal,
+          top: statusBarHeight,
           bottom: 12,
         ),
         child: Row(

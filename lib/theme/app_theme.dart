@@ -14,7 +14,7 @@ class AppTheme {
       useMaterial3: true,
       
       // 기본 배경색 (BaseScaffold에서도 사용 가능)
-      scaffoldBackgroundColor: AppColors.defaultBackgroundColor,
+      scaffoldBackgroundColor: AppColors.white,
       
       // 폰트 설정 - Google Fonts Noto Sans KR 사용
       textTheme: GoogleFonts.notoSansKrTextTheme(),

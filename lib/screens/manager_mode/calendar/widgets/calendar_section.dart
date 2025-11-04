@@ -1,49 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../calendar_modal.dart';
-import '../../../../services/report_service.dart';
+import '../../../../core/index_export.dart';
 import '../../../../utils/emotion_ratio_calculator.dart';
 
-class CalendarSection extends StatefulWidget {
+class CalendarSection extends ConsumerStatefulWidget {
   const CalendarSection({super.key});
 
   @override
-  State<CalendarSection> createState() => _CalendarSectionState();
+  ConsumerState<CalendarSection> createState() => _CalendarSectionState();
 }
 
-class _CalendarSectionState extends State<CalendarSection> {
+class _CalendarSectionState extends ConsumerState<CalendarSection> {
   // 현재 표시 중인 월
   DateTime _focusedDay = DateTime.now();
   // 사용자가 클릭한 날짜
   DateTime? _selectedDay;
   // 오늘 날짜
   late final DateTime _today = DateTime.now();
-  // 주간 리포트 데이터
-  Map<String, dynamic> _weeklyReport = {};
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadWeeklyReport();
-  }
-
-  Future<void> _loadWeeklyReport() async {
-    final data = await ReportService.getWeeklyReport();
-    if (mounted) {
-      setState(() {
-        _weeklyReport = data;
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final weeklyReportAsync = ref.watch(weeklyReportProvider);
+    
     // 주간 감정 비율 계산
-    final weeklyRatios = _isLoading 
-        ? <String, double>{} 
-        : calculateWeeklyRatios(_weeklyReport);
+    final weeklyRatios = weeklyReportAsync.maybeWhen(
+      data: (report) => EmotionRatioCalculator.calculateWeeklyRatios(report),
+      orElse: () => <String, double>{},
+    );
     
     return Container(
       height: 410, // 오버플로우 방지를 위해 높이 증가 (380 + 30)
@@ -137,7 +121,7 @@ class _CalendarSectionState extends State<CalendarSection> {
             // 날짜를 "MM-dd" 문자열 형태로 변환
             final key = '${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
             final ratio = weeklyRatios[key] ?? 0.3;
-            final cellColor = isFutureDay ? Colors.grey[300] : getColorByRatio(ratio);
+            final cellColor = isFutureDay ? Colors.grey[300] : EmotionRatioCalculator.getColorByRatio(ratio);
 
             return Container(
               margin: const EdgeInsets.all(3), // 외부 컨테이너에 마진 추가

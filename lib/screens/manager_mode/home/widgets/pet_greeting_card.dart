@@ -1,15 +1,14 @@
 import '../../../../core/index_export.dart';
 import '../../settings/setting_screen.dart';
 
-class PetGreetingCard extends StatelessWidget {
+class PetGreetingCard extends ConsumerWidget {
   const PetGreetingCard({super.key});
 
-  // TODO: PetInfo를 prop으로 받거나 다른 상태 관리 방법 사용
-  bool get _isPetRegistered => false;
-  String get _petName => '';
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final petInfo = ref.watch(currentPetProvider);
+    final isPetRegistered = petInfo != null;
+    final petName = petInfo?.name ?? '';
     return AppCards.basic(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -33,8 +32,8 @@ class PetGreetingCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isPetRegistered 
-                    ? '안녕하세요 $_petName님~'
+                  isPetRegistered 
+                    ? '안녕하세요 $petName님~'
                     : '강아지 정보를 등록해주세요',
                   style: const TextStyle(
                     fontSize: 20,
@@ -42,7 +41,7 @@ class PetGreetingCard extends StatelessWidget {
                     color: AppColors.grey12,
                   ),
                 ),
-                if (_isPetRegistered) ...[
+                if (isPetRegistered) ...[
                   const SizedBox(height: 4),
                   const Text(
                     '오늘도 건강한 하루 보내세요! 🐕',

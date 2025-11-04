@@ -1,0 +1,51 @@
+name: dog_telepathy
+description: Dog emotion analysis app
+publish_to: 'none'
+
+environment:
+  sdk: '^3.9.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 1. 핵심 로직 계층
+  flutter_riverpod: ^3.0.3                # Provider 정의용 핵심 로직 계층(StateProvider, Provider, Ref 등)
+  hooks_riverpod: ^3.0.3          # Riverpod + Hooks 통합 UI 계층(HookConsumerWidget, useState 등)
+  dio: ^5.9.0                     # HTTP 클라이언트(파일 업로드, 서버 통신, 에러 핸들링 담당)
+  path: ^1.9.0                    # 파일명·경로 처리 유틸(basename, join 등)
+
+  # 2. 카메라/녹화/업로드
+  camera: ^0.11.3                 # 카메라 프리뷰 및 녹화 제어(Flutter 공식 플러그인)
+  path_provider: ^2.1.5           # 임시 폴더 접근(업로드 전 영상 임시 저장용)
+  permission_handler: ^12.0.1     # 카메라·마이크 권한 요청 및 상태 확인
+  flutter_animate: ^4.5.2         # 촬영 안내/가이드용 애니메이션(오버레이 등 시각 효과)
+
+  # 3. 리포트/시각화/캘린더
+  fl_chart: ^1.1.1                # 감정 변화 그래프 시각화(Pie/Bar/Line)
+  table_calendar: ^3.2.0          # 날짜별 감정 리포트 표시, 클릭 시 상세 리포트 이동
+  intl: ^0.20.2                   # 날짜 및 퍼센트 포맷(yyyy.MM.dd / 87%)
+
+  # 4. 알림/환경 설정/로컬 DB
+  flutter_local_notifications: ^19.5.0   # 일·주·월 리포트 생성 알림 전송
+  shared_preferences: ^2.3.0             # 단순 설정값 로컬 저장(테마, 알림 on/off 등)
+  flutter_settings_screens: ^0.3.4       # 설정 화면 템플릿(SettingsGroup, SwitchTile 등)
+  hive: ^2.2.3                           # 로컬 DB(감정 로그·리포트 캐싱)
+  hive_flutter: ^1.1.0                   # Hive 초기화 및 Flutter 통합
+
+  # 5. 보조/품질 관리
+  logger: ^2.6.2                         # 네트워크 응답·예외 로깅(print() 상위 호환)
+  connectivity_plus: ^7.0.0              # 네트워크 연결 상태 감지(오프라인 시 fallback 처리)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter                         # 위젯·통합 테스트 기본 프레임워크
+
+  # 코드 품질 관리
+  flutter_lints: ^6.0.0                  # 코드 스타일 및 규칙 검사
+  custom_lint: ^0.6.4                    # 코드 검사 로직 실행용(Riverpod, 프로젝트별 규칙 포함)
+
+  # 코드 생성 및 Hive 모델 빌드
+  build_runner: ^2.4.6                   # 자동 코드 생성 도구(Hive 어댑터 빌드용)
+  hive_generator: ^2.0.1                 # Hive 모델 직렬화 코드 생성
+  

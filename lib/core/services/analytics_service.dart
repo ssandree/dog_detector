@@ -1,7 +1,7 @@
 // lib/core/services/analytics_service.dart
 // 감정 분석 리포트 통신 로직
 // - /analytics 엔드포인트와 통신
-// - 요약·트렌드·카메라별 통계 데이터 요청 및 파싱
+// - 요약·트렌드·주간·월간·카메라별 통계 데이터 요청 및 파싱
 // - 서버 응답 실패 시 예외 처리 및 로깅
 
 import 'package:dio/dio.dart';
@@ -28,7 +28,16 @@ class AnalyticsService {
       final summary = await fetchSummary();
       final trend = await fetchTrend();
       final camera = await fetchCamera();
-      return AnalyticsBundle(summary: summary, trend: trend, camera: camera);
+      final weekly = await fetchWeekly();
+      final monthly = await fetchMonthly();
+
+      return AnalyticsBundle(
+        summary: summary,
+        trend: trend,
+        camera: camera,
+        weekly: weekly,
+        monthly: monthly,
+      );
     } catch (e, s) {
       _log.e('Analytics fetch failed', error: e, stackTrace: s);
       rethrow;
@@ -42,11 +51,35 @@ class AnalyticsService {
     return AnalyticsSummary.fromJson(res.data as Map<String, dynamic>);
   }
 
-  // 트렌드 리포트 요청
+  // 일간 트렌드 리포트 요청
   Future<List<TrendPoint>> fetchTrend() async {
     final res = await _dio.get('/analytics/trend');
     final list = (res.data as List).cast<Map<String, dynamic>>();
     return list.map(TrendPoint.fromJson).toList();
+  }
+
+  // 주간 리포트 요청
+  Future<List<TrendPoint>> fetchWeekly() async {
+    try {
+      final res = await _dio.get('/analytics/weekly');
+      final list = (res.data as List).cast<Map<String, dynamic>>();
+      return list.map(TrendPoint.fromJson).toList();
+    } catch (e) {
+      _log.w('Weekly analytics fetch failed, fallback to empty list');
+      return [];
+    }
+  }
+
+  // 월간 리포트 요청
+  Future<List<TrendPoint>> fetchMonthly() async {
+    try {
+      final res = await _dio.get('/analytics/monthly');
+      final list = (res.data as List).cast<Map<String, dynamic>>();
+      return list.map(TrendPoint.fromJson).toList();
+    } catch (e) {
+      _log.w('Monthly analytics fetch failed, fallback to empty list');
+      return [];
+    }
   }
 
   // 카메라별 통계 요청

@@ -10,8 +10,7 @@ import '../../models/emotion_report.dart';
 import '../../core/utils/analytics_formatter.dart';
 
 class EmotionDetailScreen extends HookConsumerWidget {
-  final String? id;
-  const EmotionDetailScreen({super.key, this.id});
+  const EmotionDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,7 +24,7 @@ class EmotionDetailScreen extends HookConsumerWidget {
             return const Center(child: Text('데이터가 없습니다.'));
           }
 
-          // 서버 연동 전 임시 더미 데이터 사용
+          // 서버 연동 후 bundle.reports로 대체
           final reports = _mockReports();
 
           return ListView.builder(
@@ -38,7 +37,7 @@ class EmotionDetailScreen extends HookConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.videocam, size: 36),
                   title: Text(
-                    '${r.emotion} (${(r.confidence * 100).toStringAsFixed(1)}%)',
+                    '${r.emotion} (${AnalyticsFormatter.percent(r.confidence)})',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
@@ -50,17 +49,12 @@ class EmotionDetailScreen extends HookConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text(
-            '오류 발생: $e',
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
+        error: (e, _) =>
+            Center(child: Text('오류 발생: $e', style: TextStyle(color: Colors.red))),
       ),
     );
   }
 
-  // 서버 데이터 연동 전 임시 샘플
   List<EmotionReport> _mockReports() => [
         EmotionReport(
           emotion: '행복',

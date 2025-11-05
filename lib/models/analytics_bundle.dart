@@ -1,6 +1,6 @@
 // lib/models/analytics_bundle.dart
 // 분석 데이터 통합 모델
-// - summary, trend, camera 세그먼트를 하나로 묶음
+// - summary, trend, weekly, monthly, camera 세그먼트를 하나로 묶음
 // - Hive 캐시 직렬화 지원
 
 import 'package:hive/hive.dart';
@@ -19,10 +19,18 @@ class AnalyticsBundle {
   @HiveField(2)
   final List<CameraStat> camera;
 
+  @HiveField(3)
+  final List<TrendPoint>? weekly;
+
+  @HiveField(4)
+  final List<TrendPoint>? monthly;
+
   const AnalyticsBundle({
     required this.summary,
     required this.trend,
     required this.camera,
+    this.weekly,
+    this.monthly,
   });
 }
 

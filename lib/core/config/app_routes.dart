@@ -18,4 +18,9 @@ class AppRoutes {
 
   // 관리자용
   static const String managerHome = '/managerHome';
+
+  // 알림 관련
+  static const String notificationSettings = '/settings/notifications';
+  static const String deepLinkReportHome = 'report_home';
+  static const String deepLinkReportDetail = 'report_detail';
 }

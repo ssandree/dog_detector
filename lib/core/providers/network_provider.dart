@@ -6,18 +6,13 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-// 네트워크 상태 스트림 Provider
-final connectivityStreamProvider =
-    StreamProvider<ConnectivityResult>((ref) async* {
-  await for (final results in Connectivity().onConnectivityChanged) {
-    // results는 List<ConnectivityResult>
-    yield results.isNotEmpty ? results.first : ConnectivityResult.none;
-  }
+// 스트림은 List<ConnectivityResult> 반환
+final connectivityStreamProvider = StreamProvider<List<ConnectivityResult>>((ref) {
+  return Connectivity().onConnectivityChanged;
 });
 
-// 현재 연결 여부 Provider
+// 현재 연결 상태 한 번 확인
 final isNetworkConnectedProvider = FutureProvider<bool>((ref) async {
-  final results = await Connectivity().checkConnectivity();
-  // checkConnectivity()도 List<ConnectivityResult> 반환
-  return results.isNotEmpty && results.first != ConnectivityResult.none;
+  final result = await Connectivity().checkConnectivity(); // ConnectivityResult
+  return result != ConnectivityResult.none;
 });

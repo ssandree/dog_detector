@@ -15,7 +15,16 @@ class AnalyticsRepository {
     final summary = await _service.fetchSummary();
     final trend = await _service.fetchTrend();
     final camera = await _service.fetchCamera();
-    return AnalyticsBundle(summary: summary, trend: trend, camera: camera);
+    final weekly = await _service.fetchWeekly();
+    final monthly = await _service.fetchMonthly();
+
+    return AnalyticsBundle(
+      summary: summary,
+      trend: trend,
+      camera: camera,
+      weekly: weekly,
+      monthly: monthly,
+    );
   }
 
   // 캐시 로드

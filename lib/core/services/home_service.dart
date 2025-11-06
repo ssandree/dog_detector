@@ -1,5 +1,5 @@
-import '../data/pet_mock.dart';
-import '../core/exceptions.dart';
+import '../../data/pet_mock.dart';
+import '../exceptions.dart';
 
 /// 홈 화면 관련 데이터 서비스
 class HomeService {

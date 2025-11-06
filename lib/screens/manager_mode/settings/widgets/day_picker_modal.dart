@@ -14,7 +14,7 @@ class DayPickerModal {
             height: 320,
             child: Column(
               children: [
-                const SizedBox(height: 12),
+                AppConstants.h12,
                 Text(
                   title,
                   style: const TextStyle(fontWeight: FontWeight.bold),

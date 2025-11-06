@@ -16,85 +16,78 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: AppConstants.defaultPadding,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height - 
-                  MediaQuery.of(context).padding.top - 
-                  MediaQuery.of(context).padding.bottom,
-              ),
-              child: Column(
+        child: Padding(
+          padding: AppConstants.defaultPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // 상단 콘텐츠 그룹
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 상단 콘텐츠 그룹
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 60),
-                      
-                      // 로고/타이틀 영역
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              '견심술',
-                              style: TextStyle(
-                                fontSize: AppConstants.largeTitleFontSize,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.appBarColor,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '강아지의 마음을 읽어보세요',
-                              style: TextStyle(
-                                fontSize: AppConstants.defaultFontSize,
-                                color: AppColors.grey8,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 60),
-                      
-                      // 로그인 폼
-                      LoginForm(key: _formKey),
-                      
-                      const SizedBox(height: 32),
+                  const SizedBox(height: 60),
                   
-                      // 버튼들들
-                      _buildLoginButton(),
-                      const SizedBox(height: 12),
-                      
-                      // 로그인 없이 이용 버튼
-                      AppButtons.normal(
-                        text: '(임시) 로그인 없이 이용',
-                        onPressed: () {
-                          context.go(AppRoutes.modeSelect);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // main_screen으로 돌아가기
-                      AppButtons.outline(
-                        text: '(임시) 이전 페이지로 돌아가기',
-                        onPressed: () {
-                          context.go(AppRoutes.main);
-                        },
-                      ),
-                    ],
+                  // 로고/타이틀 영역
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          '견심술',
+                          style: TextStyle(
+                            fontSize: AppConstants.largeTitleFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.appBarColor,
+                          ),
+                        ),
+                        AppConstants.h8,
+                        Text(
+                          '강아지의 마음을 읽어보세요',
+                          style: TextStyle(
+                            fontSize: AppConstants.defaultFontSize,
+                            color: AppColors.grey8,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   
-                  // 하단 링크 (회원가입)
-                  const BottomLinkTo(),
+                  const SizedBox(height: 60),
+                  
+                  // 로그인 폼
+                  LoginForm(key: _formKey),
+                  
+                  AppConstants.h32,
+              
+                  // 버튼들
+                  _buildLoginButton(),
+                  AppConstants.h24,
+                  
+                  // 로그인 없이 이용 버튼
+                  AppButtons.normal(
+                    text: '(임시) 로그인 없이 이용',
+                    onPressed: () {
+                      context.go(AppRoutes.modeSelect);
+                    },
+                  ),
+                  AppConstants.h12,
+                  
+                  // main_screen으로 돌아가기
+                  AppButtons.outline(
+                    text: '(임시) 이전 페이지로 돌아가기',
+                    onPressed: () {
+                      context.go(AppRoutes.main);
+                    },
+                  ),
                 ],
               ),
-            ),
+              
+              // 하단 링크 (회원가입)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 20),
+                child: BottomLinkTo(),
+              ),
+            ],
           ),
         ),
       ),

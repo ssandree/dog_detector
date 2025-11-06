@@ -48,6 +48,7 @@ class AppButtons {
     Color? textColor,
     double? fontSize,
     FontWeight? fontWeight,
+    String? subtitle,
   }) {
     final textWidget = Text(
       text,
@@ -58,8 +59,10 @@ class AppButtons {
         shadows: [],
       ),
     );
+    
+    Widget content;
     if (icon != null) {
-      return Row(
+      content = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: AppConstants.defaultIconSize),
@@ -67,8 +70,29 @@ class AppButtons {
           textWidget,
         ],
       );
+    } else {
+      content = textWidget;
     }
-    return textWidget;
+    
+    if (subtitle != null) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          content,
+          AppConstants.h4,
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: (fontSize ?? AppConstants.buttonFontSize) * 0.75,
+              fontWeight: FontWeight.w400,
+              color: textColor?.withOpacity(0.7) ?? AppColors.black.withOpacity(0.7),
+            ),
+          ),
+        ],
+      );
+    }
+    
+    return content;
   }
 
 
@@ -85,6 +109,7 @@ class AppButtons {
     double height = 56.0,
     Color? backgroundColor,
     double? fontSize,
+    String? subtitle,
   }) {
     return _buildButton(
       width: width,
@@ -100,7 +125,12 @@ class AppButtons {
       ),
       child: isLoading
         ? _buildLoadingIndicator()
-        : _buildStandardChild(text: text, icon: icon, fontSize: fontSize),
+        : _buildStandardChild(
+            text: text,
+            icon: icon,
+            fontSize: fontSize,
+            subtitle: subtitle,
+          ),
     );
   }
 

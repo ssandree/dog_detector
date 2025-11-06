@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/exceptions.dart';
+import '../exceptions.dart';
 
 /// 로컬 저장소 서비스
 /// SharedPreferences를 사용하여 데이터를 저장/조회합니다.
@@ -8,6 +8,7 @@ class LocalStorageService {
   static const String _keyAccessToken = 'access_token';
   static const String _keyRefreshToken = 'refresh_token';
   static const String _keyAlarmSettings = 'alarm_settings';
+  static const String _keyPetInfo = 'pet_info';
 
   /// SharedPreferences 인스턴스 가져오기
   Future<SharedPreferences> get _prefs async {
@@ -153,6 +154,45 @@ class LocalStorageService {
     } catch (e) {
       throw DataException(
         '알림 설정을 삭제하는데 실패했습니다',
+        e,
+      );
+    }
+  }
+
+  /// 반려동물 정보 저장 (JSON 문자열)
+  Future<void> savePetInfo(String jsonString) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setString(_keyPetInfo, jsonString);
+    } catch (e) {
+      throw DataException(
+        '반려동물 정보를 저장하는데 실패했습니다',
+        e,
+      );
+    }
+  }
+
+  /// 반려동물 정보 조회 (JSON 문자열)
+  Future<String?> getPetInfo() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getString(_keyPetInfo);
+    } catch (e) {
+      throw DataException(
+        '반려동물 정보를 불러오는데 실패했습니다',
+        e,
+      );
+    }
+  }
+
+  /// 반려동물 정보 삭제
+  Future<void> clearPetInfo() async {
+    try {
+      final prefs = await _prefs;
+      await prefs.remove(_keyPetInfo);
+    } catch (e) {
+      throw DataException(
+        '반려동물 정보를 삭제하는데 실패했습니다',
         e,
       );
     }

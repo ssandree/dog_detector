@@ -42,7 +42,7 @@ class PetGreetingCard extends ConsumerWidget {
                   ),
                 ),
                 if (isPetRegistered) ...[
-                  const SizedBox(height: 4),
+                  AppConstants.h4,
                   const Text(
                     '오늘도 건강한 하루 보내세요! 🐕',
                     style: TextStyle(

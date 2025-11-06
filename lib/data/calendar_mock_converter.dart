@@ -155,5 +155,112 @@ class CalendarMockConverter {
       monthlySummary: monthlySummary,
     );
   }
+
+  /// 분리된 캘린더 전용 목업(Map<String,dynamic>)에서 CalendarData 생성
+  static CalendarData fromCalendarOnly(Map<String, dynamic> calendarData) {
+    // Rank Stats
+    final rankStats = (calendarData['rankStats'] as List)
+        .map((item) => RankChipData(
+              rankLabel: 'Top ${item['rank']}',
+              text: '${item['emotion']} ${item['count']}회',
+              backgroundColor: _getColorByName(item['bgColor'] as String),
+              borderColor: _getColorByName(item['borderColor'] as String),
+            ))
+        .toList();
+
+    // Pie Chart Data
+    final pieChartData = calendarData['pieChartData'] as List;
+    final pieChartSections = pieChartData.map((item) {
+      final percentage = item['percentage'] as int;
+      final color = _getColorByName(item['color'] as String);
+      return PieChartSectionData(
+        color: color,
+        value: percentage.toDouble(),
+        title: '$percentage%',
+        radius: 50,
+        titleStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: color == AppColors.grey4 ? AppColors.black : AppColors.white,
+        ),
+      );
+    }).toList();
+
+    final pieChartLegends = pieChartData
+        .map((item) => LegendItemData(
+              color: _getColorByName(item['color'] as String),
+              label: item['emotion'] as String,
+            ))
+        .toList();
+
+    // Emotion Ratio
+    final emotionRatioData = calendarData['emotionRatio'] as Map<String, dynamic>;
+    final emotionRatio = EmotionRatioData(
+      negativePercent: emotionRatioData['negativePercent'] as int,
+      positivePercent: emotionRatioData['positivePercent'] as int,
+      negativeColor: _getColorByName(emotionRatioData['negativeColor'] as String),
+      positiveColor: _getColorByName(emotionRatioData['positiveColor'] as String),
+    );
+
+    // Health Alert
+    final healthAlertData = calendarData['healthAlert'] as Map<String, dynamic>;
+    final healthAlert = HealthAlertData(
+      message: healthAlertData['message'] as String,
+      detectionCount: healthAlertData['detectionCount'] as String,
+      countLabel: healthAlertData['countLabel'] as String,
+      timeSlots: (healthAlertData['timeSlots'] as List)
+          .map((item) => TimeSlotData(
+                time: item['time'] as String,
+                count: item['count'] as String,
+                color: _getColorByName(item['color'] as String),
+              ))
+          .toList(),
+      iconName: healthAlertData['icon'] as String,
+      backgroundColor: _getColorByName(healthAlertData['bgColor'] as String),
+      iconColor: _getColorByName(healthAlertData['iconColor'] as String),
+      textColor: _getColorByName(healthAlertData['textColor'] as String),
+    );
+
+    // AI Report
+    final aiReportData = calendarData['aiReport'] as Map<String, dynamic>;
+    final aiReport = AiReportData(
+      title: aiReportData['title'] as String,
+      subtitle: aiReportData['subtitle'] as String,
+      statusLabel: aiReportData['statusLabel'] as String,
+      statusColor: _getColorByName(aiReportData['statusColor'] as String),
+      analysisTexts: (aiReportData['analysisTexts'] as List).cast<String>(),
+      guideItems: (aiReportData['guideItems'] as List).cast<String>(),
+    );
+
+    // Monthly Trend
+    final monthlyTrendData = calendarData['monthlyTrend'] as Map<String, dynamic>;
+    final radarEntriesData = monthlyTrendData['radarEntries'] as List;
+    final radarEntries = radarEntriesData
+        .map((item) => RadarEntry(value: (item['value'] as num).toDouble()))
+        .toList();
+    final radarTitles = radarEntriesData.map((item) => item['label'] as String).toList();
+    final monthlyTrend = MonthlyTrendData(
+      radarEntries: radarEntries,
+      radarTitles: radarTitles,
+    );
+
+    // Monthly Summary
+    final monthlySummaryData = calendarData['monthlySummary'] as Map<String, dynamic>;
+    final monthlySummary = MonthlySummaryData(
+      summaryText: monthlySummaryData['summaryText'] as String,
+      bulletPoints: (monthlySummaryData['bulletPoints'] as List).cast<String>(),
+    );
+
+    return CalendarData(
+      rankStats: rankStats,
+      pieChartSections: pieChartSections,
+      pieChartLegends: pieChartLegends,
+      emotionRatio: emotionRatio,
+      healthAlert: healthAlert,
+      aiReport: aiReport,
+      monthlyTrend: monthlyTrend,
+      monthlySummary: monthlySummary,
+    );
+  }
 }
 

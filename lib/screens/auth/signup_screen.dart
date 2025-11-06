@@ -39,14 +39,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: AppConstants.smallPadding,
+            padding: AppConstants.defaultPadding,
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                const SizedBox(height: 20),
+                AppConstants.h20,
                 
                 // 이름 입력
                 AppInputField(
@@ -62,7 +62,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 20),
+                AppConstants.h20,
                 
                 // 이메일 입력
                 AppInputField(
@@ -77,7 +77,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ]),
                 ),
                 
-                const SizedBox(height: 20),
+                AppConstants.h20,
                 
                 // 비밀번호 입력
                 TextFormField(
@@ -132,7 +132,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                AppConstants.h20,
                 
                 // 비밀번호 확인 입력
                 TextFormField(
@@ -187,16 +187,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 32),
+                AppConstants.h32,
                 
                 // 회원가입 버튼
                 _buildSignupButton(),
                 
-                const SizedBox(height: 32),
+                AppConstants.h32,
                 
                 // 하단 링크 (로그인)
                 const BottomLinkTo(),
-                const SizedBox(height: 16),
+                AppConstants.h16,
               ],
               ),
             ),

@@ -24,7 +24,7 @@ class SettingRow extends StatelessWidget {
           // 텍스트는 왼쪽 정렬 - 고정된 왼쪽 여백
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 16),
+              padding: const EdgeInsets.only(left: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -86,7 +86,7 @@ class ActionRow extends StatelessWidget {
                 // 텍스트는 왼쪽 정렬 - 고정된 왼쪽 여백
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 16),
+                    padding: const EdgeInsets.only(left: 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -109,7 +109,7 @@ class ActionRow extends StatelessWidget {
                 // trailingText가 있으면 오른쪽에 표시
                 if (trailingText != null)
                   Padding(
-                    padding: const EdgeInsets.only(right: 16, top: 6),
+                    padding: const EdgeInsets.only(right: 8, top: 8),
                     child: Text(
                       trailingText!,
                       style: TextStyle(fontSize: 14, color: AppColors.grey9),

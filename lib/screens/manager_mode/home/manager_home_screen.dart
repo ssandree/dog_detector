@@ -7,129 +7,202 @@ import 'widgets/emotion_graph_card.dart';
 import 'widgets/ai_recommendation_card.dart';
 import 'widgets/weather_card.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  late TabController _reportTabController;
 
-  List<Widget> _buildScreens() => [
-        _HomeContent(
-          onNavigateTab: (i) => setState(() => _currentIndex = i),
-        ),
-        const RealtimeScreen(),
-        const ReportScreen(),
-        const CalendarScreen(),
-      ];
+  @override
+  void initState() {
+    super.initState();
+    _reportTabController = TabController(length: 2, vsync: this);
+    _reportTabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (!_reportTabController.indexIsChanging) {
+      // 탭 변경이 완료된 후에만 Provider 업데이트
+      ref.read(reportTabProvider.notifier).changeTab(_reportTabController.index);
+    }
+  }
+
+  @override
+  void dispose() {
+    _reportTabController.removeListener(_onTabChanged);
+    _reportTabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final currentScreen = _buildScreens()[_currentIndex];
+    // Provider 상태 변경 시 TabController 동기화
+    final currentTab = ref.watch(reportTabProvider);
+    if (_reportTabController.index != currentTab) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _reportTabController.index != currentTab) {
+          _reportTabController.animateTo(currentTab);
+        }
+      });
+    }
+    final currentScreen = _buildCurrentScreen();
     final bottomNav = BottomNavBar(
       currentIndex: _currentIndex,
-      onTap: (index) => setState(() => _currentIndex = index),
+      onTap: (i) => setState(() => _currentIndex = i),
     );
 
-    // 홈 화면(_currentIndex == 0)일 때만 CustomScrollView 사용
-    if (_currentIndex == 0) {
-      final statusBarHeight = MediaQuery.of(context).padding.top;
-      final headerHeight = statusBarHeight + 80.0;
-      
-      return Scaffold(
-        backgroundColor: AppColors.white,
-        bottomNavigationBar: bottomNav,
-        body: buildCollapsingScrollView(
-          headerHeight: headerHeight,
-          customHeader: _buildHeader(context),
-          child: currentScreen,
-        ),
-      );
-    }
-
-    // 다른 화면들은 BaseScaffold 사용
-    return BaseScaffold(
-      body: currentScreen,
-      bottomNavigationBar: bottomNav,
-    );
-  }
-
-  /// 🐶 Collapsing Header 위젯
-  /// CustomScrollView의 SliverAppBar에 flexibleSpace로 들어가며
-  /// 스크롤 시 자연스럽게 fade-out 효과가 적용됨.
-  Widget _buildHeader(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    return Container(
-      color: AppColors.white,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: AppConstants.smallPadding.horizontal,
-          right: AppConstants.smallPadding.horizontal,
-          top: statusBarHeight,
-          bottom: 12,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '견심술',
-              style: TextStyle(
-                color: AppColors.grey12,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
+
+    switch (_currentIndex) {
+      case 0:
+        return BaseScaffold(
+          useCollapsingHeader: true,
+          collapseHeaderHeight: statusBarHeight + 80,
+          collapseHeaderTitle: '견심술',
+          collapseHeaderActions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
+              onPressed: () => context.push(AppRoutes.notification),
             ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    // TODO: 알림 기능 추가
-                  },
-                  icon: const Icon(
-                    Icons.notifications_none,
-                    color: AppColors.grey8,
-                    size: 24,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    context.push(AppRoutes.settings);
-                  },
-                  icon: const Icon(
-                    Icons.settings,
-                    color: AppColors.grey8,
-                    size: 24,
-                  ),
-                ),
-              ],
+            IconButton(
+              icon: const Icon(Icons.settings, color: AppColors.blackAppBarTextColor),
+              onPressed: () => context.push(AppRoutes.settings),
             ),
           ],
-        ),
+          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          bottomNavigationBar: bottomNav,
+          body: currentScreen,
+        );
+
+      case 1:
+        return BaseScaffold(
+          useCollapsingHeader: true,
+          collapseHeaderHeight: statusBarHeight + 80,
+          collapseHeaderTitle: '실시간 모니터링',
+          collapseHeaderActions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
+              onPressed: () => context.push(AppRoutes.notification),
+            ),
+          ],
+          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          bottomNavigationBar: bottomNav,
+          body: currentScreen,
+        );
+
+      case 2:
+        return BaseScaffold(
+          useCollapsingHeader: true,
+          collapseHeaderTitle: '분석리포트',
+          collapseHeaderHeight: statusBarHeight + 80 + kTextTabBarHeight + 16,
+          collapseCustomHeader: _buildReportHeader(context),
+          collapseFillRemaining: true,
+          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          bottomNavigationBar: bottomNav,
+          body: currentScreen,
+        );
+
+      case 3:
+        return BaseScaffold(
+          useCollapsingHeader: true,
+          collapseHeaderHeight: statusBarHeight + 80,
+          collapseHeaderTitle: '캘린더',
+          collapseHeaderActions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
+              onPressed: () => context.push(AppRoutes.notification),
+            ),
+          ],
+          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          bottomNavigationBar: bottomNav,
+          body: currentScreen,
+        );
+
+      default:
+        return BaseScaffold(body: currentScreen, bottomNavigationBar: bottomNav);
+    }
+  }
+
+  Widget _buildCurrentScreen() {
+    switch (_currentIndex) {
+      case 0:
+        return const _HomeContent();
+      case 1:
+        return const RealtimeScreen();
+      case 2:
+        return const ReportScreen();
+      case 3:
+        return const CalendarScreen();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildReportHeader(BuildContext context) {
+    return SafeArea(
+      top: true,
+      bottom: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 타이틀과 알림 아이콘을 한 줄로 배치
+          SizedBox(
+            height: 80,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '분석리포트',
+                    style: TextStyle(
+                      color: AppColors.blackAppBarTextColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: AppConstants.appBarTitleFontSize,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
+                    onPressed: () => context.push(AppRoutes.notification),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          TabBar(
+            controller: _reportTabController,
+            indicatorColor: AppColors.blackAppBarTextColor,
+            labelColor: AppColors.blackAppBarTextColor,
+            unselectedLabelColor: AppColors.blackAppBarTextColor.withValues(alpha: 0.6),
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+            tabs: const [Tab(text: '일별'), Tab(text: '주별')],
+          ),
+          AppConstants.h16,
+        ],
       ),
     );
   }
 }
 
-/// 홈 탭 콘텐츠
-/// SliverToBoxAdapter 내부에 들어가기 때문에 Column은 유한 높이만 사용 가능
 class _HomeContent extends StatelessWidget {
-  final ValueChanged<int> onNavigateTab;
-  const _HomeContent({required this.onNavigateTab});
+  const _HomeContent();
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min, // ✅ 무한 높이 방지
+      mainAxisSize: MainAxisSize.min,
       children: const [
         PetGreetingCard(),
-        SizedBox(height: 16),
+        AppConstants.h16,
         EmotionGraphCard(),
-        SizedBox(height: 16),
+        AppConstants.h16,
         AIRecommendationCard(),
-        SizedBox(height: 16),
+        AppConstants.h16,
         WeatherCard(),
       ],
     );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 import 'dart:math';
 
 /// 감정 비율 계산 유틸리티 클래스
@@ -10,9 +10,9 @@ class EmotionRatioCalculator {
   /// 부정 감정 리스트
   static const List<String> _negativeEmotions = [
     '불안',
-    '통증',
-    '흥분',
-    '스트레스',
+    '화남',
+    '공포',
+    '공격성',
   ];
   
   /// 심각도별 가중치

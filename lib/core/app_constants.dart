@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 /// 앱 전체에서 사용하는 상수값들을 정의합니다.
 class AppConstants {
   // AppBar 관련 상수
-    static const double appBarHeight = 65.0;
+    static const double appBarHeight = 80.0;
     static const double appBarElevation = 0.0;
-    static const bool appBarCenterTitle = true;
+    static const bool appBarCenterTitle = false;
     static const double appBarTitleFontSize = 18.0;
     static const double appBarIconSize = 20.0;
     

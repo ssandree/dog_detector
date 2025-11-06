@@ -1,6 +1,5 @@
 import '../../../../core/index_export.dart';
-import '../../../../models/pet_info.dart';
-import '../../../register/pet_regi_screen.dart';
+import '../../dog_info/pet_regi_screen.dart';
 
 class PetProfile extends ConsumerWidget {
   const PetProfile({super.key});
@@ -9,11 +8,11 @@ class PetProfile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final petInfo = ref.watch(currentPetProvider);
     return GestureDetector(
-      onTap: petInfo == null ? () => _navigateToPetRegistration(context) : null,
+      onTap: petInfo == null ? () => _navigateToPetRegistration(context, ref) : null,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: AppConstants.smallPadding,
         decoration: BoxDecoration(
-          color: AppColors.beige3,
+          color: AppColors.beige1,
           borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
           border: petInfo == null ? Border.all(color: AppColors.white, width: 2) : null,
         ),
@@ -43,7 +42,7 @@ class PetProfile extends ConsumerWidget {
                       color: petInfo == null ? AppColors.white : AppColors.black,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  AppConstants.h6,
                   Text(
                     _buildPetInfoText(petInfo),
                     style: TextStyle(
@@ -58,7 +57,7 @@ class PetProfile extends ConsumerWidget {
             ),
             if (petInfo != null)
               TextButton(
-                onPressed: () => _navigateToPetRegistration(context),
+                onPressed: () => _navigateToPetRegistration(context, ref),
                 child: const Text('정보 수정하기'),
               )
             else
@@ -97,11 +96,12 @@ class PetProfile extends ConsumerWidget {
     return info.isEmpty ? '정보 없음' : info;
   }
 
-  void _navigateToPetRegistration(BuildContext context) {
+  void _navigateToPetRegistration(BuildContext context, WidgetRef ref) {
+    final petInfo = ref.read(currentPetProvider);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PetRegiScreen(),
+        builder: (context) => PetRegiScreen(existingPetInfo: petInfo),
       ),
     );
   }

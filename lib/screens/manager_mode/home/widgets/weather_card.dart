@@ -30,7 +30,7 @@ class WeatherCard extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          AppConstants.h12,
           weatherDataAsync.when(
             data: (weatherData) {
               // 어제 날씨를 제외하고 오늘, 내일, 모레만 표시
@@ -107,7 +107,7 @@ class WeatherItem extends StatelessWidget {
                   color: AppColors.grey8,
                 ),
               ),
-              const SizedBox(height: 4),
+              AppConstants.h4,
               Text(
                 icon,
                 style: const TextStyle(fontSize: 20),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../models/alarm_info.dart';
+import '../../models/alarm_info.dart';
 import '../services/alarm_service.dart';
+import 'app_provider.dart';
 
 /// AlarmInfo 상태를 관리하는 Notifier
 /// 

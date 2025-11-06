@@ -20,7 +20,7 @@ class EmotionGraphCard extends ConsumerWidget {
               color: AppColors.grey12,
             ),
           ),
-          const SizedBox(height: 16),
+          AppConstants.h16,
           emotionDataAsync.when(
             data: (emotionData) => Column(
               children: emotionData.map((data) => EmotionBarItem(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../calendar_modal.dart';
 import '../../../../core/index_export.dart';
-import '../../../../utils/emotion_ratio_calculator.dart';
+import '../../../../core/utils/emotion_ratio_calculator.dart';
 
 class CalendarSection extends ConsumerStatefulWidget {
   const CalendarSection({super.key});
@@ -21,13 +21,13 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
 
   @override
   Widget build(BuildContext context) {
-    final weeklyReportAsync = ref.watch(weeklyReportProvider);
-    
-    // 주간 감정 비율 계산
-    final weeklyRatios = weeklyReportAsync.maybeWhen(
-      data: (report) => EmotionRatioCalculator.calculateWeeklyRatios(report),
-      orElse: () => <String, double>{},
+    // 현재 표시 중인 월의 데이터 가져오기
+    final monthlyCalendarAsync = ref.watch(
+      monthlyCalendarProvider((year: _focusedDay.year, month: _focusedDay.month)),
     );
+    
+    // 주간 감정 비율 계산 (임시로 빈 맵 사용, 추후 월간 데이터에서 추출하도록 수정 필요)
+    final weeklyRatios = <String, double>{};
     
     return Container(
       height: 410, // 오버플로우 방지를 위해 높이 증가 (380 + 30)

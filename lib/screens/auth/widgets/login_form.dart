@@ -46,7 +46,7 @@ class LoginFormState extends State<LoginForm> {
           AppInputField(
             controller: _emailController,
             label: '이메일',
-            hint: '이메일을 입력해주세요',
+            // hint: '이메일을 입력해주세요',
             icon: Icons.email,
             keyboardType: TextInputType.emailAddress,
             validator: AppInputValidator.combine([
@@ -55,13 +55,13 @@ class LoginFormState extends State<LoginForm> {
             ]),
           ),
           
-          const SizedBox(height: 24),
+          AppConstants.h24,
           
           // 비밀번호 입력
           AppInputField(
             controller: _passwordController,
             label: '비밀번호',
-            hint: '비밀번호를 입력해주세요',
+            // hint: '비밀번호를 입력해주세요',
             icon: Icons.lock,
             obscureText: _obscurePassword,
             suffixIcon: IconButton(

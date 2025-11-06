@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+// 외부 패키지 제거: 기본 Image.network 사용
 import '../core/index_export.dart';
 
 /// 프로필 이미지 통합 컴포넌트
@@ -35,23 +35,19 @@ class AppProfileImage extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget imageWidget;
 
-    // cached_network_image를 사용하여 네트워크 이미지 로딩 및 캐싱 처리
-    // 자동으로 로딩 상태, 에러 상태, 플레이스홀더를 관리합니다.
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       imageWidget = ClipRRect(
         borderRadius: BorderRadius.circular(size / 2),
-        child: CachedNetworkImage(
-          imageUrl: imageUrl!,
+        child: Image.network(
+          imageUrl!,
           width: size,
           height: size,
           fit: BoxFit.cover,
-          // 이미지 로딩 중 표시할 플레이스홀더
-          placeholder: (context, url) => _buildLoadingPlaceholder(),
-          // 이미지 로딩 실패 시 표시할 에러 위젯
-          errorWidget: (context, url, error) => _buildPlaceholder(),
-          // 메모리 캐시 활성화 (기본값: true)
-          memCacheWidth: size.toInt(),
-          memCacheHeight: size.toInt(),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return _buildLoadingPlaceholder();
+          },
+          errorBuilder: (context, error, stack) => _buildPlaceholder(),
         ),
       );
     } else {

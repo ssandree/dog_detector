@@ -116,7 +116,7 @@ class LoadingDialog extends StatelessWidget {
                 size: size ?? 50.0,
               ),
               if (message != null) ...[
-                const SizedBox(height: 16),
+                AppConstants.h16,
                 Text(
                   message!,
                   style: const TextStyle(

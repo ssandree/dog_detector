@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../models/auth_info.dart';
+import '../../models/auth_info.dart';
 import '../services/auth_service.dart';
-import '../services/local_storage_service.dart';
+import 'app_provider.dart';
 
 /// 인증 상태를 관리하는 Notifier
 /// 

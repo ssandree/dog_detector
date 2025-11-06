@@ -21,19 +21,16 @@ export '../theme/app_theme.dart';
 export '../widgets/widget_export.dart';
 
 // App Core
-export '../core/app_router.dart';
+export 'app_routes.dart';
 
 // Providers
-export '../providers/pet_provider.dart';
-export '../providers/alarm_provider.dart';
-export '../providers/home_provider.dart';
-export '../providers/report_provider.dart';
-export '../providers/auth_provider.dart';
-export '../providers/app_provider.dart';
-export '../providers/ai_provider.dart';
-export '../providers/camera_provider.dart';
-export '../providers/recording_provider.dart';
-export '../providers/upload_provider.dart';
+export 'providers/pet_provider.dart';
+export 'providers/alarm_provider.dart';
+export 'providers/home_provider.dart';
+export 'providers/report_provider.dart';
+export 'providers/auth_provider.dart';
+export 'providers/app_provider.dart';
 
 // Models
 export '../models/auth_info.dart';
+export '../models/pet_info.dart';

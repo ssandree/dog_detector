@@ -30,7 +30,7 @@ class AIRecommendationCard extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          AppConstants.h12,
           recommendationsAsync.when(
             data: (recommendations) => Column(
               children: recommendations.map((recommendation) => RecommendationItem(
@@ -105,7 +105,7 @@ class RecommendationItem extends StatelessWidget {
                     color: AppColors.grey12,
                   ),
                 ),
-                const SizedBox(height: 4),
+                AppConstants.h4,
                 Text(
                   description,
                   style: const TextStyle(

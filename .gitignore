@@ -9,6 +9,7 @@ env/
 datasets/
 data/
 pose_data
+EmotionalCanines/
 preprocessed_data/
 *.csv
 *.zip

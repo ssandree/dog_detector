@@ -25,10 +25,16 @@ def load_vggish_model():
         model.eval()
         
         def preprocess_audio(audio_path: str) -> torch.Tensor:
-            """오디오 파일을 VGGish 입력으로 변환"""
+            """오디오 파일을 VGGish 입력으로 변환 (항상 torch.Tensor 반환)"""
             try:
                 input_batch = vggish_input.wavfile_to_examples(audio_path)
-                return torch.from_numpy(input_batch).float()
+                if isinstance(input_batch, np.ndarray):
+                    return torch.from_numpy(input_batch).float()
+                elif isinstance(input_batch, torch.Tensor):
+                    return input_batch.float()
+                else:
+                    print(f"⚠️ vggish_input.wavfile_to_examples 반환 타입 이상: {type(input_batch)}")
+                    return torch.zeros(1, 96, 64)
             except Exception as e:
                 print(f"⚠️ 오디오 전처리 실패: {e}")
                 return torch.zeros(1, 96, 64)  # 기본 크기

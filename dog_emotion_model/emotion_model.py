@@ -90,26 +90,18 @@ class DogEmotionPredictor:
         
         # 감정 클래스 정의
         self.emotion_classes = {
-            0: "happy",      # 기쁨
-            1: "excited",    # 흥분
-            2: "calm",       # 차분
-            3: "anxious",    # 불안
-            4: "aggressive", # 공격적
-            5: "fearful",    # 두려움
-            6: "playful",    # 장난기
-            7: "tired"       # 피곤
+            0: "calm",      # 차분
+            1: "anxious",    # 불안
+            2: "fearful",       # 공포
+            3: "aggressive",    # 공격성
         }
         
         # 감정 클래스 (한국어)
         self.emotion_classes_kr = {
-            0: "기쁨",
-            1: "흥분",
-            2: "차분함",
-            3: "불안함", 
-            4: "공격적",
-            5: "두려움",
-            6: "장난기",
-            7: "피곤함"
+            0: "편안/안정",
+            1: "불안/슬픔",
+            2: "공포",
+            3: "공격성"
         }
         
         # 오디오 특성 추출기

@@ -16,7 +16,8 @@ def check_dependencies():
     
     required_packages = [
         "fastapi", "uvicorn", "ultralytics", "opencv-python", 
-        "torch", "torchvision", "numpy", "requests"
+        "torch", "torchvision", "numpy", "requests", 
+        "moviepy", "librosa", "soundfile"  # MP4 처리 및 오디오 분석
     ]
     
     missing_packages = []
@@ -41,17 +42,37 @@ def check_model_files():
     """AI 모델 파일 확인"""
     print("\n🤖 AI 모델 파일 확인...")
     
-    model_path = Path("DogPose_Official/yolo11n_dog24/weights/best.pt")
+    # 포즈 모델 확인
+    pose_model_path = Path("DogPose_Official/yolo11n_dog24/weights/best.pt")
     
-    if model_path.exists():
-        print(f"✅ 학습된 모델: {model_path}")
-        print(f"   파일 크기: {model_path.stat().st_size / 1024 / 1024:.1f}MB")
-        return True
+    if pose_model_path.exists():
+        print(f"✅ 포즈 모델: {pose_model_path}")
+        print(f"   파일 크기: {pose_model_path.stat().st_size / 1024 / 1024:.1f}MB")
+        pose_ok = True
     else:
-        print(f"❌ 모델 파일 없음: {model_path}")
-        print("💡 해결 방법:")
-        print("   python train_official_dog_pose.py  # 모델 학습 실행")
-        return False
+        print(f"❌ 포즈 모델 없음: {pose_model_path}")
+        print("💡 해결 방법: python train_official_dog_pose.py")
+        pose_ok = False
+    
+    # 감정 모델 확인
+    emotion_model_paths = [
+        Path("ai_train/best_dog_vggish_av_f1_0.5044.pt"),
+        Path("ai_train/best_dog_vggish_av_f1_0.2600.pt")
+    ]
+    
+    emotion_ok = False
+    for emotion_path in emotion_model_paths:
+        if emotion_path.exists():
+            print(f"✅ 감정 모델: {emotion_path}")
+            print(f"   파일 크기: {emotion_path.stat().st_size / 1024 / 1024:.1f}MB")
+            emotion_ok = True
+            break
+    
+    if not emotion_ok:
+        print("❌ 감정 모델 없음")
+        print("💡 해결 방법: python ai_train/train_emotion_a.py")
+    
+    return pose_ok and emotion_ok
 
 def start_api_server():
     """API 서버 시작"""

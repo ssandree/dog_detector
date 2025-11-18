@@ -57,7 +57,7 @@ class LocalStorageRepository {
       final prefs = await _prefs;
       await prefs.clear();
     } catch (e) {
-      throw DataException('저장된 데이터를 삭제하는데 실패했습니다', e);
+      throw DataException('모든 저장된 데이터를 삭제하는데 실패했습니다', e);
     }
   }
 }

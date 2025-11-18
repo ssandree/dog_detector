@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../models/alarm_info.dart';
 import '../services/alarm/alarm_service.dart';
 import '../services/alarm/mock_alarm_service.dart';
-import 'mode_provider.dart';
+import 'storage_provider.dart';
 
 /// AlarmInfo 상태를 관리하는 Notifier
 /// 

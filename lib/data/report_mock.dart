@@ -41,9 +41,18 @@ final Map<String, Map<String, dynamic>> mockDailyReports = {
     'aiComment': '어제는 부정적인 감정이 많이 감지되었어요. 스트레스 요인을 확인해보세요 🐕',
   },
   
-  // 그저께 (혼합)
+  // 그저께 (탐지 결과 없음)
   _formatDate(DateTime.now().subtract(const Duration(days: 2))): {
     'date': _formatDate(DateTime.now().subtract(const Duration(days: 2))),
+    'detectionStatus': '탐지 결과 없음',
+    'events': [],
+    'chartData': [],
+    'aiComment': '탐지된 행동이 없었습니다.',
+  },
+  
+  // 2일 전 (혼합) - 그저께를 탐지 결과 없음으로 변경했으므로 이전 데이터를 2일 전으로 이동
+  _formatDate(DateTime.now().subtract(const Duration(days: 3))): {
+    'date': _formatDate(DateTime.now().subtract(const Duration(days: 3))),
     'events': [
       {'time': '07:20', 'type': '산책 전 기대', 'emotion': '행복', 'severity': 'MEDIUM'},
       {'time': '10:00', 'type': '낑낑거림', 'emotion': '불안', 'severity': 'LOW'},
@@ -58,12 +67,12 @@ final Map<String, Map<String, dynamic>> mockDailyReports = {
       {'hour': '16', 'activity': 8, 'barkCount': 2},
       {'hour': '18', 'activity': 7, 'barkCount': 0},
     ],
-    'aiComment': '그저께는 감정이 다양하게 나타났어요. 전반적으로 안정적인 하루였습니다 🐕',
+    'aiComment': '감정이 다양하게 나타났어요. 전반적으로 안정적인 하루였습니다 🐕',
   },
   
-  // 3일 전 (매우 긍정적)
-  _formatDate(DateTime.now().subtract(const Duration(days: 3))): {
-    'date': _formatDate(DateTime.now().subtract(const Duration(days: 3))),
+  // 4일 전 (매우 긍정적) - 날짜 조정
+  _formatDate(DateTime.now().subtract(const Duration(days: 4))): {
+    'date': _formatDate(DateTime.now().subtract(const Duration(days: 4))),
     'events': [
       {'time': '08:00', 'type': '활발한 놀이', 'emotion': '행복', 'severity': 'HIGH'},
       {'time': '10:30', 'type': '안정적인 상태', 'emotion': '편안', 'severity': 'LOW'},
@@ -83,9 +92,9 @@ final Map<String, Map<String, dynamic>> mockDailyReports = {
     'aiComment': '3일 전은 매우 긍정적인 하루였어요! 행복한 활동이 많았습니다 🎉',
   },
   
-  // 4일 전 (매우 부정적)
-  _formatDate(DateTime.now().subtract(const Duration(days: 4))): {
-    'date': _formatDate(DateTime.now().subtract(const Duration(days: 4))),
+  // 5일 전 (매우 부정적) - 날짜 조정
+  _formatDate(DateTime.now().subtract(const Duration(days: 5))): {
+    'date': _formatDate(DateTime.now().subtract(const Duration(days: 5))),
     'events': [
       {'time': '09:00', 'type': '하울링', 'emotion': '공포', 'severity': 'HIGH'},
       {'time': '11:20', 'type': '공격적 행동', 'emotion': '공격성', 'severity': 'HIGH'},
@@ -102,12 +111,12 @@ final Map<String, Map<String, dynamic>> mockDailyReports = {
       {'hour': '18', 'activity': 16, 'barkCount': 9},
       {'hour': '20', 'activity': 19, 'barkCount': 11},
     ],
-    'aiComment': '4일 전은 부정적인 감정이 많이 감지되었어요. 전문가 상담을 권장합니다 🐕',
+    'aiComment': '5일 전은 부정적인 감정이 많이 감지되었어요. 전문가 상담을 권장합니다 🐕',
   },
   
-  // 5일 전 (중간)
-  _formatDate(DateTime.now().subtract(const Duration(days: 5))): {
-    'date': _formatDate(DateTime.now().subtract(const Duration(days: 5))),
+  // 6일 전 (중간)
+  _formatDate(DateTime.now().subtract(const Duration(days: 6))): {
+    'date': _formatDate(DateTime.now().subtract(const Duration(days: 6))),
     'events': [
       {'time': '08:15', 'type': '기대감', 'emotion': '행복', 'severity': 'MEDIUM'},
       {'time': '10:00', 'type': '낑낑거림', 'emotion': '불안', 'severity': 'LOW'},
@@ -122,7 +131,7 @@ final Map<String, Map<String, dynamic>> mockDailyReports = {
       {'hour': '14', 'activity': 4, 'barkCount': 1},
       {'hour': '16', 'activity': 6, 'barkCount': 0},
     ],
-    'aiComment': '5일 전은 전반적으로 안정적인 하루였어요 🐕',
+    'aiComment': '6일 전은 전반적으로 안정적인 하루였어요 🐕',
   },
   
   // 추가 날짜들 (다양한 패턴)
@@ -232,11 +241,11 @@ Map<String, Map<String, dynamic>> _generateAdditionalDates() {
     },
   ];
   
-  // 6일 전부터 30일 전까지 패턴을 순환하며 데이터 생성
-  for (int i = 6; i <= 30; i++) {
+  // 7일 전부터 30일 전까지 패턴을 순환하며 데이터 생성
+  for (int i = 7; i <= 30; i++) {
     final date = DateTime.now().subtract(Duration(days: i));
     final dateKey = _formatDate(date);
-    final patternIndex = (i - 6) % patterns.length;
+    final patternIndex = (i - 7) % patterns.length;
     final pattern = patterns[patternIndex];
     
     additionalDates[dateKey] = {

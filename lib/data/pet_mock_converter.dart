@@ -10,16 +10,22 @@ class PetMockConverter {
   /// [mockData]: Mock 데이터 Map (pet_mock.dart의 mockPet 항목)
   /// 반환값: PetInfo 객체
   static PetInfo fromMockData(Map<String, dynamic> mockData) {
+    final petId = mockData['id'] as int?;
+    final registeredAt = mockData['registeredAt'] as String?;
+    DateTime? birthDate;
+    if (registeredAt != null) {
+      birthDate = DateTime.tryParse(registeredAt);
+    }
+    
     return PetInfo(
+      petId: petId,
       name: mockData['name'] as String,
-      age: mockData['age'] as int?,
-      birthday: mockData['registeredAt'] != null
-          ? DateTime.tryParse(mockData['registeredAt'] as String)
-          : null,
-      weight: 5.5, // mockPet에는 weight가 없으므로 기본값 사용
       breed: mockData['breed'] as String?,
-      gender: _convertGender(mockData['gender'] as String?),
+      birthDate: birthDate,
+      weightKg: 5.5, // mockPet에는 weight가 없으므로 기본값 사용
       photoUrl: mockData['photoUrl'] as String?,
+      age: mockData['age'] as int?,
+      gender: _convertGender(mockData['gender'] as String?),
     );
   }
 
@@ -34,12 +40,13 @@ class PetMockConverter {
   /// 기본 PetInfo 생성 (fallback용)
   /// Mock 데이터가 없을 때 사용
   static PetInfo createDefault() {
+    final birthDate = DateTime.now().subtract(const Duration(days: 365 * 3));
     return PetInfo(
       name: '멍멍이',
-      age: 3,
-      birthday: DateTime.now().subtract(const Duration(days: 365 * 3)),
-      weight: 5.5,
       breed: '골든리트리버',
+      birthDate: birthDate,
+      weightKg: 5.5,
+      age: 3,
       gender: '수컷',
       photoUrl: null,
     );

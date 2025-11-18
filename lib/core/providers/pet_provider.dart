@@ -1,7 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../models/pet_info.dart';
-import '../services/pet_service.dart';
-import 'mode_provider.dart';
+import '../services/pet/pet_service.dart';
+import '../services/pet/mock_pet_service.dart';
+import 'storage_provider.dart';
 
 /// PetInfo 상태를 관리하는 Notifier
 /// 
@@ -15,8 +16,8 @@ class PetNotifier extends Notifier<AsyncValue<PetInfo?>> {
   @override
   AsyncValue<PetInfo?> build() {
     _petService = ref.watch(petServiceProvider);
-    // 초기화 시 저장된 반려동물 정보 로드
-    loadPetInfo();
+    // 초기값은 petInfo가 연결되지 않은 상태 (null)
+    // 필요시 loadPetInfo()를 호출하여 정보를 로드할 수 있음
     return const AsyncValue.data(null);
   }
 
@@ -119,7 +120,7 @@ class PetListNotifier extends Notifier<AsyncValue<List<PetInfo>>> {
 /// Service 인스턴스를 생성하여 재사용합니다.
 final petServiceProvider = Provider<PetService>((ref) {
   final storage = ref.watch(localStorageRepositoryProvider);
-  return PetService(storage);
+  return MockPetService(storage);
 });
 
 /// PetInfo 상태를 관리하는 Provider

@@ -1,15 +1,34 @@
 import '../../../core/index_export.dart';
+import '../../../models/camera_info.dart';
 import '../realtime/widgets/video_player_section.dart';
-import '../realtime/widgets/detection_info_section.dart';
-import '../realtime/widgets/realtime_timeline_section.dart';
+import '../realtime/widgets/camera_info_section.dart';
+import '../realtime/widgets/today_activity_chart.dart';
 
 // 실시간 감정·객체 분석 결과 스트리밍 화면
 // WebSocket을 통해 수신된 감정(label, prob)과 객체 탐지, 녹화·업로드 상태를 표시
-class RealtimeScreen extends ConsumerWidget {
+class RealtimeScreen extends ConsumerStatefulWidget {
   const RealtimeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RealtimeScreen> createState() => _RealtimeScreenState();
+}
+
+class _RealtimeScreenState extends ConsumerState<RealtimeScreen> {
+  int _selectedCameraIndex = 0;
+  late List<CameraInfo> _cameras;
+
+  @override
+  void initState() {
+    super.initState();
+    // 실제로는 Provider나 Service에서 가져올 예정
+    _cameras = CameraInfo.getMockCameras();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentCamera = _cameras[_selectedCameraIndex];
+    final isMultipleCameras = _cameras.length > 1;
+
     return SingleChildScrollView(
       padding: AppConstants.horizontalPadding,
       child: Column(
@@ -19,20 +38,34 @@ class RealtimeScreen extends ConsumerWidget {
           Container(
             height: 200,
             margin: const EdgeInsets.symmetric(vertical: 16),
-            child: const VideoPlayerSection(),
+            child: VideoPlayerSection(
+              cameraId: currentCamera.id,
+              cameraName: currentCamera.name,
+            ),
           ),
+          
+          // 다중 카메라일 경우 슬라이더
+          if (isMultipleCameras) ...[
+            AppConstants.h16,
+            _buildCameraSlider(),
+          ],
+          
           AppConstants.h20,
-          // 전체보기 버튼
-          AppButtons.primary(
-            text: '전체보기',
-            icon: Icons.fullscreen,
-            onPressed: () => context.push(AppRoutes.realtimeFullscreen),
+          
+          // 카메라 정보 섹션
+          CameraInfoSection(
+            cameraId: currentCamera.id,
+            dogVisibleDuration: currentCamera.dogVisibleDuration,
+            cameraTotalDuration: currentCamera.cameraTotalDuration,
           ),
+          
           AppConstants.h20,
-          const DetectionInfoSection(),
+          
+          // 오늘 활동 그래프
+          const TodayActivityChart(),
+          
           AppConstants.h20,
-          const RealtimeTimelineSection(),
-          AppConstants.h20,
+          
           // 연결 상태 표시
           const Text(
             '실시간 연결 기능이 임시 비활성화되었습니다.',
@@ -45,6 +78,78 @@ class RealtimeScreen extends ConsumerWidget {
           AppConstants.h20,
         ],
       ),
+    );
+  }
+
+  Widget _buildCameraSlider() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '카메라 선택',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.grey9,
+              ),
+            ),
+            Text(
+              '${_selectedCameraIndex + 1} / ${_cameras.length}',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.grey7,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              onPressed: _selectedCameraIndex > 0
+                  ? () => setState(() => _selectedCameraIndex--)
+                  : null,
+              color: AppColors.green6,
+            ),
+            Expanded(
+              child: Slider(
+                value: _selectedCameraIndex.toDouble(),
+                min: 0,
+                max: (_cameras.length - 1).toDouble(),
+                divisions: _cameras.length - 1,
+                label: _cameras[_selectedCameraIndex].name,
+                activeColor: AppColors.green6,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCameraIndex = value.toInt();
+                  });
+                },
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              onPressed: _selectedCameraIndex < _cameras.length - 1
+                  ? () => setState(() => _selectedCameraIndex++)
+                  : null,
+              color: AppColors.green6,
+            ),
+          ],
+        ),
+        Center(
+          child: Text(
+            _cameras[_selectedCameraIndex].name,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.green6,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

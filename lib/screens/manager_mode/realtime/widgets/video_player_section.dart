@@ -1,7 +1,14 @@
 import '../../../../core/index_export.dart';
 
 class VideoPlayerSection extends StatelessWidget {
-const VideoPlayerSection({super.key});
+  final String cameraId;
+  final String cameraName;
+
+  const VideoPlayerSection({
+    super.key,
+    required this.cameraId,
+    required this.cameraName,
+  });
 
 @override
 Widget build(BuildContext context) {

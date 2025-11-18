@@ -1,5 +1,6 @@
 import '../../../core/index_export.dart';
-import '../report/widgets/emotion_ratio_bar.dart';
+import '../../../widgets/app_error_banner.dart';
+import 'report_widgets/report_widgets.dart';
 
 class CalendarModal extends ConsumerWidget {
    final DateTime currentDate;
@@ -46,82 +47,7 @@ class CalendarModal extends ConsumerWidget {
                child: Padding(
                padding: AppConstants.cameraSettingPadding,
                child: dailyReportAsync.when(
-                  data: (reportData) {
-                     // 감정 통계 계산
-                     final events = reportData['events'] as List<dynamic>? ?? [];
-                     final emotionCounts = <String, int>{};
-                     for (var e in events) {
-                        final emotion = e['emotion'] as String?;
-                        if (emotion != null && emotion.isNotEmpty) {
-                           emotionCounts[emotion] = (emotionCounts[emotion] ?? 0) + 1;
-                        }
-                     }
-                     
-                     final healthAlertCount = events.length;
-                     
-                     return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                           // 날짜 제목
-                           Text(
-                              '${selectedDate.year}년 ${selectedDate.month}월 ${selectedDate.day}일',
-                              style: const TextStyle(
-                                 fontSize: AppConstants.titleFontSize,
-                                 fontWeight: FontWeight.bold,
-                                 color: AppColors.black,
-                              ),
-                           ),
-                           const SizedBox(height: AppConstants.defaultSpacing + 4),
-
-                           // 슬개골 탈구 의심 행동 감지 알림
-                           AppCards.alert(
-                              message: healthAlertCount > 1 
-                                 ? '슬개골 탈구 의심 행동이 $healthAlertCount회 감지되었어요' 
-                                 : healthAlertCount == 1
-                                    ? '슬개골 탈구 의심 행동이 1회 감지되었어요'
-                                    : '슬개골 탈구 의심 행동이 감지되지 않았어요',
-                              icon: Icons.warning_amber_rounded,
-                              backgroundColor: AppColors.green1,
-                              iconColor: AppColors.green5,
-                              textColor: AppColors.green8,
-                           ),
-                           const SizedBox(height: AppConstants.defaultSpacing + 4),
-                           
-                           // 감정 비율 바 (EmotionRatioBar 위젯 사용)
-                           if (emotionCounts.isNotEmpty)
-                              EmotionRatioBar(emotionCounts: emotionCounts)
-                           else
-                              Container(
-                                 height: 20,
-                                 decoration: BoxDecoration(
-                                    color: AppColors.grey3,
-                                    borderRadius: BorderRadius.circular(10),
-                                 ),
-                                 alignment: Alignment.center,
-                                 child: const Text(
-                                    '감정 데이터가 없습니다',
-                                    style: TextStyle(
-                                       color: AppColors.black,
-                                       fontSize: AppConstants.smallFontSize,
-                                    ),
-                                 ),
-                              ),
-                           const SizedBox(height: AppConstants.defaultSpacing + 4),
-
-                           // 일일 분석 바로가기 버튼
-                           AppButtons.outline(
-                              text: '일일 분석 바로가기',
-                              onPressed: () {
-                                 Navigator.pop(context);
-                                 // 매니저 홈으로 이동 (사용자가 리포트 탭 선택 필요)
-                                context.push(AppRoutes.managerHome);
-                              },
-                              height: 50,
-                           ),
-                           const SizedBox(height: AppConstants.defaultSpacing + 4),
-                        ],
-                     );
-                  },
+                  data: (reportData) => _buildContent(context, ref, reportData, selectedDate),
                   loading: () => const Center(
                      child: Padding(
                         padding: EdgeInsets.all(AppConstants.defaultSpacing),
@@ -140,6 +66,93 @@ class CalendarModal extends ConsumerWidget {
                ),
                ),
             ),
+         ],
+         ),
+      );
+   }
+
+   Widget _buildContent(BuildContext context, WidgetRef ref, Map<String, dynamic> reportData, DateTime selectedDate) {
+      // 날짜 처리 - reportData에 날짜가 있으면 사용하고, 없으면 selectedDate 사용
+      final dateString = reportData['date'] as String?;
+      final dateTime = dateString != null 
+         ? (DateTime.tryParse(dateString) ?? selectedDate)
+         : selectedDate;
+      final dateStr =
+         '${dateTime.year.toString().substring(2)}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}';
+
+      // 제목 동적 설정 (오늘, 어제, 그저께 등)
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+      final selectedDateOnly = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+      final daysDiff = todayDate.difference(selectedDateOnly).inDays;
+      
+      String title;
+      if (daysDiff == 0) {
+         title = '오늘';
+      } else if (daysDiff == 1) {
+         title = '어제';
+      } else if (daysDiff == 2) {
+         title = '그저께';
+      } else {
+         title = dateStr;
+      }
+
+      // 데이터 추출
+      final events = reportData['events'] as List<dynamic>? ?? [];
+      final chartData = reportData['chartData'] as List<dynamic>? ?? [];
+
+      // 감정 통계
+      final emotionCounts = <String, int>{};
+      for (var e in events) {
+         final emotion = e['emotion'] as String?;
+         if (emotion != null && emotion.isNotEmpty) {
+         emotionCounts[emotion] = (emotionCounts[emotion] ?? 0) + 1;
+         }
+      }
+
+      final healthAlertCount = events.length;
+
+      return SingleChildScrollView(
+         child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+               // 날짜 제목 (DateSelector 대신 날짜만 표시)
+               Column(
+                  children: [
+                     Text(
+                        title,
+                        style: const TextStyle(
+                           fontSize: AppConstants.titleFontSize - 6,
+                           fontWeight: FontWeight.bold,
+                        ),
+                     ),
+                     Text(
+                        dateStr,
+                        style: const TextStyle(
+                           fontSize: AppConstants.smallFontSize,
+                           color: AppColors.grey6,
+                        ),
+                     ),
+                  ],
+               ),
+               AppConstants.h20,
+               EmotionStatsSection(title: '감정 통계', events: events),
+               AppConstants.h20,
+               EmotionPieChart(emotionCounts: emotionCounts),
+               AppConstants.h20,
+               EmotionRatioBar(emotionCounts: emotionCounts),
+               AppConstants.h20,
+               TimeSlotBarChart(chartData: chartData),
+               AppConstants.h20,
+               HealthAlertCard(events: events, healthAlertCount: healthAlertCount),
+               AppConstants.h20,
+               AiReportSection(
+                  reportData: reportData,
+                  emotionCounts: emotionCounts,
+                  healthAlertCount: healthAlertCount,
+               ),
+               const SizedBox(height: 30),
          ],
          ),
       );

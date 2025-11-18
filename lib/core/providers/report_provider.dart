@@ -1,14 +1,15 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../services/report_service.dart';
+import '../services/report/report_service.dart';
+import '../services/report/mock_report_service.dart';
 import '../../models/calendar_data.dart';
 
 /// ReportService Provider
 final reportServiceProvider = Provider<ReportService>((ref) {
-  return ReportService();
+  return MockReportService();
 });
 
 /// 주간 리포트 주 시작 날짜 상태를 관리하는 Notifier
-/// 현재 주의 시작 날짜(월요일)를 관리하며, 최대 5일 이전까지만 이동 가능
+/// 현재 주의 시작 날짜(월요일)를 관리하며, 제한 없이 이동 가능
 class WeeklyReportDateNotifier extends Notifier<DateTime> {
   @override
   DateTime build() {
@@ -22,34 +23,23 @@ class WeeklyReportDateNotifier extends Notifier<DateTime> {
     return date.subtract(Duration(days: weekday - 1));
   }
 
-  /// 이전 주로 이동 (최대 5일 이전까지만)
-  /// 성공 시 true, 제한에 도달했으면 false 반환
-  bool previousWeek() {
-    final newDate = state.subtract(const Duration(days: 7));
-    final today = DateTime.now();
-    final todayWeekStart = _getWeekStart(today);
-    final minDate = todayWeekStart.subtract(const Duration(days: 5));
-    
-    if (newDate.isBefore(minDate)) {
-      return false; // 5일 이전 제한에 도달
-    }
-    
-    state = newDate;
-    return true;
+  /// 이전 주로 이동
+  void previousWeek() {
+    state = state.subtract(const Duration(days: 7));
   }
 
   /// 다음 주로 이동 (오늘 이후로는 이동 불가)
-  bool nextWeek() {
+  void nextWeek() {
     final newDate = state.add(const Duration(days: 7));
     final today = DateTime.now();
     final todayWeekStart = _getWeekStart(today);
     
+    // 오늘 이후로는 이동 불가
     if (newDate.isAfter(todayWeekStart)) {
-      return false; // 오늘 이후로는 이동 불가
+      return;
     }
     
     state = newDate;
-    return true;
   }
 
   /// 이번 주로 이동

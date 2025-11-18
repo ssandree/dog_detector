@@ -82,3 +82,54 @@ final mockWeatherData = [
     'color': '#71AF46'
   }
 ];
+
+// 홈 화면용 최근 감지 데이터
+final mockRecentDetection = {
+  'lastDetectedAt': DateTime.now().subtract(const Duration(minutes: 15)),
+};
+
+// 최근 감지된 감정 태그 (최근 3개)
+final mockRecentEmotionTags = [
+  {'emotion': '행복', 'detectedAt': DateTime.now().subtract(const Duration(minutes: 5)), 'confidence': 0.92},
+  {'emotion': '평온', 'detectedAt': DateTime.now().subtract(const Duration(minutes: 12)), 'confidence': 0.88},
+  {'emotion': '활발', 'detectedAt': DateTime.now().subtract(const Duration(minutes: 20)), 'confidence': 0.85},
+];
+
+// 최근 영상 목록
+final mockRecentVideos = [
+  {
+    'id': '1',
+    'thumbnailUrl': 'https://your-s3-url.com/videos/thumb1.jpg',
+    'duration': '00:15',
+    'detectedAt': DateTime.now().subtract(const Duration(minutes: 5)),
+    'emotion': '행복',
+  },
+  {
+    'id': '2',
+    'thumbnailUrl': 'https://your-s3-url.com/videos/thumb2.jpg',
+    'duration': '00:23',
+    'detectedAt': DateTime.now().subtract(const Duration(minutes: 12)),
+    'emotion': '평온',
+  },
+  {
+    'id': '3',
+    'thumbnailUrl': 'https://your-s3-url.com/videos/thumb3.jpg',
+    'duration': '00:18',
+    'detectedAt': DateTime.now().subtract(const Duration(minutes: 20)),
+    'emotion': '활발',
+  },
+  {
+    'id': '4',
+    'thumbnailUrl': 'https://your-s3-url.com/videos/thumb4.jpg',
+    'duration': '00:30',
+    'detectedAt': DateTime.now().subtract(const Duration(hours: 1)),
+    'emotion': '행복',
+  },
+  {
+    'id': '5',
+    'thumbnailUrl': 'https://your-s3-url.com/videos/thumb5.jpg',
+    'duration': '00:22',
+    'detectedAt': DateTime.now().subtract(const Duration(hours: 2)),
+    'emotion': '평온',
+  },
+];

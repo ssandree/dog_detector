@@ -1,5 +1,52 @@
 import '../../../../core/index_export.dart';
 
+/// 설정 섹션 위젯
+/// 제목과 자식 위젯들을 표시하며, 자식 위젯들 사이에 Divider를 추가합니다.
+class SettingsSection extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+  final EdgeInsets? padding;
+
+  const SettingsSection({
+    super.key,
+    required this.title,
+    required this.children,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSection(
+      title: title,
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _buildChildrenWithDividers(),
+      ),
+    );
+  }
+
+  List<Widget> _buildChildrenWithDividers() {
+    if (children.isEmpty) return children;
+    
+    List<Widget> result = [];
+    for (int i = 0; i < children.length; i++) {
+      result.add(children[i]);
+      // 마지막 항목이 아니면 Divider 추가
+      if (i < children.length - 1) {
+        result.add(const Divider(
+          height: 1,
+          color: AppColors.grey3,
+          thickness: 0.5,
+        ));
+      }
+    }
+    return result;
+  }
+}
+
+/// 설정 행 위젯
+/// 제목, 부제목, 그리고 오른쪽에 trailing 위젯을 표시합니다.
 class SettingRow extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -14,21 +61,24 @@ class SettingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasSubtitle = subtitle != null && subtitle!.isNotEmpty;
+    
     return Container(
       // 최소 높이를 설정하되 텍스트에 따라 자동으로 늘어나도록 함
       constraints: const BoxConstraints(minHeight: 60),
       padding: const EdgeInsets.only(left: 16, right: 16, top: 6, bottom: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: hasSubtitle ? CrossAxisAlignment.start : CrossAxisAlignment.center,
         children: [
           // 텍스트는 왼쪽 정렬 - 고정된 왼쪽 여백
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: hasSubtitle ? MainAxisAlignment.start : MainAxisAlignment.center,
+              mainAxisSize: hasSubtitle ? MainAxisSize.min : MainAxisSize.max,
               children: [
                 Text(title, style: const TextStyle(fontSize: 16)),
-                if (subtitle != null)
+                if (hasSubtitle)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
@@ -43,7 +93,7 @@ class SettingRow extends StatelessWidget {
           ),
           // 버튼은 오른쪽 정렬
           Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: EdgeInsets.only(top: hasSubtitle ? 6 : 0),
             child: trailing,
           ),
         ],
@@ -52,6 +102,8 @@ class SettingRow extends StatelessWidget {
   }
 }
 
+/// 액션 행 위젯
+/// 클릭 가능한 설정 행으로, trailingText를 표시하고 onTap 콜백을 실행합니다.
 class ActionRow extends StatelessWidget {
   final String title;
   final String? subtitle;

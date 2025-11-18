@@ -1,15 +1,16 @@
-import '../core/index_export.dart';
+import 'index_export.dart';
 import '../screens/main_screen.dart';
 import '../screens/mode_selection/mode_select_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/camera_mode/camera_home_screen.dart' as camera;
 import '../screens/camera_mode/camera_record_screen.dart';
 
-import '../screens/manager_mode/home/manager_home_screen.dart' as manager;
+import '../screens/manager_mode/manager_navigation.dart';
 import '../screens/manager_mode/notification/notification_screen.dart';
 import '../screens/manager_mode/settings/setting_screen.dart';
 import '../screens/manager_mode/dog_info/pet_regi_screen.dart';
 import '../screens/manager_mode/realtime/realtime_fullscreen.dart';
+import '../screens/manager_mode/detect_video/detect_video_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
 
@@ -27,6 +28,7 @@ class AppRoutes {
   static const String signup = '/auth/signup';
   static const String cameraRecord = '/camera/record';
   static const String realtimeFullscreen = '/realtime/fullscreen';
+  static const String detectVideo = '/detect-video';
 }
 
 /// GoRouter 생성 함수
@@ -63,7 +65,7 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.main}) {
     GoRoute(
       path: AppRoutes.managerHome,
       name: 'managerHome',
-      builder: (context, state) => const manager.HomeScreen(),
+      builder: (context, state) => const MainNavigation(),
     ),
     GoRoute(
       path: AppRoutes.notification,
@@ -94,6 +96,11 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.main}) {
         path: AppRoutes.realtimeFullscreen,
         name: 'realtimeFullscreen',
         builder: (context, state) => const RealtimeFullscreenScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.detectVideo,
+        name: 'detectVideo',
+        builder: (context, state) => const DetectVideoScreen(),
       ),
   ],
   errorBuilder: (context, state) => Scaffold(

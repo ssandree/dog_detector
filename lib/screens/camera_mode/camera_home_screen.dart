@@ -7,8 +7,9 @@ class HomeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return StandardScaffold(
+    return BaseScaffold(
       title: '캠모드',
+      showBackButton: true,
       onBackPressed: () => context.go(AppRoutes.main),
       body: Padding(
         padding: EdgeInsets.symmetric(

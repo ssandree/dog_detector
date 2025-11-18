@@ -1,4 +1,5 @@
 import '../../../../core/index_export.dart';
+import '../../../../data/notification_mock.dart';
 
 class NotificationItem extends StatelessWidget {
   final NotificationMessage notification;

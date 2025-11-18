@@ -53,15 +53,3 @@ class AuthException extends AppException {
   ]) : super(message, 'AUTH_ERROR', originalError);
 }
 
-/// 서버 관련 Exception
-/// 500 에러, 서버 오류 등
-class ServerException extends AppException {
-  final int? statusCode;
-
-  ServerException(
-    String message, [
-    this.statusCode,
-    Object? originalError,
-  ]) : super(message, 'SERVER_ERROR', originalError);
-}
-

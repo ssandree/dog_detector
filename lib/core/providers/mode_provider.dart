@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../storage/local_storage_keys.dart';
 import '../storage/local_storage_repository.dart';
+import 'storage_provider.dart';
 
 /// 앱 모드 열거형
 enum AppMode {
@@ -93,34 +94,6 @@ class AppModeNotifier extends Notifier<AppMode> {
   }
 }
 
-/// LocalStorageRepository Provider
-final localStorageRepositoryProvider = Provider<LocalStorageRepository>((ref) {
-  return LocalStorageRepository();
-});
-
 /// 앱 모드 상태를 관리하는 Provider
 final appModeProvider = NotifierProvider<AppModeNotifier, AppMode>(AppModeNotifier.new);
-
-/// 현재 선택된 모드를 쉽게 접근하기 위한 Provider
-final currentAppModeProvider = Provider<AppMode>((ref) {
-  return ref.watch(appModeProvider);
-});
-
-/// 모드가 선택되었는지 확인하는 Provider
-final isModeSelectedProvider = Provider<bool>((ref) {
-  final mode = ref.watch(appModeProvider);
-  return mode != AppMode.none;
-});
-
-/// 현재 모드가 캠 모드인지 확인하는 Provider
-final isCameraModeProvider = Provider<bool>((ref) {
-  final mode = ref.watch(appModeProvider);
-  return mode == AppMode.camera;
-});
-
-/// 현재 모드가 매니저 모드인지 확인하는 Provider
-final isManagerModeProvider = Provider<bool>((ref) {
-  final mode = ref.watch(appModeProvider);
-  return mode == AppMode.manager;
-});
 

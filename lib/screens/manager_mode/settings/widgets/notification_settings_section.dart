@@ -1,9 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../core/index_export.dart';
-import 'settings_section.dart';
 import 'setting_row.dart';
 import 'time_picker_modal.dart';
-import 'email_editor_modal.dart';
 import 'day_picker_modal.dart';
 
 /// 알림 설정 섹션
@@ -50,11 +48,6 @@ class NotificationSettingsSection extends ConsumerWidget {
           ),
         ),
         ActionRow(
-          title: '리포트 전송 이메일',
-          trailingText: alarmInfo.reportEmail,
-          onTap: () => _editEmail(context, alarmInfo.reportEmail, alarmNotifier),
-        ),
-        ActionRow(
           title: '리포트 전송 날짜',
           trailingText: alarmInfo.formattedReportDay,
           onTap: () => _pickDay(context, alarmInfo.reportDay, alarmNotifier),
@@ -71,18 +64,6 @@ class NotificationSettingsSection extends ConsumerWidget {
     );
     if (result != null) {
       await notifier.setPushTime(result);
-    }
-  }
-
-  Future<void> _editEmail(BuildContext context, String initialEmail, AlarmNotifier notifier) async {
-    final result = await EmailEditorModal.show(
-      context: context,
-      initialEmail: initialEmail,
-      title: '리포트 전송 이메일',
-      hintText: '이메일 입력',
-    );
-    if (result != null) {
-      await notifier.setReportEmail(result);
     }
   }
 

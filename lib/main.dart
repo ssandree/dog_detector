@@ -1,5 +1,4 @@
 import 'core/index_export.dart';
-import 'core/providers/mode_provider.dart';
 import 'core/services/auth/mock_auth_service.dart';
 import 'core/storage/local_storage_keys.dart';
 import 'core/storage/local_storage_repository.dart';

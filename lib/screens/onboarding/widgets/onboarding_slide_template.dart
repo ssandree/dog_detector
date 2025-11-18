@@ -6,13 +6,11 @@ class OnboardingSlideTemplate extends StatelessWidget {
     required this.imageAsset,
     required this.title,
     required this.description,
-    this.footer,
   });
 
   final String imageAsset;
   final String title;
   final String description;
-  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +48,6 @@ class OnboardingSlideTemplate extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          if (footer != null) ...[
-            AppConstants.h24,
-            footer!,
-          ],
         ],
       ),
     );

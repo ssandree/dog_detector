@@ -45,9 +45,9 @@ class AgeSectionState extends State<AgeSection> {
         // 생일 입력 여부 선택 (Segmented Control 스타일)
         Container(
           decoration: BoxDecoration(
-            color: AppColors.beige3,
+            color: AppColors.grey1,
             borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-            border: Border.all(color: AppColors.grey5, width: 1),
+            border: Border.all(color: AppColors.grey3, width: 1),
           ),
           child: Row(
             children: [
@@ -113,12 +113,14 @@ class AgeSectionState extends State<AgeSection> {
           InkWell(
             onTap: _selectBirthday,
             child: Container(
-              padding: const EdgeInsets.all(16),
+              height: 56, // TextFormField와 동일한 높이로 통일
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.grey5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Icon(Icons.calendar_today, color: AppColors.grey7),
                   const SizedBox(width: 12),
@@ -149,16 +151,20 @@ class AgeSectionState extends State<AgeSection> {
             ),
           ],
         ] else ...[
-          TextFormField(
-            controller: widget.ageController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: '나이',
-              hintText: '나이를 입력해주세요',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.cake),
-              suffixText: '살',
-            ),
+          SizedBox(
+            height: 56, // 생일 입력칸과 동일한 높이로 통일
+            child: TextFormField(
+              controller: widget.ageController,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(fontSize: 16),
+              decoration: const InputDecoration(
+                labelText: '나이',
+                hintText: '나이를 입력해주세요',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.cake),
+                suffixText: '살',
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return '나이를 입력해주세요';
@@ -169,6 +175,7 @@ class AgeSectionState extends State<AgeSection> {
               }
               return null;
             },
+            ),
           ),
         ],
       ],

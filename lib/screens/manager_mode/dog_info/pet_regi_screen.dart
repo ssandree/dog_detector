@@ -1,5 +1,7 @@
 import '../../../core/index_export.dart';
-import 'widgets/widget_export.dart';
+import 'widgets/basic_info_section.dart';
+import 'widgets/age_section.dart';
+import 'widgets/weight_section.dart';
 
 class PetRegiScreen extends ConsumerStatefulWidget {
   final PetInfo? existingPetInfo;
@@ -35,7 +37,7 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
     if (_isInitialized) return;
     
     _nameController.text = petInfo.name;
-    _weightController.text = petInfo.weight.toString();
+    _weightController.text = petInfo.weightKg?.toString() ?? '';
     
     // AgeSection은 initialBirthday와 initialHasBirthday를 통해 초기화됨
     if (petInfo.age != null && petInfo.birthday == null) {
@@ -81,7 +83,23 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
               children: [
                 AppConstants.h12,
                 // 프로필 이미지 섹션
-                const ProfileImageSection(),
+                Center(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: AppColors.beige3,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.grey5, width: 2),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '🐕',
+                        style: TextStyle(fontSize: 60),
+                      ),
+                    ),
+                  ),
+                ),
                 AppConstants.h24,
                 
                 // 기본 정보 입력 폼
@@ -145,13 +163,15 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
     }
 
     final petInfo = PetInfo(
+      petId: widget.existingPetInfo?.petId,
+      userId: widget.existingPetInfo?.userId,
       name: name,
-      age: age,
-      birthday: birthday,
-      weight: weight,
       breed: widget.existingPetInfo?.breed,
-      gender: widget.existingPetInfo?.gender,
+      birthDate: birthday,
+      weightKg: weight,
       photoUrl: widget.existingPetInfo?.photoUrl,
+      age: age,
+      gender: widget.existingPetInfo?.gender,
     );
 
     try {

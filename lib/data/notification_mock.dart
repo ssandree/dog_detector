@@ -1,5 +1,21 @@
-import '../models/notification_message.dart';
+/// 알림 메시지 데이터 클래스
+class NotificationMessage {
+  final String id;
+  final String title;
+  final String body;
+  final DateTime sentAt;
+  final bool isRead;
 
+  const NotificationMessage({
+    required this.id,
+    required this.title,
+    required this.body,
+    required this.sentAt,
+    this.isRead = false,
+  });
+}
+
+/// Mock 알림 메시지 목록
 final List<NotificationMessage> mockNotificationMessages = [
   NotificationMessage(
     id: 'notif-001',

@@ -23,34 +23,25 @@ class AiReportSection extends StatelessWidget {
     // AI 리포트 텍스트
     final aiComment = reportData['aiComment'] as String? ?? '오늘 도도의 하루를 AI가 요약했어요!';
     
-    // 감정 비율 계산
-    final positiveEmotions = ['행복', '편안'];
-    final negativeEmotions = ['불안', '화남', '공포', '공격성'];
-    int positiveCount = 0;
-    int negativeCount = 0;
-    for (var entry in emotionCounts.entries) {
-      if (positiveEmotions.contains(entry.key)) {
-        positiveCount += entry.value;
-      } else if (negativeEmotions.contains(entry.key)) {
-        negativeCount += entry.value;
-      }
-    }
-    final totalEmotionCount = positiveCount + negativeCount;
-    final negativePercent = totalEmotionCount > 0 ? (negativeCount / totalEmotionCount * 100).round() : 0;
-    final positivePercent = totalEmotionCount > 0 ? (positiveCount / totalEmotionCount * 100).round() : 0;
+    // reportData에서 분석 텍스트 가져오기
+    final analysisTextsData = reportData['analysisTexts'] as List<dynamic>?;
+    final analysisTexts = analysisTextsData != null
+        ? analysisTextsData.map((text) => text.toString()).toList()
+        : _generateDefaultAnalysisTexts();
     
-    // 분석 텍스트 생성
-    final analysisTexts = [
-      '하루 중 부정적인 감정이 $negativePercent%로 긍정적인 감정 $positivePercent%보다 ${negativePercent > positivePercent ? '높았습니다' : '낮았습니다'}.',
-      '오늘 슬개골 탈구 의심 행동이 총 $healthAlertCount회 감지되었습니다. 현재 단계는 \'관심\'에 해당하며, 무릎 관절에 부담이 있었을 수 있으니 보호자의 관찰이 필요합니다.',
-    ];
+    // reportData에서 가이드 아이템 가져오기
+    final guideItemsData = reportData['guideItems'] as List<dynamic>?;
+    final guideItems = guideItemsData != null
+        ? guideItemsData.map((item) => item.toString()).toList()
+        : _generateDefaultGuideItems();
     
-    // 가이드 아이템
-    final guideItems = [
-      '오늘은 무리한 산책이나 계단 오르내리기, 잦은 점프 같은 활동은 피하는 것이 좋습니다.',
-      '내일도 같은 행동이 반복된다면 가까운 동물병원에 상담을 권장합니다.',
-      '대신 가벼운 산책이나 실내 놀이를 통해 스트레스를 완화시켜주는 것이 도도의 정서 안정에도 도움이 될 수 있습니다.',
-    ];
+    // reportData에서 statusLabel과 statusColor 가져오기 (없으면 props 사용)
+    final reportStatusLabel = reportData['statusLabel'] as String?;
+    final reportStatusColorName = reportData['statusColor'] as String?;
+    final finalStatusLabel = reportStatusLabel ?? statusLabel;
+    final finalStatusColor = reportStatusColorName != null
+        ? _getColorByName(reportStatusColorName)
+        : statusColor;
 
     return Container(
       padding: AppConstants.cameraSettingPadding,
@@ -78,11 +69,11 @@ class AiReportSection extends StatelessWidget {
                   vertical: AppConstants.smallSpacing - 4,
                 ),
                 decoration: BoxDecoration(
-                  color: statusColor,
+                  color: finalStatusColor,
                   borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
                 ),
                 child: Text(
-                  statusLabel,
+                  finalStatusLabel,
                   style: const TextStyle(
                     fontSize: AppConstants.smallFontSize,
                     fontWeight: FontWeight.bold,
@@ -159,5 +150,85 @@ class AiReportSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 기본 분석 텍스트 생성 (reportData에 없을 때 사용)
+  List<String> _generateDefaultAnalysisTexts() {
+    // 감정 비율 계산
+    final positiveEmotions = ['행복', '편안'];
+    final negativeEmotions = ['불안', '화남', '공포', '공격성'];
+    int positiveCount = 0;
+    int negativeCount = 0;
+    for (var entry in emotionCounts.entries) {
+      if (positiveEmotions.contains(entry.key)) {
+        positiveCount += entry.value;
+      } else if (negativeEmotions.contains(entry.key)) {
+        negativeCount += entry.value;
+      }
+    }
+    final totalEmotionCount = positiveCount + negativeCount;
+    final negativePercent = totalEmotionCount > 0 ? (negativeCount / totalEmotionCount * 100).round() : 0;
+    final positivePercent = totalEmotionCount > 0 ? (positiveCount / totalEmotionCount * 100).round() : 0;
+    
+    // 건강 알림 단계 결정
+    String healthStage = '관심';
+    if (healthAlertCount >= 10) {
+      healthStage = '위험';
+    } else if (healthAlertCount >= 5) {
+      healthStage = '주의';
+    }
+    
+    return [
+      '하루 중 부정적인 감정이 $negativePercent%로 긍정적인 감정 $positivePercent%보다 ${negativePercent > positivePercent ? '높았습니다' : '낮았습니다'}.',
+      '오늘 슬개골 탈구 의심 행동이 총 $healthAlertCount회 감지되었습니다. 현재 단계는 \'$healthStage\'에 해당하며, 무릎 관절에 부담이 있었을 수 있으니 보호자의 관찰이 필요합니다.',
+    ];
+  }
+
+  /// 기본 가이드 아이템 생성 (reportData에 없을 때 사용)
+  List<String> _generateDefaultGuideItems() {
+    if (healthAlertCount == 0) {
+      return [
+        '오늘은 건강한 하루였어요! 계속해서 도도를 관찰해주세요.',
+      ];
+    } else if (healthAlertCount < 5) {
+      return [
+        '오늘은 무리한 산책이나 계단 오르내리기, 잦은 점프 같은 활동은 피하는 것이 좋습니다.',
+        '내일도 같은 행동이 반복된다면 가까운 동물병원에 상담을 권장합니다.',
+        '대신 가벼운 산책이나 실내 놀이를 통해 스트레스를 완화시켜주는 것이 도도의 정서 안정에도 도움이 될 수 있습니다.',
+      ];
+    } else if (healthAlertCount < 10) {
+      return [
+        '주의가 필요한 수준입니다. 활동량을 줄이고 휴식을 취하도록 해주세요.',
+        '가까운 동물병원에 상담을 받는 것을 권장합니다.',
+        '무리한 운동이나 계단 오르내리기는 피해주세요.',
+      ];
+    } else {
+      return [
+        '위험 단계입니다. 즉시 동물병원에 방문하여 전문의 상담을 받으세요.',
+        '수술을 고려해야 할 수 있으므로 전문의와 상담하여 치료 계획을 세우세요.',
+        '도도의 활동을 최소화하고 안정을 취하도록 해주세요.',
+      ];
+    }
+  }
+
+  /// 색상 이름으로 Color 객체 반환
+  Color _getColorByName(String colorName) {
+    switch (colorName.toLowerCase()) {
+      case 'green5':
+        return AppColors.green5;
+      case 'green3':
+        return AppColors.green3;
+      case 'coral4':
+        return AppColors.coral4;
+      case 'coral3':
+        return AppColors.coral3;
+      case 'error':
+      case 'errorred':
+        return AppColors.errorRed;
+      case 'activitystatuscolor':
+        return AppColors.activityStatusColor;
+      default:
+        return AppColors.green5;
+    }
   }
 }

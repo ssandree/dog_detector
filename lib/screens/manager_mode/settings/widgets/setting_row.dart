@@ -17,36 +17,33 @@ class SettingRow extends StatelessWidget {
     return Container(
       // 최소 높이를 설정하되 텍스트에 따라 자동으로 늘어나도록 함
       constraints: const BoxConstraints(minHeight: 60),
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 6, bottom: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 텍스트는 왼쪽 정렬 - 고정된 왼쪽 여백
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(title, style: const TextStyle(fontSize: 16)),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        subtitle!,
-                        style: TextStyle(fontSize: 12, color: AppColors.grey8),
-                        maxLines: 3, // 최대 3줄까지 허용
-                        overflow: TextOverflow.ellipsis,
-                      ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 16)),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      subtitle!,
+                      style: TextStyle(fontSize: 12, color: AppColors.grey8),
+                      maxLines: 3, // 최대 3줄까지 허용
+                      overflow: TextOverflow.ellipsis,
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
           // 버튼은 오른쪽 정렬
           Padding(
-            padding: const EdgeInsets.only(right: 16, top: 6),
+            padding: const EdgeInsets.only(top: 6),
             child: trailing,
           ),
         ],
@@ -79,14 +76,14 @@ class ActionRow extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 텍스트는 왼쪽 정렬 - 고정된 왼쪽 여백
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
+                    padding: EdgeInsets.only(top: trailingText == null ? 6 : 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -109,7 +106,7 @@ class ActionRow extends StatelessWidget {
                 // trailingText가 있으면 오른쪽에 표시
                 if (trailingText != null)
                   Padding(
-                    padding: const EdgeInsets.only(right: 8, top: 8),
+                    padding: const EdgeInsets.only(left: 16, top: 8),
                     child: Text(
                       trailingText!,
                       style: TextStyle(fontSize: 14, color: AppColors.grey9),

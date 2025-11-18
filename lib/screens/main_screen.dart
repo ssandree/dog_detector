@@ -26,7 +26,7 @@ class MainScreen extends StatelessWidget {
                 height: 60,
                 text: '시작하기',
                 onPressed: () {
-                  context.push(AppRoutes.login);
+                  context.push(AppRoutes.onboarding);
                 },
               ),
             ),

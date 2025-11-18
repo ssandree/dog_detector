@@ -60,11 +60,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     switch (_currentIndex) {
       case 0:
-        return BaseScaffold(
-          useCollapsingHeader: true,
-          collapseHeaderHeight: statusBarHeight + 80,
-          collapseHeaderTitle: '견심술',
-          collapseHeaderActions: [
+        return CollapsibleScaffold(
+          headerTitle: '견심술',
+          headerHeight: statusBarHeight + 80,
+          headerActions: [
             IconButton(
               icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
               onPressed: () => context.push(AppRoutes.notification),
@@ -74,51 +73,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               onPressed: () => context.push(AppRoutes.settings),
             ),
           ],
-          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );
 
       case 1:
-        return BaseScaffold(
-          useCollapsingHeader: true,
-          collapseHeaderHeight: statusBarHeight + 80,
-          collapseHeaderTitle: '실시간 모니터링',
-          collapseHeaderActions: [
+        return CollapsibleScaffold(
+          headerTitle: '실시간 모니터링',
+          headerHeight: statusBarHeight + 80,
+          headerActions: [
             IconButton(
               icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
               onPressed: () => context.push(AppRoutes.notification),
             ),
           ],
-          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );
 
       case 2:
-        return BaseScaffold(
-          useCollapsingHeader: true,
-          collapseHeaderTitle: '분석리포트',
-          collapseHeaderHeight: statusBarHeight + 80 + kTextTabBarHeight + 16,
-          collapseCustomHeader: _buildReportHeader(context),
-          collapseFillRemaining: true,
-          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+        return CollapsibleScaffold(
+          headerTitle: '분석리포트',
+          headerHeight: statusBarHeight + 80 + kTextTabBarHeight + 16,
+          header: _buildReportHeader(context),
+          fillRemaining: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );
 
       case 3:
-        return BaseScaffold(
-          useCollapsingHeader: true,
-          collapseHeaderHeight: statusBarHeight + 80,
-          collapseHeaderTitle: '캘린더',
-          collapseHeaderActions: [
+        return CollapsibleScaffold(
+          headerTitle: '캘린더',
+          headerHeight: statusBarHeight + 80,
+          headerActions: [
             IconButton(
               icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
               onPressed: () => context.push(AppRoutes.notification),
             ),
           ],
-          collapsePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );

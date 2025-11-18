@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../models/pet_info.dart';
 import '../services/pet_service.dart';
-import 'app_provider.dart';
+import 'mode_provider.dart';
 
 /// PetInfo 상태를 관리하는 Notifier
 /// 
@@ -118,7 +118,7 @@ class PetListNotifier extends Notifier<AsyncValue<List<PetInfo>>> {
 /// PetService Provider (싱글톤)
 /// Service 인스턴스를 생성하여 재사용합니다.
 final petServiceProvider = Provider<PetService>((ref) {
-  final storage = ref.watch(localStorageServiceProvider);
+  final storage = ref.watch(localStorageRepositoryProvider);
   return PetService(storage);
 });
 

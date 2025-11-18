@@ -109,9 +109,10 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
                 AppButtons.primary(
                   text: isEditMode ? '정보 수정하기' : '강아지 등록하기',
                   onPressed: _registerPet,
-                  backgroundColor: AppColors.green6,
+                  backgroundColor: AppColors.green5,
                   height: 56,
                 ),
+                AppConstants.h24,
               ],
             ),
           ),

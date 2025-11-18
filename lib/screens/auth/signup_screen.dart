@@ -16,6 +16,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _nameController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isSubmitting = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -28,6 +30,41 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<AuthInfo?>>(authProvider, (previous, next) {
+      if (!_isSubmitting) return;
+
+      next.when(
+        data: (authInfo) {
+          if (authInfo != null) {
+            if (!mounted) return;
+            setState(() {
+              _isSubmitting = false;
+              _errorMessage = null;
+            });
+            AppToast.success(context, '회원가입이 완료되었습니다!');
+            context.pop();
+          } else {
+            if (!mounted) return;
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
+        },
+        loading: () {},
+        error: (error, stackTrace) {
+          if (!mounted) return;
+          setState(() {
+            _isSubmitting = false;
+            _errorMessage = _mapError(error);
+          });
+        },
+      );
+    });
+
+    final authState = ref.watch(authProvider);
+    final isLoading = _isSubmitting && authState.isLoading;
+    final hasError = _errorMessage != null && !isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -190,7 +227,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 AppConstants.h32,
                 
                 // 회원가입 버튼
-                _buildSignupButton(),
+                AppButtons.primary(
+                  text: '회원가입',
+                  onPressed: isLoading ? null : _submit,
+                  isLoading: isLoading,
+                ),
+                if (hasError)
+                  AppErrorBanner(
+                    message: _errorMessage ?? '회원가입에 실패했습니다. 다시 시도해주세요.',
+                    onRetry: isLoading ? null : _submit,
+                  ),
                 
                 AppConstants.h32,
                 
@@ -206,60 +252,30 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
   }
 
-  Widget _buildSignupButton() {
-    final authAsync = ref.watch(authProvider);
-    
-    return authAsync.when(
-      data: (authInfo) => AppButtons.primary(
-        text: '회원가입',
-        onPressed: () => _handleSignup(),
-        isLoading: false,
-      ),
-      loading: () => AppButtons.primary(
-        text: '회원가입',
-        onPressed: null,
-        isLoading: true,
-      ),
-      error: (error, stack) => AppButtons.primary(
-        text: '회원가입',
-        onPressed: () => _handleSignup(),
-        isLoading: false,
-      ),
-    );
-  }
-
-  Future<void> _handleSignup() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    if (_isSubmitting) return;
 
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final name = _nameController.text.trim();
 
-    try {
-      await ref.read(authProvider.notifier).signup(email, password, name);
-      
-      if (mounted) {
-        final authState = ref.read(authProvider);
-        authState.when(
-          data: (authInfo) {
-            if (authInfo != null) {
-              AppToast.success(context, '회원가입이 완료되었습니다!');
-              context.pop();
-            }
-          },
-          loading: () {},
-          error: (error, stack) {
-            AppToast.error(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
-          },
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    await ref.read(authProvider.notifier).signup(
+          email,
+          password,
+          name,
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        AppToast.error(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
-      }
-    }
+  }
+
+  String _mapError(Object? error) {
+    return '회원가입에 실패했습니다. 다시 시도해주세요.';
   }
 }
 

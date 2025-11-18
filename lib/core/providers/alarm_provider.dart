@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../models/alarm_info.dart';
-import '../services/alarm_service.dart';
-import 'app_provider.dart';
+import '../services/alarm/alarm_service.dart';
+import '../services/alarm/mock_alarm_service.dart';
+import 'mode_provider.dart';
 
 /// AlarmInfo 상태를 관리하는 Notifier
 /// 
@@ -16,8 +17,8 @@ class AlarmNotifier extends Notifier<AlarmInfo> {
   @override
   AlarmInfo build() {
     _alarmService = ref.watch(alarmServiceProvider);
-    // 초기화 시 저장된 알림 설정 로드
-    loadAlarmSettings();
+    // 초기화 시 저장된 알림 설정 로드 (비동기 작업은 별도로 처리)
+    Future.microtask(() => loadAlarmSettings());
     return const AlarmInfo();
   }
 
@@ -25,7 +26,7 @@ class AlarmNotifier extends Notifier<AlarmInfo> {
   /// Service를 호출하여 알림 설정을 가져옵니다.
   Future<void> loadAlarmSettings() async {
     try {
-      final alarmInfo = await _alarmService.loadAlarmSettings();
+      final alarmInfo = await _alarmService.loadSettings();
       state = alarmInfo;
     } catch (e) {
       // 에러 발생 시 기본값 유지
@@ -37,7 +38,7 @@ class AlarmNotifier extends Notifier<AlarmInfo> {
   /// Service를 호출하여 현재 상태를 저장합니다.
   Future<void> saveAlarmSettings() async {
     try {
-      await _alarmService.saveAlarmSettings(state);
+      await _alarmService.saveSettings(state);
     } catch (e) {
       // TODO: 에러 처리 (예: Toast 표시)
     }
@@ -82,8 +83,8 @@ class AlarmNotifier extends Notifier<AlarmInfo> {
 
 /// AlarmService Provider
 final alarmServiceProvider = Provider<AlarmService>((ref) {
-  final storage = ref.watch(localStorageServiceProvider);
-  return AlarmService(storage);
+  final storage = ref.watch(localStorageRepositoryProvider);
+  return MockAlarmService(storage);
 });
 
 /// AlarmInfo 상태를 관리하는 Provider

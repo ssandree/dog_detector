@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../services/local_storage_service.dart';
+import '../storage/local_storage_keys.dart';
+import '../storage/local_storage_repository.dart';
 
 /// 앱 모드 열거형
 enum AppMode {
@@ -20,11 +21,11 @@ enum AppMode {
 /// - 모드 변경 시 UI 자동 업데이트
 /// - 모드 상태 저장/복원 (SharedPreferences)
 class AppModeNotifier extends Notifier<AppMode> {
-  late final LocalStorageService _storage;
+  late final LocalStorageRepository _storage;
 
   @override
   AppMode build() {
-    _storage = ref.watch(localStorageServiceProvider);
+    _storage = ref.watch(localStorageRepositoryProvider);
     // 초기화 시 저장된 모드 로드
     _loadSavedMode();
     return AppMode.none;
@@ -34,7 +35,7 @@ class AppModeNotifier extends Notifier<AppMode> {
   /// SharedPreferences에서 저장된 모드를 불러옵니다.
   Future<void> _loadSavedMode() async {
     try {
-      final savedModeString = await _storage.getAppMode();
+      final savedModeString = await _storage.loadString(LocalStorageKeys.appMode);
       if (savedModeString != null) {
         final savedMode = AppMode.values.firstWhere(
           (mode) => mode.name == savedModeString,
@@ -56,9 +57,9 @@ class AppModeNotifier extends Notifier<AppMode> {
     try {
       state = mode;
       if (mode == AppMode.none) {
-        await _storage.clearAppMode();
+        await _storage.remove(LocalStorageKeys.appMode);
       } else {
-        await _storage.saveAppMode(mode.name);
+        await _storage.saveString(LocalStorageKeys.appMode, mode.name);
       }
     } catch (e) {
       // 에러 발생 시에도 상태는 변경
@@ -92,9 +93,9 @@ class AppModeNotifier extends Notifier<AppMode> {
   }
 }
 
-/// LocalStorageService Provider
-final localStorageServiceProvider = Provider<LocalStorageService>((ref) {
-  return LocalStorageService();
+/// LocalStorageRepository Provider
+final localStorageRepositoryProvider = Provider<LocalStorageRepository>((ref) {
+  return LocalStorageRepository();
 });
 
 /// 앱 모드 상태를 관리하는 Provider

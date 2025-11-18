@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/index_export.dart';
-import '../../../core/providers/app_provider.dart';
+import '../../../core/providers/mode_provider.dart';
 
 class ModeSelectionSection extends ConsumerWidget {
    const ModeSelectionSection({

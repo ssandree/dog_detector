@@ -14,11 +14,39 @@ class TimeSlotBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeSlotData = chartData.map((item) {
-      final hour = item['hour'] as String? ?? '00';
+    // 시간대별로 데이터 그룹화 (오전: 0-11, 오후: 12-17, 저녁: 18-23)
+    final morningActivity = <int>[];
+    final afternoonActivity = <int>[];
+    final eveningActivity = <int>[];
+
+    for (final item in chartData) {
+      final hour = int.tryParse(item['hour'] as String? ?? '0') ?? 0;
       final activity = item['activity'] as int? ?? 0;
-      return {'hour': hour, 'activity': activity};
-    }).toList();
+      
+      if (hour < 12) {
+        morningActivity.add(activity);
+      } else if (hour < 18) {
+        afternoonActivity.add(activity);
+      } else {
+        eveningActivity.add(activity);
+      }
+    }
+
+    // 각 시간대별 활동량 합산
+    final morningTotal = morningActivity.fold<int>(0, (sum, activity) => sum + activity);
+    final afternoonTotal = afternoonActivity.fold<int>(0, (sum, activity) => sum + activity);
+    final eveningTotal = eveningActivity.fold<int>(0, (sum, activity) => sum + activity);
+
+    // 최대값 계산 (Y축 범위 설정용)
+    final maxActivity = [morningTotal, afternoonTotal, eveningTotal].reduce((a, b) => a > b ? a : b);
+    final maxY = maxActivity > 0 ? (maxActivity * 1.2).ceil().toDouble() : 20.0;
+
+    // 시간대별 데이터 (x: 0=오전, 1=오후, 2=저녁)
+    final timeSlotGroups = [
+      {'x': 0, 'activity': morningTotal, 'color': AppColors.green5, 'label': '오전'},
+      {'x': 1, 'activity': afternoonTotal, 'color': AppColors.coral4, 'label': '오후'},
+      {'x': 2, 'activity': eveningTotal, 'color': AppColors.green3, 'label': '저녁'},
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +70,7 @@ class TimeSlotBarChart extends StatelessWidget {
           child: BarChart(
             BarChartData(
               alignment: BarChartAlignment.spaceAround,
-              maxY: 20,
+              maxY: maxY,
               barTouchData: BarTouchData(
                 enabled: true,
                 touchTooltipData: BarTouchTooltipData(
@@ -68,6 +96,7 @@ class TimeSlotBarChart extends StatelessWidget {
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
+                    reservedSize: 40,
                     getTitlesWidget: (double value, TitleMeta meta) {
                       const style = TextStyle(
                         color: Colors.grey,
@@ -101,7 +130,7 @@ class TimeSlotBarChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 40,
-                    interval: 5,
+                    interval: maxY > 0 ? (maxY / 5).ceil().toDouble() : 5,
                     getTitlesWidget: (double value, TitleMeta meta) {
                       return Text(
                         value.toInt().toString(),
@@ -118,25 +147,13 @@ class TimeSlotBarChart extends StatelessWidget {
               borderData: FlBorderData(
                 show: false,
               ),
-              barGroups: timeSlotData.asMap().entries.map((entry) {
-                final index = entry.key;
-                final data = entry.value;
-                final activity = data['activity'] as int? ?? 0;
-                final hour = int.tryParse(data['hour'] as String? ?? '0') ?? 0;
-                final isMorning = hour < 12;
-                final isAfternoon = hour >= 12 && hour < 18;
-                final color = isMorning 
-                  ? AppColors.green5 
-                  : isAfternoon 
-                    ? AppColors.coral4 
-                    : AppColors.green3;
-                
+              barGroups: timeSlotGroups.map((group) {
                 return BarChartGroupData(
-                  x: index,
+                  x: group['x'] as int,
                   barRods: [
                     BarChartRodData(
-                      toY: activity.toDouble(),
-                      color: color,
+                      toY: (group['activity'] as int).toDouble(),
+                      color: group['color'] as Color,
                       width: 22,
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(4),

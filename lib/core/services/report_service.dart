@@ -37,6 +37,16 @@ class ReportService {
     try {
       // TODO: 실제 API 호출로 변경
       await Future.delayed(const Duration(milliseconds: 300)); // 로딩 시뮬레이션
+      
+      // 날짜를 'YYYY-MM-DD' 형식으로 변환
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      
+      // mockDailyReports에서 해당 날짜의 데이터 찾기
+      if (mockDailyReports.containsKey(dateKey)) {
+        return Map<String, dynamic>.from(mockDailyReports[dateKey]!);
+      }
+      
+      // 데이터가 없으면 기본 리포트 반환 (하위 호환성)
       return Map<String, dynamic>.from(mockDailyReport);
     } on AppException {
       rethrow;

@@ -22,6 +22,7 @@ export '../widgets/widget_export.dart';
 
 // App Core
 export 'app_routes.dart';
+export 'providers/notification_provider.dart';
 
 // Providers
 export 'providers/pet_provider.dart';
@@ -29,8 +30,9 @@ export 'providers/alarm_provider.dart';
 export 'providers/home_provider.dart';
 export 'providers/report_provider.dart';
 export 'providers/auth_provider.dart';
-export 'providers/app_provider.dart';
+export 'providers/mode_provider.dart';
 
 // Models
 export '../models/auth_info.dart';
 export '../models/pet_info.dart';
+export '../models/notification_message.dart';

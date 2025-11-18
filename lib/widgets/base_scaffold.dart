@@ -1,5 +1,95 @@
 import '../core/index_export.dart';
 
+class StandardScaffold extends StatelessWidget {
+  final String? title;
+  final Widget body;
+  final bool showBackButton;
+  final VoidCallback? onBackPressed;
+  final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
+  final bool showNotification;
+  final VoidCallback? onNotificationPressed;
+  final bool useSafeArea;
+  final Widget? floatingActionButton;
+  final Widget? bottomNavigationBar;
+
+  const StandardScaffold({
+    super.key,
+    this.title,
+    required this.body,
+    this.showBackButton = false,
+    this.onBackPressed,
+    this.actions,
+    this.bottom,
+    this.showNotification = false,
+    this.onNotificationPressed,
+    this.useSafeArea = true,
+    this.floatingActionButton,
+    this.bottomNavigationBar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseScaffold(
+      title: title,
+      body: body,
+      showBackButton: showBackButton,
+      onBackPressed: onBackPressed,
+      actions: actions,
+      bottom: bottom,
+      showNotification: showNotification,
+      onNotificationPressed: onNotificationPressed,
+      useSafeArea: useSafeArea,
+      floatingActionButton: floatingActionButton,
+      bottomNavigationBar: bottomNavigationBar,
+    );
+  }
+}
+
+class CollapsibleScaffold extends StatelessWidget {
+  final Widget body;
+  final double headerHeight;
+  final double? collapsedHeight;
+  final Widget? header;
+  final String? headerTitle;
+  final List<Widget>? headerActions;
+  final EdgeInsets? contentPadding;
+  final Widget? floatingActionButton;
+  final Widget? bottomNavigationBar;
+  final bool fillRemaining;
+
+  const CollapsibleScaffold({
+    super.key,
+    required this.body,
+    required this.headerHeight,
+    this.collapsedHeight,
+    this.header,
+    this.headerTitle,
+    this.headerActions,
+    this.contentPadding,
+    this.floatingActionButton,
+    this.bottomNavigationBar,
+    this.fillRemaining = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseScaffold(
+      body: body,
+      useCollapsingHeader: true,
+      collapseHeaderHeight: headerHeight,
+      collapseCollapsedHeight: collapsedHeight,
+      collapseCustomHeader: header,
+      collapseHeaderTitle: headerTitle,
+      collapseHeaderActions: headerActions,
+      collapsePadding: contentPadding,
+      collapseFillRemaining: fillRemaining,
+      floatingActionButton: floatingActionButton,
+      bottomNavigationBar: bottomNavigationBar,
+    );
+  }
+}
+
 /// 앱 전체에서 사용할 기본 Scaffold 위젯
 class BaseScaffold extends StatelessWidget {
   final String? title;
@@ -15,6 +105,7 @@ class BaseScaffold extends StatelessWidget {
   final Widget? bottomNavigationBar;
   final bool useCollapsingHeader;
   final double? collapseHeaderHeight;
+  final double? collapseCollapsedHeight;
   final Widget? collapseCustomHeader;
   final String? collapseHeaderTitle;
   final List<Widget>? collapseHeaderActions;
@@ -36,6 +127,7 @@ class BaseScaffold extends StatelessWidget {
     this.bottomNavigationBar,
     this.useCollapsingHeader = false,
     this.collapseHeaderHeight,
+    this.collapseCollapsedHeight,
     this.collapseCustomHeader,
     this.collapseHeaderTitle,
     this.collapseHeaderActions,
@@ -67,6 +159,7 @@ class BaseScaffold extends StatelessWidget {
         customHeader: header,
         padding: collapsePadding,
         fillRemaining: collapseFillRemaining,
+        collapsedHeight: collapseCollapsedHeight,
         child: content,
       );
     } else if (useSafeArea) {
@@ -157,7 +250,17 @@ class BaseScaffold extends StatelessWidget {
     required Widget child,
     EdgeInsets? padding,
     bool fillRemaining = false,
+    double? collapsedHeight,
   }) {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    double effectiveCollapsedHeight = collapsedHeight ?? (kToolbarHeight + statusBarHeight);
+    if (effectiveCollapsedHeight >= headerHeight) {
+      effectiveCollapsedHeight = headerHeight * 0.6;
+    }
+    if (effectiveCollapsedHeight <= 0) {
+      effectiveCollapsedHeight = headerHeight * 0.5;
+    }
+
     return CustomScrollView(
       key: PageStorageKey('collapsingScroll_${title ?? ''}'),
       physics: const BouncingScrollPhysics(),
@@ -165,7 +268,7 @@ class BaseScaffold extends StatelessWidget {
         SliverAppBar(
           automaticallyImplyLeading: false,
           expandedHeight: headerHeight,
-          collapsedHeight: headerHeight, // 접힘 상태에서도 동일 높이 유지
+          collapsedHeight: effectiveCollapsedHeight,
           pinned: false,
           floating: false, // 애니메이션 없이 안정적
           backgroundColor: Colors.white,
@@ -207,7 +310,7 @@ class HorizontalPadding extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding ?? AppConstants.smallPadding.horizontal,
+        horizontal: horizontalPadding ?? 16.0,
       ),
       child: child,
     );

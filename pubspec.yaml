@@ -65,3 +65,7 @@ flutter:
 
   assets:
     - lib/config/logo.png
+    - lib/config/puppy.jpg
+    - lib/config/onboarding_1st.jpg
+    - lib/config/onboarding_2nd.jpg
+    - lib/config/onboarding_3rd.jpg

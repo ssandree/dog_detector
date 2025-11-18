@@ -9,15 +9,43 @@ import 'app_colors.dart';
 class AppTheme {
   /// 라이트 테마 설정
   static ThemeData get lightTheme {
+    final baseTextTheme = GoogleFonts.notoSansKrTextTheme();
+
     return ThemeData(
-      // Material 3 디자인 시스템 사용
       useMaterial3: true,
-      
-      // 기본 배경색 (BaseScaffold에서도 사용 가능)
+      colorScheme: ColorScheme(
+        brightness: Brightness.light,
+        primary: AppColors.beige4,
+        onPrimary: AppColors.white,
+        secondary: AppColors.coral3,
+        onSecondary: AppColors.white,
+        background: AppColors.white,
+        onBackground: AppColors.grey12,
+        surface: AppColors.white,
+        onSurface: AppColors.grey12,
+        error: AppColors.errorRed,
+        onError: AppColors.white,
+      ),
       scaffoldBackgroundColor: AppColors.white,
-      
-      // 폰트 설정 - Google Fonts Noto Sans KR 사용
-      textTheme: GoogleFonts.notoSansKrTextTheme(),
+      textTheme: baseTextTheme.copyWith(
+        headlineMedium: baseTextTheme.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppColors.grey12,
+        ),
+        titleLarge: baseTextTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppColors.grey12,
+        ),
+        bodyLarge: baseTextTheme.bodyLarge?.copyWith(
+          color: AppColors.grey9,
+        ),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+          color: AppColors.grey8,
+        ),
+        labelMedium: baseTextTheme.labelMedium?.copyWith(
+          color: AppColors.grey7,
+        ),
+      ),
       fontFamily: GoogleFonts.notoSansKr().fontFamily,
     );
   }

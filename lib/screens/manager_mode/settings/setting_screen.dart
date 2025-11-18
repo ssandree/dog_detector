@@ -9,7 +9,7 @@ class SettingScreen extends ConsumerWidget {
 
    @override
    Widget build(BuildContext context, WidgetRef ref) {
-      return BaseScaffold(
+      return StandardScaffold(
          title: '환경설정',
          showBackButton: true,
          body: SingleChildScrollView(

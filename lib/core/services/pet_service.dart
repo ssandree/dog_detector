@@ -3,17 +3,18 @@ import '../../models/pet_info.dart';
 import '../../data/pet_mock.dart';
 import '../../data/pet_mock_converter.dart';
 import '../exceptions.dart';
-import 'local_storage_service.dart';
+import '../storage/local_storage_keys.dart';
+import '../storage/local_storage_repository.dart';
 
 /// 반려동물 정보 관련 비즈니스 로직을 처리하는 Service
 /// 
 /// 역할:
 /// - 데이터 소스(API/Mock)와 통신
-/// - LocalStorageService를 통해 로컬 저장
+/// - LocalStorageRepository를 통해 로컬 저장
 /// - Mock 데이터를 Model로 변환
 /// - 에러를 적절한 Exception으로 변환
 class PetService {
-  final LocalStorageService _storage;
+  final LocalStorageRepository _storage;
 
   PetService(this._storage);
   /// 반려동물 정보 조회
@@ -24,7 +25,7 @@ class PetService {
   Future<PetInfo> getPetInfo(String petId) async {
     try {
       // 로컬 저장소에서 먼저 조회
-      final petInfoJson = await _storage.getPetInfo();
+      final petInfoJson = await _storage.loadString(LocalStorageKeys.petInfo);
       if (petInfoJson != null && petInfoJson.isNotEmpty) {
         try {
           final petInfoMap = jsonDecode(petInfoJson) as Map<String, dynamic>;
@@ -62,7 +63,7 @@ class PetService {
     try {
       // 로컬 저장소에 저장
       final petInfoJson = jsonEncode(petInfo.toJson());
-      await _storage.savePetInfo(petInfoJson);
+      await _storage.saveString(LocalStorageKeys.petInfo, petInfoJson);
       
       // TODO: 실제 API 호출로 변경
       await Future.delayed(const Duration(milliseconds: 500));
@@ -89,7 +90,7 @@ class PetService {
     try {
       // 로컬 저장소에 저장
       final petInfoJson = jsonEncode(petInfo.toJson());
-      await _storage.savePetInfo(petInfoJson);
+      await _storage.saveString(LocalStorageKeys.petInfo, petInfoJson);
       
       // TODO: 실제 API 호출로 변경
       await Future.delayed(const Duration(milliseconds: 500));
@@ -113,7 +114,7 @@ class PetService {
   Future<void> deletePetInfo(String petId) async {
     try {
       // 로컬 저장소에서 삭제
-      await _storage.clearPetInfo();
+      await _storage.remove(LocalStorageKeys.petInfo);
       
       // TODO: 실제 API 호출로 변경
       await Future.delayed(const Duration(milliseconds: 500));

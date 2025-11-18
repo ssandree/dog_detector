@@ -19,9 +19,11 @@ class DailyReport extends ConsumerWidget {
   Widget _buildContent(BuildContext context, WidgetRef ref, Map<String, dynamic> reportData) {
     final selectedDate = ref.watch(dailyReportDateProvider);
     
-    // 날짜 처리
-    final date = reportData['date'] as String? ?? '2025-10-11';
-    final dateTime = DateTime.tryParse(date) ?? selectedDate;
+    // 날짜 처리 - reportData에 날짜가 있으면 사용하고, 없으면 selectedDate 사용
+    final dateString = reportData['date'] as String?;
+    final dateTime = dateString != null 
+        ? (DateTime.tryParse(dateString) ?? selectedDate)
+        : selectedDate;
     final dateStr =
         '${dateTime.year.toString().substring(2)}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}';
 

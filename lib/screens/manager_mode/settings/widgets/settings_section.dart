@@ -14,19 +14,13 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _SectionHeader(title: title),
-        AppCards.basic(
-          padding: padding ?? const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: _buildChildrenWithDividers(),
-          ),
-        ),
-      ],
+    return AppSection(
+      title: title,
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _buildChildrenWithDividers(),
+      ),
     );
   }
 
@@ -42,25 +36,5 @@ class SettingsSection extends StatelessWidget {
       }
     }
     return result;
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: AppColors.grey8,
-        ),
-      ),
-    );
   }
 }

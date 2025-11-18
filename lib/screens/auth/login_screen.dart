@@ -11,9 +11,46 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<LoginFormState>();
+  bool _isSubmitting = false;
+  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<AuthInfo?>>(authProvider, (previous, next) {
+      if (!_isSubmitting) return;
+
+      next.when(
+        data: (authInfo) {
+          if (authInfo != null) {
+            if (!mounted) return;
+            setState(() {
+              _isSubmitting = false;
+              _errorMessage = null;
+            });
+            AppToast.success(context, '로그인 성공!');
+            context.go(AppRoutes.modeSelect);
+          } else {
+            if (!mounted) return;
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
+        },
+        loading: () {},
+        error: (error, stackTrace) {
+          if (!mounted) return;
+          setState(() {
+            _isSubmitting = false;
+            _errorMessage = _mapError(error);
+          });
+        },
+      );
+    });
+
+    final authState = ref.watch(authProvider);
+    final isLoading = _isSubmitting && authState.isLoading;
+    final hasError = _errorMessage != null && !isLoading;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -34,19 +71,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         Text(
                           '견심술',
-                          style: TextStyle(
-                            fontSize: AppConstants.largeTitleFontSize,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.appBarColor,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: AppColors.appBarColor,
+                              ),
                         ),
                         AppConstants.h8,
                         Text(
                           '강아지의 마음을 읽어보세요',
-                          style: TextStyle(
-                            fontSize: AppConstants.defaultFontSize,
-                            color: AppColors.grey8,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
                     ),
@@ -56,11 +88,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   
                   // 로그인 폼
                   LoginForm(key: _formKey),
+                  if (hasError)
+                    AppErrorBanner(
+                      message: _errorMessage ?? '로그인에 실패했습니다. 다시 시도해주세요.',
+                      onRetry: isLoading ? null : _submit,
+                    ),
                   
                   AppConstants.h32,
               
                   // 버튼들
-                  _buildLoginButton(),
+                  AppButtons.primary(
+                    text: '로그인',
+                    onPressed: isLoading ? null : _submit,
+                    isLoading: isLoading,
+                  ),
                   AppConstants.h24,
                   
                   // 로그인 없이 이용 버튼
@@ -76,7 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   AppButtons.outline(
                     text: '(임시) 이전 페이지로 돌아가기',
                     onPressed: () {
-                      context.go(AppRoutes.main);
+                      context.push(AppRoutes.main);
                     },
                   ),
                 ],
@@ -94,59 +135,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildLoginButton() {
-    final authAsync = ref.watch(authProvider);
-    
-    return authAsync.when(
-      data: (authInfo) => AppButtons.primary(
-        text: '로그인',
-        onPressed: () => _handleLogin(),
-        isLoading: false,
-      ),
-      loading: () => AppButtons.primary(
-        text: '로그인',
-        onPressed: null,
-        isLoading: true,
-      ),
-      error: (error, stack) => AppButtons.primary(
-        text: '로그인',
-        onPressed: () => _handleLogin(),
-        isLoading: false,
-      ),
-    );
-  }
-
-  Future<void> _handleLogin() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    if (_isSubmitting) return;
 
     final email = _formKey.currentState!.email;
     final password = _formKey.currentState!.password;
 
-    try {
-      await ref.read(authProvider.notifier).login(email, password);
-      
-      if (mounted) {
-        final authState = ref.read(authProvider);
-        authState.when(
-          data: (authInfo) {
-            if (authInfo != null) {
-              AppToast.success(context, '로그인 성공!');
-              context.go(AppRoutes.modeSelect);
-            }
-          },
-          loading: () {},
-          error: (error, stack) {
-            AppToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
-          },
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        AppToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
-      }
-    }
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    await ref.read(authProvider.notifier).login(email, password);
+  }
+
+  String _mapError(Object? error) {
+    return '로그인에 실패했습니다. 다시 시도해주세요.';
   }
 }
 

@@ -26,55 +26,63 @@ class AppErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultSpacing),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 에러 아이콘
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: AppConstants.defaultSpacing),
-            
-            // 에러 메시지
-            Text(
-              message,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.black,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            
-            // 상세 정보 (개발 모드에서만 표시)
-            if (details != null) ...[
-              const SizedBox(height: AppConstants.smallSpacing),
-              Text(
-                details!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.grey6,
+    return Container(
+      color: AppColors.white,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 400,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.defaultSpacing),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 에러 아이콘
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppColors.error,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            
-            // 재시도 버튼
-            if (onRetry != null) ...[
-              const SizedBox(height: AppConstants.defaultSpacing),
-              AppButtons.primary(
-                text: '다시 시도',
-                icon: Icons.refresh,
-                onPressed: onRetry,
-              ),
-            ],
-          ],
+                const SizedBox(height: AppConstants.defaultSpacing),
+                
+                // 에러 메시지
+                Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                // 상세 정보 (개발 모드에서만 표시)
+                if (details != null) ...[
+                  const SizedBox(height: AppConstants.smallSpacing),
+                  Text(
+                    details!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.grey6,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                
+                // 재시도 버튼
+                if (onRetry != null) ...[
+                  const SizedBox(height: AppConstants.defaultSpacing),
+                  AppButtons.primary(
+                    text: '다시 시도',
+                    icon: Icons.refresh,
+                    onPressed: onRetry,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

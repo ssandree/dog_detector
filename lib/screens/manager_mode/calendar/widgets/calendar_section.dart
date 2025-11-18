@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import '../calendar_modal.dart';
 import '../../../../core/index_export.dart';
 import '../../../../core/utils/emotion_ratio_calculator.dart';
+import '../../../../data/report_mock.dart';
 
 class CalendarSection extends ConsumerStatefulWidget {
   const CalendarSection({super.key});
@@ -21,13 +22,34 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
 
   @override
   Widget build(BuildContext context) {
-    // 현재 표시 중인 월의 데이터 가져오기
-    final monthlyCalendarAsync = ref.watch(
-      monthlyCalendarProvider((year: _focusedDay.year, month: _focusedDay.month)),
-    );
-    
-    // 주간 감정 비율 계산 (임시로 빈 맵 사용, 추후 월간 데이터에서 추출하도록 수정 필요)
+    // 날짜별 감정 비율 계산 (mockDailyReports 기반)
     final weeklyRatios = <String, double>{};
+    
+    // 현재 월의 모든 날짜에 대해 비율 계산
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final firstDayOfMonth = DateTime(_focusedDay.year, _focusedDay.month, 1);
+    final lastDayOfMonth = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
+    final endDate = today.isBefore(lastDayOfMonth) ? today : lastDayOfMonth;
+    
+    // 각 날짜에 대해 mockDailyReports에서 데이터 가져와서 비율 계산
+    for (var date = firstDayOfMonth; 
+        date.isBefore(endDate.add(const Duration(days: 1))); 
+        date = date.add(const Duration(days: 1))) {
+      final dateKey = '${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final fullDateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      
+      // mockDailyReports에서 해당 날짜의 데이터 찾기
+      if (mockDailyReports.containsKey(fullDateKey)) {
+        final reportData = mockDailyReports[fullDateKey]!;
+        final events = reportData['events'] as List<dynamic>? ?? [];
+        final ratio = EmotionRatioCalculator.calculateNegativeRatio(events);
+        weeklyRatios[dateKey] = ratio;
+      } else {
+        // 데이터가 없으면 기본 비율 (0.3)
+        weeklyRatios[dateKey] = 0.3;
+      }
+    }
     
     return Container(
       height: 410, // 오버플로우 방지를 위해 높이 증가 (380 + 30)

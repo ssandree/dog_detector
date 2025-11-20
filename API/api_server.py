@@ -4,9 +4,10 @@ AI API 서버 - 프론트엔드와 직접 통신
 실시간 강아지 탐지 및 영상 분석 API
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Depends, Security 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 import uvicorn
 import asyncio
 from typing import Dict, Optional
@@ -16,9 +17,30 @@ import requests
 import tempfile
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
 # AI 서비스 import
 from ai_service import get_ai_service
+
+# =================================================================
+# 🛡️ API 보안 설정: API Key 인증 추가
+# =================================================================
+load_dotenv()  # .env 파일에서 환경 변수 로드
+# 1. 보안 종속성 정의: 요청 헤더에서 "X-API-Key"를 찾도록 설정
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+# 2. 비밀 키 정의 (🚨 이 부분에 고객님이 설정한 비밀 키를 입력하세요!)
+# TODO: 환경 변수나 .env 파일에서 불러오는 것을 권장합니다.
+API_SECRET_KEY = os.getenv("API_SECRET_KEY")
+
+# 3. API 키 검증 함수
+async def get_api_key(api_key: str = Security(api_key_header)):
+    if api_key == API_SECRET_KEY:
+        return api_key
+    # 키가 없거나 틀릴 경우 401 Unauthorized 에러 발생
+    raise HTTPException(
+        status_code=401,
+        detail="API Key가 유효하지 않습니다. X-API-Key 헤더에 정확한 키를 포함해야 합니다."
+    )
 
 # FastAPI 앱 생성
 app = FastAPI(
@@ -30,10 +52,14 @@ app = FastAPI(
 # CORS 설정 (프론트엔드 연결용)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 실제 배포시에는 특정 도메인으로 제한
+    allow_origins=[
+        "*",
+        "http://dog-det.ddns.net", # 예시: "http://dog-det.ddns.net"
+        "http://dog-det.ddns.net:8000" # 포트 포함
+                ],  # 실제 배포시에는 특정 도메인으로 제한
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-API-Key"],
 )
 
 # AI 서비스 인스턴스
@@ -44,7 +70,7 @@ async def root():
     """API 상태 확인"""
     return {"message": "강아지 AI 분석 서버가 실행중입니다 🐕"}
 
-@app.post("/api/detect-realtime")
+@app.post("/api/detect-realtime", dependencies=[Depends(get_api_key)])
 async def detect_dog_realtime(
     file: UploadFile = File(...),
     camera_id: str = Form(...)
@@ -75,14 +101,13 @@ async def detect_dog_realtime(
         # 프론트엔드용 단순화된 응답 형식 (카메라 ID 포함)
         return JSONResponse(content={
             "camera_id": camera_id,
-            "should_start_recording": detection_result["should_record"],
             "confidence": detection_result["confidence"]
         })
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"실시간 탐지 실패: {str(e)}")
 
-@app.post("/api/analyze-video-url")
+@app.post("/api/analyze-video-url", dependencies=[Depends(get_api_key)]) # <--- 인증 추가
 async def analyze_video_from_url(video_url: str = Form(...)):
     """
     클라우드 URL로부터 MP4 영상 완전 분석
@@ -135,7 +160,7 @@ async def analyze_video_from_url(video_url: str = Form(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"MP4 분석 실패: {str(e)}")
 
-@app.post("/api/analyze-video-file")
+@app.post("/api/analyze-video-file", dependencies=[Depends(get_api_key)])
 async def analyze_video_file(file: UploadFile = File(...)):
     """
     업로드된 MP4 파일 완전 분석
@@ -179,7 +204,7 @@ async def analyze_video_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"MP4 분석 실패: {str(e)}")
 
-@app.get("/api/analysis/{dog_id}")
+@app.get("/api/analysis/{dog_id}", dependencies=[Depends(get_api_key)])
 async def get_analysis_result(dog_id: str):
     """분석 결과 조회"""
     try:
@@ -193,7 +218,7 @@ async def get_analysis_result(dog_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"조회 실패: {str(e)}")
 
-@app.get("/api/health-summary/{dog_id}")
+@app.get("/api/health-summary/{dog_id}", dependencies=[Depends(get_api_key)])
 async def get_health_summary(dog_id: str):
     """건강 상태 요약 조회"""
     try:

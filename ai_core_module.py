@@ -272,7 +272,7 @@ class AIModelInterface:
             # 가중치 로드
             video_weight_path = ai_train_dir / "best_dog_emotion_model_f1.pth"
             if video_weight_path.exists():
-                checkpoint = torch.load(video_weight_path, map_location='cpu')
+                checkpoint = torch.load(video_weight_path, map_location='cpu', weights_only=False)
                 # [수정] checkpoint에서 model_state_dict 추출
                 if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
                     self.video_model.load_state_dict(checkpoint['model_state_dict'])
@@ -291,12 +291,12 @@ class AIModelInterface:
         print("🎵 음성 감정 모델 로딩...")
         try:
             if VGGISH_AVAILABLE:
-                # DogVGGishTrainer 생성 후 가중치 로드
-                self.audio_trainer = DogVGGishTrainer(num_arousal_classes=3, num_valence_classes=3)
+                # DogVGGishTrainer 생성 후 가중치 로드 (CPU 디바이스 강제 설정)
+                self.audio_trainer = DogVGGishTrainer(num_arousal_classes=3, num_valence_classes=3, device='cpu')
                 audio_weight_path = ai_train_dir / "audio_emotion_model.pt"
                 if audio_weight_path.exists():
                     self.audio_trainer.load_model(str(audio_weight_path))
-                    print(f"✅ 음성 모델 로드 완료: {audio_weight_path}")
+                    print(f"✅ 음성 모델 로드 완료: {audio_weight_path} (CPU 모드)")
                 else:
                     print(f"⚠️ 음성 모델 파일 없음: {audio_weight_path}")
                 self.audio_model = self.audio_trainer  # trainer 객체를 그대로 사용
@@ -314,7 +314,7 @@ class AIModelInterface:
             self.patella_model = PatellaSTGCN(in_channels=3, num_classes=2, dropout=0.5)  # 2-class로 변경
             
             if patella_model_path.exists():
-                checkpoint = torch.load(patella_model_path, map_location='cpu')
+                checkpoint = torch.load(patella_model_path, map_location='cpu', weights_only=False)
                 # checkpoint 구조 확인
                 if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
                     self.patella_model.load_state_dict(checkpoint['model_state_dict'])
@@ -338,7 +338,7 @@ class AIModelInterface:
         try:
             emotion_stats_path = ai_train_dir / "dog_pose_stats.pt"
             if emotion_stats_path.exists():
-                stats = torch.load(emotion_stats_path, map_location='cpu')
+                stats = torch.load(emotion_stats_path, map_location='cpu', weights_only=False)
                 self.emotion_mean, self.emotion_std = stats['mean'], stats['std']
                 print(f"✅ 감정 모델 통계 로드 완료: {emotion_stats_path}")
             else:
@@ -353,7 +353,7 @@ class AIModelInterface:
         try:
             patella_stats_path = Path(__file__).parent / "dog_pattela_model" / "patella_stats_seg60.pt"
             if patella_stats_path.exists():
-                patella_stats = torch.load(patella_stats_path, map_location='cpu')
+                patella_stats = torch.load(patella_stats_path, map_location='cpu', weights_only=False)
                 self.patella_mean, self.patella_std = patella_stats['mean'], patella_stats['std']
                 print(f"✅ 슬개골 모델 통계 로드 완료: {patella_stats_path}")
             else:
@@ -367,7 +367,43 @@ class AIModelInterface:
         self.patella_seg_len = 60  # 슬개골 모델용
         self.emotion_labels = ["편안/안정", "불안/슬픔", "공포", "공격성"]
         self.keypoint_names = list(DogDetectionCore("").keypoint_mapping.values())
+        
+        # 슬개골 분석 움직임 임계값 설정
+        self.movement_threshold = 5.0  # 프레임 간 평균 이동량 (픽셀)
+        
         print("✅ AI 인터페이스 초기화 완료")
+    
+    def _check_movement(self, frames_data: np.ndarray, threshold: float = 5.0) -> bool:
+        """
+        프레임 간 키포인트 움직임을 감지하여 강아지가 실제로 움직이는지 확인
+        Args:
+            frames_data: numpy array of shape (T, V, 3) - T: 프레임 수, V: 키포인트 수, 3: (x, y, confidence)
+            threshold: 프레임 간 평균 이동량 임계값 (픽셀)
+        Returns:
+            bool: 움직임이 감지되면 True, 아니면 False
+        """
+        if len(frames_data) < 2:
+            return False
+        
+        # x, y 좌표만 추출 (confidence 제외)
+        coords = frames_data[:, :, :2]  # (T, V, 2)
+        
+        # 프레임 간 차이 계산
+        frame_diffs = np.diff(coords, axis=0)  # (T-1, V, 2)
+        
+        # 각 프레임의 키포인트별 이동 거리 계산 (유클리드 거리)
+        movement_distances = np.sqrt(np.sum(frame_diffs**2, axis=2))  # (T-1, V)
+        
+        # 전체 평균 이동량 계산
+        mean_movement = np.mean(movement_distances)
+        
+        # 임계값보다 큰 움직임이 있는지 확인
+        has_movement = mean_movement > threshold
+        
+        print(f"🏃 움직임 분석: 평균 이동량 = {mean_movement:.2f} 픽셀 (임계값: {threshold:.2f})")
+        
+        return has_movement
+
 
     def _preprocess_joints(self, json_path: str, seg_len: int, for_patella: bool = False) -> torch.Tensor:
         """
@@ -427,10 +463,11 @@ class AIModelInterface:
         # 7. 배치 및 멤버 차원 추가 (1, C, T, V, 1)
         return tensor.unsqueeze(0).unsqueeze(-1)
 
-    def _predict_emotion_from_video(self, keypoint_json_path: str, use_video_level_avg: bool = True) -> dict:
+    def _predict_emotion_from_video(self, keypoint_json_path: str, use_video_level_avg: bool = True, debug: bool = False) -> dict:
         """
         포즈 모델에서 4개 감정에 대한 확률값 출력
         [수정] 학습 시와 동일하게 비디오 레벨 평균 적용 옵션 추가
+        [디버깅] 신뢰도 0 문제 해결을 위한 디버깅 정보 추가
         """
         # 전체 프레임 로드하여 슬라이딩 윈도우로 분할
         with open(keypoint_json_path, 'r', encoding='utf-8') as f: 
@@ -446,17 +483,21 @@ class AIModelInterface:
             frames_data.append(frame_joints)
         
         if not frames_data:
+            if debug: print(f"⚠️ 프레임 데이터 없음")
             return {name: 0.0 for name in self.emotion_labels}
         
         sample = np.array(frames_data, dtype=np.float32)
         sample = self._smooth_and_interpolate(sample)
         
         num_frames = sample.shape[0]
+        if debug: print(f"🔍 프레임 수: {num_frames}, seg_len: {self.seg_len}")
         
         # 슬라이딩 윈도우 방식으로 여러 세그먼트 생성 (학습 시와 동일)
         if use_video_level_avg and num_frames >= self.seg_len:
             all_probs = []
             stride = max(self.seg_len // 3, 1)  # 33% 오버랩
+            
+            if debug: print(f"🔍 슬라이딩 윈도우 모드: stride={stride}")
             
             for start_idx in range(0, num_frames - self.seg_len + 1, stride):
                 segment = sample[start_idx : start_idx + self.seg_len]
@@ -468,21 +509,37 @@ class AIModelInterface:
                 tensor = (permuted_tensor - self.emotion_mean) / (self.emotion_std.clamp(min=1e-6))
                 tensor = tensor.permute(2, 0, 1).unsqueeze(0).unsqueeze(-1)
                 
+                if debug: print(f"🔍 텐서 형태: {tensor.shape}")
+                
                 # 추론
                 with torch.no_grad():
                     output = self.video_model(tensor)
+                    if debug: print(f"🔍 모델 출력: {output}")
                     prob = torch.softmax(output, dim=1)[0]
+                    if debug: print(f"🔍 softmax 확률: {prob}")
                     all_probs.append(prob)
             
+            if debug: print(f"🔍 총 {len(all_probs)}개 세그먼트 처리됨")
+            
             # 확률 평균 (학습 시와 동일)
-            mean_prob = torch.mean(torch.stack(all_probs), dim=0)
-            probabilities = mean_prob
+            if all_probs:
+                mean_prob = torch.mean(torch.stack(all_probs), dim=0)
+                probabilities = mean_prob
+                if debug: print(f"🔍 평균 확률: {probabilities}")
+            else:
+                probabilities = torch.zeros(len(self.emotion_labels))
+                if debug: print(f"⚠️ 처리된 세그먼트 없음, 0으로 설정")
         else:
             # 단일 세그먼트 (기존 방식)
+            if debug: print(f"🔍 단일 세그먼트 모드")
             input_tensor = self._preprocess_joints(keypoint_json_path, self.seg_len)
+            if debug: print(f"🔍 전처리된 텐서 형태: {input_tensor.shape}")
+            
             with torch.no_grad(): 
                 output = self.video_model(input_tensor)
+                if debug: print(f"🔍 모델 출력: {output}")
                 probabilities = torch.softmax(output, dim=1)[0]
+                if debug: print(f"🔍 softmax 확률: {probabilities}")
         
         # 4개 감정에 대한 확률값 반환
         video_emotion_probs = {}
@@ -491,6 +548,8 @@ class AIModelInterface:
                 video_emotion_probs[name] = float(probabilities[i].item())
             else:
                 video_emotion_probs[name] = 0.0
+        
+        if debug: print(f"🔍 최종 감정 확률: {video_emotion_probs}")
         
         return video_emotion_probs
 
@@ -522,7 +581,7 @@ class AIModelInterface:
                 
                 # 실제 소리가 있는지 확인 (RMS 기반)
                 rms_value = np.sqrt(np.mean(wav_data**2))
-                silence_threshold = 0.001  # 조정 가능한 임계값
+                silence_threshold = 0.005  # 매우 낮게 설정 (거의 모든 음성 허용)
                 
                 has_sound = rms_value > silence_threshold
                 
@@ -563,45 +622,170 @@ class AIModelInterface:
         try:
             # VGGish 트레이너가 있고 실제 모델이 로드된 경우
             if hasattr(self, 'audio_trainer') and hasattr(self.audio_trainer, 'forward'):
-                # 실제 음성 전처리 및 추론은 트레이너의 기존 메서드 활용
-                # 간단한 더미 데이터로 테스트 (실제로는 audio_path를 전처리해야 함)
-                dummy_input = torch.zeros(1, 1, 96, 64)  # VGGish 입력 형태
-                with torch.no_grad():
-                    arousal_out, valence_out = self.audio_trainer.forward(dummy_input)
-                    arousal_probs = torch.softmax(arousal_out, dim=1)[0]
-                    valence_probs = torch.softmax(valence_out, dim=1)[0]
+                # 실제 음성 파일을 VGGish 입력으로 전처리
+                try:
+                    from torchvggish import vggish_input
+                    import soundfile as sf
                     
-                arousal_labels = ["Low", "Medium", "High"]
-                valence_labels = ["Negative", "Neutral", "Positive"]
-                
-                arousal_pred = int(torch.argmax(arousal_probs).item())
-                valence_pred = int(torch.argmax(valence_probs).item())
-                
-                return {
-                    "arousal": arousal_labels[arousal_pred],
-                    "valence": valence_labels[valence_pred],
-                    "arousal_confidence": float(arousal_probs[arousal_pred].item()),
-                    "valence_confidence": float(valence_probs[valence_pred].item()),
-                    "audio_available": True,
-                    "audio_check": audio_check
-                }
+                    # 원본 오디오 로드 (세그먼트별 음량 체크용)
+                    wav_data, sr = sf.read(audio_path, dtype='float32')
+                    if wav_data.ndim > 1:
+                        wav_data = wav_data.mean(axis=1)
+                    
+                    # VGGish 전처리: audio_path를 멜 스펙트로그램으로 변환
+                    # 반환값: (num_segments, 1, 96, 64) 형태
+                    vggish_features = vggish_input.wavfile_to_examples(audio_path)
+                    
+                    if len(vggish_features) == 0:
+                        print(f"⚠️ VGGish 특징 추출 실패: 세그먼트 0개")
+                        return {
+                            "arousal": None,
+                            "valence": None,
+                            "arousal_confidence": 0.0,
+                            "valence_confidence": 0.0,
+                            "arousal_distribution": {},
+                            "valence_distribution": {},
+                            "audio_available": False,
+                            "audio_check": audio_check
+                        }
+                    
+                    # 세그먼트별 음량 체크 (VGGish는 0.96초 세그먼트 사용)
+                    segment_duration = 0.96  # VGGish 기본 세그먼트 길이
+                    segment_hop = 0.96       # 겹치지 않음
+                    segment_rms_threshold = 0.001  # 세그먼트 음량 threshold (전체 파일보다 높게)
+                    
+                    valid_segment_indices = []
+                    total_segments = len(vggish_features)
+                    
+                    for seg_idx in range(total_segments):
+                        # 세그먼트의 시작/끝 샘플 인덱스
+                        start_sample = int(seg_idx * segment_hop * sr)
+                        end_sample = int(start_sample + segment_duration * sr)
+                        end_sample = min(end_sample, len(wav_data))
+                        
+                        # 해당 구간의 RMS 계산
+                        segment_audio = wav_data[start_sample:end_sample]
+                        if len(segment_audio) > 0:
+                            segment_rms = np.sqrt(np.mean(segment_audio**2))
+                            
+                            # Threshold보다 높은 구간만 유효
+                            if segment_rms > segment_rms_threshold:
+                                valid_segment_indices.append(seg_idx)
+                    
+                    # 유효한 세그먼트가 없으면 음성 없음으로 처리
+                    if len(valid_segment_indices) == 0:
+                        print(f"⚠️ 유효한 음성 세그먼트 없음 (전체 {total_segments}개 중 0개)")
+                        return {
+                            "arousal": None,
+                            "valence": None,
+                            "arousal_confidence": 0.0,
+                            "valence_confidence": 0.0,
+                            "arousal_distribution": {},
+                            "valence_distribution": {},
+                            "audio_available": False,
+                            "audio_check": audio_check
+                        }
+                    
+                    print(f"🔊 유효 음성 구간: {len(valid_segment_indices)}/{total_segments} 세그먼트 ({len(valid_segment_indices)/total_segments*100:.1f}%)")
+                    
+                    # 유효한 세그먼트만 평가에 사용
+                    all_arousal_probs = []
+                    all_valence_probs = []
+                    
+                    # 배치 단위로 처리 (메모리 절약)
+                    batch_size = 32
+                    for i in range(0, len(valid_segment_indices), batch_size):
+                        batch_indices = valid_segment_indices[i:i+batch_size]
+                        
+                        # 유효한 세그먼트만 선택
+                        if isinstance(vggish_features, np.ndarray):
+                            batch = vggish_features[batch_indices]
+                            batch_tensor = torch.from_numpy(batch).float().to('cpu')
+                        else:
+                            batch = vggish_features[batch_indices]
+                            batch_tensor = batch.float().to('cpu')
+                        
+                        with torch.no_grad():
+                            arousal_out, valence_out = self.audio_trainer.forward(batch_tensor)
+                            arousal_probs = torch.softmax(arousal_out, dim=1)
+                            valence_probs = torch.softmax(valence_out, dim=1)
+                            
+                            all_arousal_probs.append(arousal_probs)
+                            all_valence_probs.append(valence_probs)
+                    
+                    # 유효한 세그먼트들의 평균 확률
+                    mean_arousal_probs = torch.cat(all_arousal_probs, dim=0).mean(dim=0)
+                    mean_valence_probs = torch.cat(all_valence_probs, dim=0).mean(dim=0)
+                    
+                    arousal_labels = ["Low", "Medium", "High"]
+                    valence_labels = ["Negative", "Neutral", "Positive"]
+                    
+                    arousal_pred = int(torch.argmax(mean_arousal_probs).item())
+                    valence_pred = int(torch.argmax(mean_valence_probs).item())
+                    
+                    # Arousal과 Valence의 전체 확률 분포 생성
+                    arousal_distribution = {
+                        arousal_labels[i]: float(mean_arousal_probs[i].item()) 
+                        for i in range(len(arousal_labels))
+                    }
+                    valence_distribution = {
+                        valence_labels[i]: float(mean_valence_probs[i].item()) 
+                        for i in range(len(valence_labels))
+                    }
+                    
+                    print(f"✅ 음성 분석 완료: Arousal={arousal_labels[arousal_pred]}, Valence={valence_labels[valence_pred]} (유효 세그먼트 {len(valid_segment_indices)}개)")
+                    
+                    return {
+                        "arousal": arousal_labels[arousal_pred],
+                        "valence": valence_labels[valence_pred],
+                        "arousal_confidence": float(mean_arousal_probs[arousal_pred].item()),
+                        "valence_confidence": float(mean_valence_probs[valence_pred].item()),
+                        "arousal_distribution": arousal_distribution,
+                        "valence_distribution": valence_distribution,
+                        "audio_available": True,
+                        "audio_check": audio_check,
+                        "valid_segments": len(valid_segment_indices),
+                        "total_segments": total_segments
+                    }
+                    
+                except Exception as e:
+                    print(f"⚠️ VGGish 전처리 또는 추론 실패: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return {
+                        "arousal": None,
+                        "valence": None,
+                        "arousal_confidence": 0.0,
+                        "valence_confidence": 0.0,
+                        "arousal_distribution": {},
+                        "valence_distribution": {},
+                        "audio_available": False,
+                        "audio_check": audio_check
+                    }
             else:
-                # 기본값 반환
+                # 모델이 없는 경우
+                print(f"⚠️ 음성 모델 없음")
                 return {
-                    "arousal": "Medium", 
-                    "valence": "Neutral", 
-                    "arousal_confidence": 0.5, 
-                    "valence_confidence": 0.5,
-                    "audio_available": True,
+                    "arousal": None,
+                    "valence": None,
+                    "arousal_confidence": 0.0,
+                    "valence_confidence": 0.0,
+                    "arousal_distribution": {},
+                    "valence_distribution": {},
+                    "audio_available": False,
                     "audio_check": audio_check
                 }
         except Exception as e:
             print(f"⚠️ 음성 감정 분석 실패: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 "arousal": None,
                 "valence": None, 
                 "arousal_confidence": 0.0,
                 "valence_confidence": 0.0,
+                "arousal_distribution": {},
+                "valence_distribution": {},
                 "audio_available": False,
                 "audio_check": audio_check
             }
@@ -613,6 +797,7 @@ class AIModelInterface:
         
         # 2. 음성 모델에서 Arousal/Valence 예측 (유효성 체크 포함)
         audio_av = self._predict_av_from_audio(audio_path)
+        print(f"🎵 DEBUG - audio_av 결과: arousal={audio_av.get('arousal')}, valence={audio_av.get('valence')}, audio_available={audio_av.get('audio_available')}")
         
         # 3. 음성 유무에 따른 분석 방식 결정
         analysis_mode = "pose_only" if not audio_av.get("audio_available", True) else "multimodal"
@@ -626,9 +811,15 @@ class AIModelInterface:
                 "primary_emotion": "unknown",
                 "confidence": 0.0,
                 "analysis_mode": analysis_mode,
+                "emotion_probabilities": {},
                 "details": {"error": "Failed to calculate emotion probabilities."},
                 "video_emotion": video_probs,
-                "audio_arousal_valence": audio_av
+                "audio_arousal_valence": audio_av,
+                "audio_available": audio_av.get("audio_available", False),
+                "arousal": audio_av.get("arousal"),
+                "valence": audio_av.get("valence"),
+                "arousal_distribution": audio_av.get("arousal_distribution", {}),
+                "valence_distribution": audio_av.get("valence_distribution", {})
             }
         
         primary_emotion = max(fused_probs.keys(), key=lambda x: fused_probs[x])
@@ -636,9 +827,15 @@ class AIModelInterface:
             "primary_emotion": primary_emotion, 
             "confidence": fused_probs[primary_emotion],
             "analysis_mode": analysis_mode,  # "pose_only" 또는 "multimodal"
+            "emotion_probabilities": fused_probs,
             "details": fused_probs,
             "video_emotion": video_probs,
-            "audio_arousal_valence": audio_av
+            "audio_arousal_valence": audio_av,
+            "audio_available": audio_av.get("audio_available", False),
+            "arousal": audio_av.get("arousal"),
+            "valence": audio_av.get("valence"),
+            "arousal_distribution": audio_av.get("arousal_distribution", {}),
+            "valence_distribution": audio_av.get("valence_distribution", {})
         }
 
     def _fuse_pose_audio_emotions(self, video_probs: dict, audio_av: dict) -> dict:
@@ -660,14 +857,18 @@ class AIModelInterface:
         # 음성 기반 감정 보정 로직
         if valence == "Negative" and arousal == "High":
             # (Negative, High) → 불안/슬픔, 공포, 공격성에 각각 1.0 추가
-            fused_probs["불안/슬픔"] += 1.0
-            fused_probs["공포"] += 1.0 
+            fused_probs["불안/슬픔"] += 0.96
+            fused_probs["공포"] += 1.0
             fused_probs["공격성"] += 1.0
+            fused_probs["편안/안정"] -= 0.5
             print("📈 (Negative, High): 불안/슬픔, 공포, 공격성 보정")
             
-        elif valence == "Negative" and arousal == "Low":
-            # (Negative, Low) → 불안/슬픔에 1.0 추가
-            fused_probs["불안/슬픔"] += 1.0
+        elif valence == "Negative" or (arousal == "Low" or arousal == "Medium"):
+            # (Negative, Low) → 불안/슬픔에 0.8 추가
+            fused_probs["불안/슬픔"] += 0.9
+            fused_probs["공포"] += 0.9
+            fused_probs["공격성"] += 0.9
+            fused_probs["편안/안정"] -= 0.5
             print("📈 (Negative, Low): 불안/슬픔 보정")
         else:
             print("📊 다른 음성 조합: 포즈 결과 유지")
@@ -683,6 +884,7 @@ class AIModelInterface:
         """
         슬개골 탈구 분석 (2-class: 정상/이상)
         [수정] 학습 시와 동일하게 비디오 레벨 평균 적용
+        [추가] 움직임 감지 - 강아지가 움직이는 경우에만 분석
         """
         try:
             if self.patella_model is None:
@@ -715,6 +917,18 @@ class AIModelInterface:
                 }
             
             sample = np.array(frames_data, dtype=np.float32)
+            
+            # [추가] 움직임 체크 - 움직임이 없으면 분석하지 않음
+            has_movement = self._check_movement(sample, threshold=self.movement_threshold)
+            if not has_movement:
+                print(f"🛑 슬개골 분석 건너뛰기: 움직임이 감지되지 않음 (임계값: {self.movement_threshold} 픽셀)")
+                return {
+                    "status": "skipped",
+                    "confidence": 0.0,
+                    "probabilities": {},
+                    "details": f"움직임 부족으로 분석 건너뜀 (평균 이동량이 {self.movement_threshold} 픽셀 미만)"
+                }
+            
             sample = self._smooth_and_interpolate(sample)
             
             num_frames = sample.shape[0]
@@ -933,13 +1147,17 @@ class AIModelInterface:
             # 3. 멀티모달 감정 분석 수행
             emotion_result = self.analyze_emotion_multimodal(keypoint_json_path, audio_path or "")
             
-            # 4. 전체 결과 통합
+            # 4. 슬개골 탈구 분석 수행
+            patella_result = self.analyze_patella(keypoint_json_path)
+            
+            # 5. 전체 결과 통합
             return {
                 "success": True,
                 "mp4_path": mp4_path,
                 "dog_id": dog_id,
                 "processing": process_result,
                 "emotion_analysis": emotion_result,
+                "patella_analysis": patella_result,
                 "files_generated": {
                     "keypoints_json": keypoint_json_path,
                     "extracted_audio": audio_path,

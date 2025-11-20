@@ -48,7 +48,6 @@ curl -X POST "http://localhost:8000/api/detect-realtime" \
 ```json
 {
   "camera_id": "camera_1",
-  "should_start_recording": true,
   "confidence": 0.95
 }
 ```

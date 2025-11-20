@@ -77,10 +77,13 @@ class AIService:
             # 기존 API 형식에 맞게 결과 재구성
             emotion_analysis = analysis_result["emotion_analysis"]
             
-            # 슬개골 분석
-            patella_result = self.analyzer.analyze_patella(
-                analysis_result["files_generated"]["keypoints_json"]
-            )
+            # 슬개골 분석 (ai_core_module에서 이미 수행됨)
+            patella_result = analysis_result.get("patella_analysis", {
+                "status": "unknown",
+                "confidence": 0.0,
+                "probabilities": {},
+                "details": "슬개골 분석 결과 없음"
+            })
             
             # API 응답 형식으로 재구성
             final_analysis = {
@@ -90,7 +93,11 @@ class AIService:
                     "analysis_mode": emotion_analysis["analysis_mode"],
                     "emotion_probabilities": emotion_analysis["details"],
                     "audio_available": emotion_analysis["audio_arousal_valence"].get("audio_available", False),
-                    "audio_info": emotion_analysis["audio_arousal_valence"]
+                    "audio_info": emotion_analysis["audio_arousal_valence"],
+                    "arousal": emotion_analysis.get("arousal"),
+                    "valence": emotion_analysis.get("valence"),
+                    "arousal_distribution": emotion_analysis.get("arousal_distribution", {}),
+                    "valence_distribution": emotion_analysis.get("valence_distribution", {})
                 },
                 "patella_analysis": patella_result,
                 "processing_info": analysis_result["processing"],

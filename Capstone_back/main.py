@@ -1,5 +1,3 @@
-# main.py
-
 from fastapi import *
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -15,6 +13,10 @@ from utils import s3
 import httpx
 import boto3
 from botocore.exceptions import NoCredentialsError
+
+# 제미나이 api를 위한 import
+from utils import gemini  # 이거 한 줄 추가
+from sqlalchemy import cast, Date # 이것도 없으면 추가
 
 # DB 테이블 생성 (앱 실행 시 한번만)
 models.Base.metadata.create_all(bind=engine)
@@ -179,9 +181,6 @@ def read_user_devices(
 # =======================================================================
 # 이벤트(Event) 엔드포인트 (!!!) (S3 URL을 AI 서버로 전송) (!!!)
 # =======================================================================
-
-# main.py
-
 @app.post("/events/upload", response_model=schemas.EventResponse, tags=["Events"])
 async def upload_video_and_create_event(
     file: UploadFile = File(...),
@@ -347,6 +346,84 @@ def read_events_for_pet(
     events = crud.get_events_by_pet(db=db, pet_id=pet_id, skip=skip, limit=limit)
 
     return events
+
+# =======================================================================
+# 데일리 리포트(Daily Report) 엔드포인트 (New!)
+# =======================================================================
+
+@app.post("/reports/generate", response_model=schemas.DailyReportResponse, tags=["Reports"])
+def generate_daily_report_api(
+    pet_id: int,
+    target_date: date, # 예: 2025-11-24
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    특정 날짜의 이벤트를 분석하여 Gemini가 작성한 리포트를 생성 및 저장합니다.
+    """
+    # 1. 권한 확인
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+
+    # 2. 이미 리포트가 있는지 확인 (중복 생성 방지)
+    existing_report = db.query(models.DailyReport).filter(
+        models.DailyReport.pet_id == pet_id,
+        models.DailyReport.report_date == target_date
+    ).first()
+    
+    if existing_report:
+        # 이미 있으면 그거 반환 (덮어쓰고 싶으면 delete 후 진행하는 로직 추가 가능)
+        return existing_report
+
+    # 3. 해당 날짜의 이벤트(Events) 모두 가져오기
+    # DB에서 start_time의 날짜 부분이 target_date와 일치하는지 조회
+    daily_events = db.query(models.Event).filter(
+        models.Event.pet_id == pet_id,
+        cast(models.Event.start_time, Date) == target_date
+    ).all()
+
+    if not daily_events:
+        raise HTTPException(status_code=404, detail="해당 날짜에 분석된 영상 기록이 없습니다.")
+
+    # 4. Gemini에게 요약 요청 (utils/gemini.py 호출)
+    summary = gemini.generate_daily_summary(
+        pet_name=db_pet.name,
+        report_date=target_date,
+        events=daily_events
+    )
+
+    # 5. DB에 리포트 저장
+    new_report = models.DailyReport(
+        pet_id=pet_id,
+        report_date=target_date,
+        summary_text=summary
+    )
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+
+    return new_report
+
+@app.get("/reports/{pet_id}", response_model=List[schemas.DailyReportResponse], tags=["Reports"])
+def read_pet_reports(
+    pet_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    특정 반려동물의 생성된 모든 리포트를 조회합니다.
+    """
+    # 권한 확인
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+
+    reports = db.query(models.DailyReport).filter(
+        models.DailyReport.pet_id == pet_id
+    ).order_by(models.DailyReport.report_date.desc()).all()
+    
+    return reports
 
 # --- 루트 주소 추가 ---
 @app.get("/", tags=["Root"])

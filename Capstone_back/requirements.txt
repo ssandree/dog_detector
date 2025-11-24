@@ -17,3 +17,6 @@ aioboto3>=10.0.0
 
 # --- AI 서버 호출용 (Celery, Redis 대신 사용) ---
 httpx
+
+# 제미나이 api 생성
+google-generativeai>=0.8.3

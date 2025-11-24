@@ -136,7 +136,7 @@ class DeviceResponse(DeviceBase):
         from_attributes = True
 
 # =======================================================================
-# 이벤트(Event) 관련 스키마 (새로 추가된 부분)
+# 이벤트(Event) 관련 스키마
 # =======================================================================
 
 class EventBase(BaseModel):
@@ -179,3 +179,16 @@ class EventResponse(EventBase):
 
     class Config:
         from_attributes = True
+
+# =======================================================================
+# 제미나이 api 관련 스키마
+# =======================================================================
+class DailyReportResponse(BaseModel):
+    report_id: int
+    pet_id: int
+    report_date: date
+    summary_text: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True

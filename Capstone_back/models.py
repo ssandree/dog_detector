@@ -1,7 +1,8 @@
 #SQLAlchemy ORM 모델 (DB 테이블과 매핑되는 파이썬 클래스)
-from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey, DECIMAL, Date
+from sqlalchemy import Column, Integer, String, TIMESTAMP, text, ForeignKey, DECIMAL, Date, ForeignKey, DateTime
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from database import Base # database.py에서 만든 부모 클래스를 가져옴
 
 # 'users' 테이블과 연결될 User 클래스
@@ -45,6 +46,7 @@ class Pet(Base):
     owner = relationship("User", back_populates="pets")
     # 펫에 연결된 이벤트 목록 (새로 추가)
     events = relationship("Event", back_populates="pet")
+    daily_reports = relationship("DailyReport", back_populates="pet")
 
 # --- 새로운 Device 모델 클래스를 추가합니다 ---
 class Device(Base):
@@ -98,3 +100,19 @@ class Event(Base):
     # --- 관계 설정 ---
     pet = relationship("Pet", back_populates="events")
     device = relationship("Device", back_populates="events")
+
+# =======================================================================
+# 제미나이 api 모델 클래스 (새로 추가)
+# =======================================================================
+class DailyReport(Base):
+    __tablename__ = "daily_reports"
+
+    report_id = Column(Integer, primary_key=True, index=True)
+    pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
+    report_date = Column(Date, nullable=False)
+    summary_text = Column(Text, nullable=False)
+    # health_score = Column(Integer, nullable=True) # 이건 필요 없으면 빼도 됨
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # 관계 설정 (Pet 모델에 daily_reports가 정의되어 있어야 함)
+    pet = relationship("Pet", back_populates="daily_reports")

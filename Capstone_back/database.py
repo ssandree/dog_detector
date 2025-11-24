@@ -1,10 +1,9 @@
-#데이터베이스 연결 설정
-import os
-
 # sqlalchemy: 파이썬 코드로 DB를 다루게 해주는 '통역사' 라이브러리
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+#데이터베이스 연결 설정
+import os
 from dotenv import load_dotenv
 
 ## .env 파일에서 환경 변수를 로드합니다.

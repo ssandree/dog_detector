@@ -72,23 +72,27 @@ class Event(Base):
     event_id = Column(BIGINT, primary_key=True, autoincrement=True)
     pet_id = Column(Integer, ForeignKey("pets.pet_id"), nullable=False)
     device_id = Column(Integer, ForeignKey("devices.device_id"), nullable=False)
-    
+    # (!!!) DataGrip 컬럼 순서 및 이름과 일치시킵니다.
+    event_type = Column(String(50), nullable=True)      # (있다면 유지, 없으면 삭제)
+    event_subtype = Column(String(50), nullable=True)   # (있다면 유지, 없으면 삭제)
+
     # AI 분석 결과를 담을 컬럼들 (v3 - '진단서' 모델)
     detected_features = Column(TEXT, nullable=True)
     final_emotion = Column(String(50), nullable=True)
-    
+    # (!!!) 슬개골 분석 결과 컬럼 (새로 추가) [cite: `API_DOCS.md`]
+    patella_analysis_result = Column(String(50), nullable=True)   
+ 
     # 시간 및 영상 정보
     start_time = Column(DATETIME, nullable=False)
     end_time = Column(DATETIME, nullable=True)
     video_duration_sec = Column(Integer, nullable=True)
     
-    # AI 분석 상태 (v4에서 추가됨)
-    analysis_status = Column(String(20), nullable=False, default='PENDING')
+#    # AI 분석 상태 (v4에서 추가됨)
+#    analysis_status = Column(String(20), nullable=False, default='PENDING')
     
     # S3 파일 위치
     video_url = Column(String(255), nullable=True)
     thumbnail_url = Column(String(255), nullable=True)
-    
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
 
     # --- 관계 설정 ---

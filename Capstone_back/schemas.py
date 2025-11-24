@@ -150,7 +150,13 @@ class EventBase(BaseModel):
     video_duration_sec: Optional[int] = None
     video_url: str  # S3 업로드 후 생성된 URL
     thumbnail_url: Optional[str] = None
-    analysis_status: str = "PENDING"
+    # (!!!) AI 분석 결과를 생성 시점에 함께 받음
+    detected_features: Optional[str] = None 
+    final_emotion: Optional[str] = None
+    patella_analysis_result: Optional[str] = None
+    
+    # (!!!) analysis_status 필드 삭제
+#    analysis_status: str = "PENDING"
 
 class EventCreate(EventBase):
     """
@@ -168,8 +174,8 @@ class EventResponse(EventBase):
     event_id: int
     
     # AI 분석이 완료된 후 채워질 필드들
-    detected_features: Optional[str] = None
-    final_emotion: Optional[str] = None
+#    detected_features: Optional[str] = None
+#    final_emotion: Optional[str] = None
 
     class Config:
         from_attributes = True

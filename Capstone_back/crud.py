@@ -64,6 +64,10 @@ def get_pets_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100)
     """
     return db.query(models.Pet).filter(models.Pet.user_id == user_id).offset(skip).limit(limit).all()
 
+def get_pet_by_id(db: Session, pet_id: int):
+    """pet_id로 특정 반려동물 정보를 조회합니다."""
+    return db.query(models.Pet).filter(models.Pet.pet_id == pet_id).first()
+
 # 반려동물 정보 수정
 def update_pet(db: Session, db_pet: models.Pet, pet_update: schemas.PetUpdate):
     """
@@ -98,7 +102,7 @@ def get_device_by_id(db: Session, device_id: int):
     """ device_id로 특정 디바이스 정보를 조회합니다. (권한 확인용) """
     return db.query(models.Device).filter(models.Device.device_id == device_id).first()
 
-# =======================================================================
+# =================≈======================================================
 # 이벤트(Event) 관련 CRUD 함수 (새로 추가)
 # =======================================================================
 
@@ -115,20 +119,19 @@ def get_events_by_pet(db: Session, pet_id: int, skip: int = 0, limit: int = 100)
     """ 특정 반려동물의 이벤트 기록을 시간순(최신순)으로 조회합니다. """
     return db.query(models.Event).filter(models.Event.pet_id == pet_id).order_by(models.Event.start_time.desc()).offset(skip).limit(limit).all()
 
-def get_event_by_id(db: Session, event_id: int):
+# def get_event_by_id(db: Session, event_id: int):
     """ event_id로 특정 이벤트 정보를 조회합니다. (AI 워커가 사용) """
-    return db.query(models.Event).filter(models.Event.event_id == event_id).first()
+#    return db.query(models.Event).filter(models.Event.event_id == event_id).first()
 
-def update_event_analysis_result(db: Session, db_event: models.Event, result: dict):
+# def update_event_analysis_result(db: Session, db_event: models.Event, result: dict):
     """
     AI 워커가 분석을 완료한 후, 'events' 테이블의 해당 레코드를 업데이트합니다.
     """
-    db_event.detected_features = result.get("detected_features")
-    db_event.final_emotion = result.get("final_emotion")
-    db_event.analysis_status = "COMPLETED" # 상태를 '완료'로 변경
-    
-    db.add(db_event)
-    db.commit()
-    db.refresh(db_event)
-    return db_event
+#    db_event.detected_features = result.get("detected_features")
+#    db_event.final_emotion = result.get("final_emotion")
+#    db_event.analysis_status = "COMPLETED" # 상태를 '완료'로 변경
+#    db.add(db_event)
+#    db.commit()
+#    db.refresh(db_event)
+#    return db_event
 

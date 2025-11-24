@@ -5,11 +5,16 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List  # 리스트 형태의 응답을 위해 추가
 from datetime import *
+import os
+from urllib.parse import urlparse
 
 # 지금까지 만든 모든 부품들을 가져옴
 import crud, models, schemas, security
 from database import engine, get_db
 from utils import s3
+import httpx
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 # DB 테이블 생성 (앱 실행 시 한번만)
 models.Base.metadata.create_all(bind=engine)
@@ -18,8 +23,20 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="견심술 API",
     description="반려견 이상행동 및 감정 분석 시스템 API입니다.",
-    version="0.1.0",
+    version="0.1.0"
 )
+# (!!!) .env에서 AI 서버 URL과 API 키를 읽어옵니다.
+AI_SERVER_URL = os.getenv("AI_SERVER_URL")
+AI_API_KEY = os.getenv("AI_API_KEY") # 새로 추가된 키
+AI_SERVER_URL = os.getenv("AI_SERVER_URL")
+if AI_SERVER_URL is None:
+    print("WARNING: .env를 읽지 못해 하드코딩된 주소를 사용합니다.")
+    AI_SERVER_URL = "http://dog-det.ddns.net:8000/api/analyze-video-url" 
+
+# API 키도 마찬가지로 없으면 직접 입력
+AI_API_KEY = os.getenv("AI_API_KEY")
+if AI_API_KEY is None:
+    AI_API_KEY = "idontwantdoganymore"
 
 # --- API 엔드포인트 정의 ---
 
@@ -160,12 +177,13 @@ def read_user_devices(
     return crud.get_devices_by_user(db=db, user_id=current_user.user_id)
 
 # =======================================================================
-# 이벤트(Event) 엔드포인트 (새로 추가/수정)
+# 이벤트(Event) 엔드포인트 (!!!) (S3 URL을 AI 서버로 전송) (!!!)
 # =======================================================================
+
+# main.py
 
 @app.post("/events/upload", response_model=schemas.EventResponse, tags=["Events"])
 async def upload_video_and_create_event(
-    # 파일과 폼 데이터를 함께 받기 위해 File과 Form을 사용합니다.
     file: UploadFile = File(...),
     pet_id: int = Form(...),
     device_id: int = Form(...),
@@ -174,47 +192,142 @@ async def upload_video_and_create_event(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
-    """
-    영상 클립을 S3에 업로드하고, '분석 대기중(PENDING)' 상태의
-    이벤트 레코드를 DB에 생성합니다.
-    """
+    print("====== [DEBUG START] 업로드 프로세스 시작 ======")
     
-    # --- 보안 검증: pet_id와 device_id가 현재 사용자의 소유인지 확인 ---
+    # 1. 보안 검증
     db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
     if not db_pet or db_pet.user_id != current_user.user_id:
-        raise HTTPException(status_code=403, detail="해당 반려동물에 대한 업로드 권한이 없습니다.")
-
+        raise HTTPException(status_code=403, detail="권한 없음: 반려동물")
     db_device = crud.get_device_by_id(db, device_id=device_id)
     if not db_device or db_device.user_id != current_user.user_id:
-        raise HTTPException(status_code=403, detail="해당 디바이스에 대한 업로드 권한이 없습니다.")
+        raise HTTPException(status_code=403, detail="권한 없음: 디바이스")
+
+    # 2. S3 업로드
+    file_url = None
+    try:
+        print("DEBUG: S3 업로드 시도 중...")
+        file_url = await s3.upload_file_to_s3(file, user_id=current_user.user_id)
+        if not file_url:
+             raise Exception("S3 업로드 결과가 None입니다.")
+        print(f"DEBUG: S3 업로드 성공. URL: {file_url}")
+    except Exception as e:
+        print(f"ERROR: S3 업로드 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"S3 업로드 에러: {e}")
+
+    # 3. 파일명 추출
+    s3_filename = ""
+    try:
+        parsed_url = urlparse(file_url)
+        s3_filename = parsed_url.path.lstrip('/')
+        print(f"DEBUG: S3 Filename: {s3_filename}")
+    except Exception as e:
+        print(f"ERROR: URL 파싱 실패: {e}")
+        raise HTTPException(status_code=500, detail="URL 파싱 실패")
+
+    # 4. AWS 클라이언트 설정
+    aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    aws_region = os.getenv("AWS_DEFAULT_REGION") 
+    s3_bucket_name = os.getenv("AWS_S3_BUCKET_NAME") 
     
-    # 1. S3에 파일 업로드 (비동기 처리)
-    file_url = await s3.upload_file_to_s3(file, user_id=current_user.user_id)
-    if not file_url:
-        raise HTTPException(status_code=500, detail="S3 파일 업로드에 실패했습니다.")
+    # 디버깅: 변수 확인
+    print(f"DEBUG: Env Check -> Region: {aws_region}, Bucket: {s3_bucket_name}")
+
+    if not aws_region:
+        aws_region = "ap-southeast-2" # 시드니
+    
+    # 버킷 이름 없으면 에러
+    if not s3_bucket_name:
+         print("CRITICAL: 버킷 이름이 없습니다.")
+
+    try:
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=aws_region 
+        )
+    except Exception as e:
+         print(f"ERROR: boto3 client 생성 실패: {e}")
+         raise HTTPException(status_code=500, detail=f"AWS 설정 오류: {e}")
+
+    # 5. AI 서버 요청 (여기가 수정됨!)
+    analysis_result = {}
+    try:
+        current_ai_url = os.getenv("AI_SERVER_URL")
+        if not current_ai_url:
+            current_ai_url = "http://dog-det.ddns.net:8000/api/analyze-video-url"
+
+        parsed_env_url = urlparse(current_ai_url)
+        base_domain = f"{parsed_env_url.scheme}://{parsed_env_url.netloc}"
+        endpoint = "/api/analyze-video-url"
+        full_url = f"{base_domain}{endpoint}"
+
+        # Presigned URL 생성
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': s3_bucket_name, 'Key': s3_filename},
+            ExpiresIn=3600
+        )
+        print(f"DEBUG: Generated Presigned URL: {presigned_url}")
+
+        current_api_key = os.getenv("AI_API_KEY")
+        if not current_api_key:
+            current_api_key = "idontwantdoganymore"
+
+        # Payload 설정
+        payload = {"video_url": presigned_url}
         
-    # (선택 사항) 썸네일 URL 생성 로직 (지금은 임시로 video_url 사용)
-    thumbnail_url = file_url 
+        # [수정] 헤더에서 Content-Type 완전히 제거 (httpx가 Form Data용으로 자동 설정함)
+        headers = {
+            "X-API-Key": current_api_key
+        }
 
-    # 2. DB에 저장할 이벤트 데이터 준비 (스키마 사용)
-    event_data = schemas.EventCreate(
-        pet_id=pet_id,
-        device_id=device_id,
-        start_time=start_time,
-        end_time=start_time + timedelta(seconds=video_duration_sec),
-        video_duration_sec=video_duration_sec,
-        video_url=file_url,
-        thumbnail_url=thumbnail_url,
-        analysis_status="PENDING" # '분석 대기' 상태로 생성
-    )
+        print(f"DEBUG: Sending to AI (Form Data): {full_url}")
 
-    # 3. DB에 이벤트 생성 (crud 함수 호출)
-    new_event = crud.create_event(db=db, event=event_data)
-    
-    # 4. (향후 구현) Celery 워커에게 AI 분석 작업 지시
-    # celery_app.send_task('tasks.analyze_video', args=[new_event.event_id, file_url])
-    
-    return new_event
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            # ★★★ [핵심] json= 대신 data= 사용! (Form Data 전송) ★★★
+            response = await client.post(full_url, data=payload, headers=headers)
+            
+            if response.status_code != 200:
+                print(f"ERROR: AI Server responded {response.status_code}: {response.text}")
+            else:
+                analysis_result = response.json()
+                print(f"DEBUG: AI Analysis Success: {analysis_result}")
+
+    except Exception as e:
+        print(f"WARNING: AI 분석 요청 실패: {e}")
+        import traceback
+        traceback.print_exc()
+
+    # 6. DB 저장
+    try:
+        final_emotion = None
+        patella_status = None
+        
+        if analysis_result:
+            final_emotion = analysis_result.get("emotion")
+            patella_status = str(analysis_result.get("patella_status"))
+
+        event_data = schemas.EventCreate(
+            pet_id=pet_id,
+            device_id=device_id,
+            start_time=start_time,
+            end_time=start_time + timedelta(seconds=video_duration_sec),
+            video_duration_sec=video_duration_sec,
+            video_url=file_url,
+            thumbnail_url=file_url,
+            final_emotion=final_emotion,
+            patella_analysis_result=patella_status
+        )
+        
+        new_event = crud.create_event(db=db, event=event_data)
+        print("====== [DEBUG END] DB 저장 완료 ======")
+        return new_event
+        
+    except Exception as e:
+        print(f"ERROR: DB 저장 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"DB 저장 실패: {e}")
 
 @app.get("/pets/{pet_id}/events", response_model=List[schemas.EventResponse], tags=["Events"])
 def read_events_for_pet(
@@ -232,6 +345,8 @@ def read_events_for_pet(
         raise HTTPException(status_code=403, detail="해당 반려동물의 이벤트 조회 권한이 없습니다.")
 
     events = crud.get_events_by_pet(db=db, pet_id=pet_id, skip=skip, limit=limit)
+
+    return events
 
 # --- 루트 주소 추가 ---
 @app.get("/", tags=["Root"])

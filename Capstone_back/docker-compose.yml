@@ -1,52 +1,46 @@
-version: '3.8' # Docker Compose 파일 형식 버전을 지정합니다.
-
+# Celery와 Redis가 필요 없어져 훨씬 간단해진 docker-compose.yml
 services:
-  # 1. FastAPI 애플리케이션 서비스 ('app'이라는 이름으로 정의)
   app:
-    build: . # 현재 폴더의 Dockerfile을 사용하여 이미지를 빌드합니다.
+    build: .
     ports:
-      - "8000:8000" # 호스트(내 PC)의 8000번 포트와 컨테이너의 8000번 포트를 연결합니다.
-    env_file:
-      - .env # .env 파일의 환경 변수를 컨테이너 내부로 로드합니다.
-    volumes:
-      # 현재 폴더를 컨테이너의 /app 폴더와 동기화합니다 (개발 시 코드 변경 실시간 반영).
-      # 운영 환경에서는 이 줄을 주석 처리하거나 제거하는 것이 좋습니다.
-      - .:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload # 개발용 실행 명령어 (Dockerfile CMD 덮어쓰기)
-    depends_on:
-      - db # 'db' 서비스가 시작된 후에 'app' 서비스를 시작합니다.
-      - redis # 'redis' 서비스가 시작된 후에 'app' 서비스를 시작합니다.
-
-  # 2. MySQL 데이터베이스 서비스 ('db'라는 이름으로 정의)
-  db:
-    image: mysql:8.0 # 공식 MySQL 8.0 이미지를 사용합니다.
-    ports:
-      - "3307:3306" # 호스트의 3307번 포트와 컨테이너의 3306 포트를 연결 (기존 로컬 MySQL과 충돌 방지)
-    environment:
-      # .env 파일 또는 직접 값을 사용하여 환경 변수 설정
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # .env 파일에 MYSQL_ROOT_PASSWORD=your_root_password 추가 필요
-      MYSQL_DATABASE: ${MYSQL_DATABASE}           # .env 파일에 MYSQL_DATABASE=gyeonsimsul_db 추가 필요
-    volumes:
-      - db_data:/var/lib/mysql # MySQL 데이터를 영구적으로 저장하기 위한 볼륨 연결
-    command: --default-authentication-plugin=mysql_native_password # 인증 방식 설정
-
-  # 3. Redis 서비스 ('redis'라는 이름으로 정의)
-  redis:
-    image: redis:alpine # 공식 Redis Alpine(경량) 이미지를 사용합니다.
-    ports:
-      - "6379:6379" # 호스트와 컨테이너의 Redis 포트를 연결합니다.
-
-  # 4. Celery 워커 서비스 ('worker'라는 이름으로 정의)
-  worker:
-    build: . # FastAPI 앱과 동일한 이미지를 사용합니다.
-    command: celery -A your_celery_app_module worker --loglevel=info # Celery 워커 실행 명령어 (실제 모듈 이름으로 변경 필요)
+      # (!!!) AI 서버(8000)와의 충돌을 피하기 위해 8001번 포트로 변경
+      - "8000:8000" 
     env_file:
       - .env
+    
+    # (!!!) 로컬(Mac)에서 AI 서버(localhost:8000)와 통신하기 위한 설정
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
     volumes:
       - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    
+    # (!!!) redis 의존성 삭제
+    # depends_on:
+    #   - redis 
     depends_on:
-      - redis # 'redis' 서비스가 시작된 후에 'worker' 서비스를 시작합니다.
+      - db # 로컬 DB 의존성은 유지
 
-# 데이터베이스 데이터를 영구 저장하기 위한 볼륨 정의
+  # (!!!) db 서비스는 로컬 테스트용으로 그대로 둡니다. (AWS 배포 시 주석 처리)
+  db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306" 
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # 로컬 .env 파일에서 읽음
+      MYSQL_DATABASE: ${MYSQL_DATABASE}           # 로컬 .env 파일에서 읽음
+    volumes:
+      - db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+  # (!!!) redis 서비스 삭제
+  # redis:
+  #   ...
+
+  # (!!!) worker 서비스 삭제
+  # worker:
+  #   ...
+
 volumes:
-  db_data:
+  db_data: # 로컬 db 볼륨 활성화

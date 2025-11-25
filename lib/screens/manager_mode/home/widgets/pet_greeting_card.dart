@@ -1,5 +1,4 @@
 import '../../../../core/index_export.dart';
-import '../../settings/setting_screen.dart';
 
 class PetGreetingCard extends ConsumerWidget {
   const PetGreetingCard({super.key});
@@ -9,53 +8,84 @@ class PetGreetingCard extends ConsumerWidget {
     final petInfo = ref.watch(currentPetProvider);
     final isPetRegistered = petInfo != null;
     final petName = petInfo?.name ?? '';
-    return AppCards.basic(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppColors.green2,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Icon(
-              Icons.pets,
-              color: AppColors.green6,
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    
+    Widget cardContent = Row(
+      children: [
+        // 강아지 얼굴 이모지
+        const Text(
+          '🐶',
+          style: TextStyle(fontSize: 50),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                 Text(
                   isPetRegistered 
-                    ? '안녕하세요 $petName님~'
+                    ? '안녕하세요, $petName님! 💕'
                     : '강아지 정보를 등록해주세요',
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.grey12,
+                    height: 1.3,
                   ),
                 ),
                 if (isPetRegistered) ...[
                   AppConstants.h4,
                   const Text(
-                    '오늘도 건강한 하루 보내세요! 🐕',
+                    '오늘도 함께하는 따뜻한 하루가 되길 바라요 ✨',
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.grey8,
+                      color: AppColors.grey9,
+                      height: 1.4,
                     ),
                   ),
                 ],
-              ],
-            ),
+            ],
+          ),
+        ),
+      ],
+    );
+    
+    // 강아지 정보가 없으면 클릭 가능하게
+    if (!isPetRegistered) {
+      return InkWell(
+        onTap: () => context.push(AppRoutes.petRegistration),
+        borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: cardContent,
+        ),
+      );
+    }
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
+      padding: const EdgeInsets.all(20),
+      child: cardContent,
     );
   }
 }

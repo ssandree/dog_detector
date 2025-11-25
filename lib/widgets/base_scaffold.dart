@@ -72,7 +72,7 @@ class BaseScaffold extends StatelessWidget {
       child: AppBar(
         title: title != null
             ? Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+                padding: const EdgeInsets.only(left: 32.0, right: 8.0, top: 4.0),
                 child: Text(
                   title!,
                   style: const TextStyle(
@@ -83,21 +83,20 @@ class BaseScaffold extends StatelessWidget {
                 ),
               )
             : null,
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.blackAppBarTextColor,
-        elevation: AppConstants.appBarElevation,
-        centerTitle: AppConstants.appBarCenterTitle,
-        automaticallyImplyLeading: showBackButton,
-        titleSpacing: 8.0,
-        leading: showBackButton
-            ? Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: IconButton(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.blackAppBarTextColor,
+              elevation: AppConstants.appBarElevation,
+              centerTitle: AppConstants.appBarCenterTitle,
+              automaticallyImplyLeading: showBackButton,
+              titleSpacing: 0,
+              leadingWidth: showBackButton ? 56 : 0,
+              leading: showBackButton
+              ? IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: AppColors.blackAppBarTextColor),
                   onPressed: onBackPressed ?? () => Navigator.pop(context),
-                ),
-              )
-            : const SizedBox(width: 8.0),
+                  padding: EdgeInsets.zero,
+                )
+            : const SizedBox.shrink(),
         actions: appBarActions,
         bottom: bottom,
       ),

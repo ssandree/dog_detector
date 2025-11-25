@@ -53,3 +53,5 @@ __pycache__/
 
 
 # 이 `.gitignore` 파일을 프로젝트에 추가하시면, `git add .` 명령어를 사용해도 지정된 파일과 폴더들은 무시되므로 안심하고 코드를 GitHub에 올리실 수 있습니다.
+
+firebase_service_account.json

@@ -18,6 +18,9 @@ from botocore.exceptions import NoCredentialsError
 from utils import gemini  # 이거 한 줄 추가
 from sqlalchemy import cast, Date # 이것도 없으면 추가
 
+# 알림푸시기능을 위한 모듈
+from utils import fcm
+
 # DB 테이블 생성 (앱 실행 시 한번만)
 models.Base.metadata.create_all(bind=engine)
 
@@ -27,6 +30,12 @@ app = FastAPI(
     description="반려견 이상행동 및 감정 분석 시스템 API입니다.",
     version="0.1.0"
 )
+
+# [1] 서버 켜질 때 Firebase 연결
+@app.on_event("startup")
+def startup_event():
+    fcm.initialize_firebase()
+
 # (!!!) .env에서 AI 서버 URL과 API 키를 읽어옵니다.
 AI_SERVER_URL = os.getenv("AI_SERVER_URL")
 AI_API_KEY = os.getenv("AI_API_KEY") # 새로 추가된 키
@@ -424,6 +433,34 @@ def read_pet_reports(
     ).order_by(models.DailyReport.report_date.desc()).all()
     
     return reports
+
+# [2] 푸시 알림 기능 토큰 저장 API 추가 (프론트가 호출함)
+@app.put("/users/fcm-token", tags=["Users"])
+def update_fcm_token(
+    token: str = Body(..., embed=True),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    current_user.fcm_token = token
+    db.commit()
+    return {"message": "토큰 저장 완료"}
+
+# ... (중략: upload_video_and_create_event 함수 내부) ...
+
+# [3] 영상 업로드 함수 안에서 알림 발송 (맨 마지막 return 직전)
+    try:
+        # DB에서 현재 사용자 정보(토큰) 다시 조회
+        user_info = crud.get_user(db, user_id=current_user.user_id)
+        if user_info.fcm_token:
+            fcm.send_push_notification(
+                token=user_info.fcm_token,
+                title="🐕 행동 분석 완료!",
+                body=f"방금 업로드한 영상 분석이 끝났습니다. 결과를 확인해보세요."
+            )
+    except Exception as e:
+        print(f"알림 에러(무시): {e}")
+
+    return new_event
 
 # --- 루트 주소 추가 ---
 @app.get("/", tags=["Root"])

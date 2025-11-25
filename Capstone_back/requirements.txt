@@ -20,3 +20,5 @@ httpx
 
 # 제미나이 api 생성
 google-generativeai>=0.8.3
+
+firebase-admin

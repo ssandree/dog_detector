@@ -20,6 +20,7 @@ class User(Base):
     age = Column(Integer, nullable=True)
     phone_number = Column(String(20), unique=True, nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    fcm_token = Column(String(255), nullable=True)
 
 
     # --- 이 관계 설정이 추가됩니다 ---

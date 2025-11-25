@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr # pydantic은 데이터 검증 라이브러리
 from typing import List, Optional
 from datetime import *
+from typing import Optional
 
 # 회원가입 시 받을 데이터 (Request Body)
 class UserCreate(BaseModel):
@@ -132,6 +133,9 @@ class DeviceResponse(DeviceBase):
     user_id: int
     status: str
 
+    # [추가] 이제 조회할 때 이 필드가 같이 나갑니다.
+    connection_status: str 
+
     class Config:
         from_attributes = True
 
@@ -192,3 +196,25 @@ class DailyReportResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+# 1. 상태 업데이트용 스키마 (새로 추가)
+class DeviceStatusUpdate(BaseModel):
+    connection_status: str  # 'offline', 'connecting', 'connected' 중 하나
+
+# SDP (Session Description Protocol): 연결 정보(코덱, 해상도 등)가 담긴 문자열
+class RTCOffer(BaseModel):
+    sender_device_id: int
+    receiver_device_id: int
+    sdp_offer: str
+
+class RTCAnswer(BaseModel):
+    sender_device_id: int # 답변을 보내는 사람 (Manager)
+    receiver_device_id: int # 답변을 받을 사람 (Cam)
+    sdp_answer: str
+
+class RTCCandidate(BaseModel):
+    device_id: int
+    candidate: str
+    sdp_mid: Optional[str] = None
+    sdp_m_line_index: Optional[int] = None
+

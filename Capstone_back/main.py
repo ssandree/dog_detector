@@ -21,6 +21,10 @@ from sqlalchemy import cast, Date # 이것도 없으면 추가
 # 알림푸시기능을 위한 모듈
 from utils import fcm
 
+from schemas import RTCOffer, RTCAnswer, RTCCandidate, DeviceStatusUpdate # import 추가
+
+# 임시 저장소 (메모리)
+
 # DB 테이블 생성 (앱 실행 시 한번만)
 models.Base.metadata.create_all(bind=engine)
 
@@ -461,6 +465,83 @@ def update_fcm_token(
         print(f"알림 에러(무시): {e}")
 
     return new_event
+
+# 임시 저장소 (실제 배포시엔 Redis를 쓰지만, 지금은 딕셔너리로 충분함)
+# 구조: { target_device_id: "SDP 문자열" }
+offers = {} 
+answers = {}
+candidates = {}
+
+# 1. (Cam -> Server) 연결 요청(Offer) 보내기
+@app.post("/stream/offer",tags=["WebRTC"])
+def send_offer(data: RTCOffer):
+    # 영희(Receiver)가 가져갈 수 있게 철수(Sender)의 제안을 저장해둠
+    offers[data.receiver_device_id] = data.sdp_offer
+    
+    # 팁: 여기서 바로 Answer를 리턴해주려면 Long-Polling이 필요한데, 
+    # 보통은 저장만 하고 'OK'를 줍니다. 요청서에는 바로 Answer를 달라고 되어있는데,
+    # 이는 프론트가 주기적으로 "답장 왔나?" 하고 찔러봐야(Polling) 가능합니다.
+    return {"message": "Offer stored successfully"}
+
+# 2. (Manager -> Server) 연결 요청 확인하기 (프론트가 호출해야 함)
+@app.get("/stream/offer/{device_id}",tags=["WebRTC"])
+def get_offer(device_id: int):
+    # 나한테 온 Offer가 있는지 확인
+    if device_id in offers:
+        return {"sdp_offer": offers[device_id]}
+    return {"message": "No offer yet"}
+
+# 3. (Manager -> Server) 수락(Answer) 보내기
+@app.post("/stream/answer",tags=["WebRTC"])
+def send_answer(data: RTCAnswer):
+    answers[data.receiver_device_id] = data.sdp_answer
+    return {"message": "Answer stored successfully"}
+
+# 4. (Cam -> Server) 수락 확인하기
+@app.get("/stream/answer/{device_id}",tags=["WebRTC"])
+def get_answer(device_id: int):
+    if device_id in answers:
+        return {"sdp_answer": answers[device_id]}
+    return {"message": "No answer yet"}
+
+# 5. ICE Candidate 교환 (네트워크 주소 교환)
+@app.post("/stream/candidate",tags=["WebRTC"])
+def send_candidate(data: RTCCandidate):
+    if data.device_id not in candidates:
+        candidates[data.device_id] = []
+    candidates[data.device_id].append(data.candidate)
+    return {"message": "Candidate stored"}
+
+@app.get("/stream/candidate/{device_id}",tags=["WebRTC"])
+def get_candidates(device_id: int):
+    if device_id in candidates:
+        return {"candidates": candidates[device_id]}
+    return {"candidates": []}
+
+# --- 2. 디바이스 상태 관리 (New!) ---
+
+# (1) 상태 업데이트 API (카메라가 호출)
+@app.put("/devices/{device_id}/status", response_model=schemas.DeviceResponse, tags=["Devices"])
+def update_device_status(
+    device_id: int,
+    status_update: schemas.DeviceStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    카메라(Cam)가 자신의 상태를 서버에 알릴 때 사용합니다.
+    status: 'offline' | 'connecting' | 'connected'
+    """
+    db_device = crud.get_device_by_id(db, device_id=device_id)
+    if not db_device:
+        raise HTTPException(status_code=404, detail="디바이스를 찾을 수 없습니다.")
+    
+    # 상태 업데이트
+    db_device.connection_status = status_update.connection_status
+    db.commit()
+    db.refresh(db_device)
+    
+    return db_device
 
 # --- 루트 주소 추가 ---
 @app.get("/", tags=["Root"])

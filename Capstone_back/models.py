@@ -64,6 +64,8 @@ class Device(Base):
     owner = relationship("User", back_populates="devices")
     # 디바이스에 연결된 이벤트 목록 (새로 추가)
     events = relationship("Event", back_populates="device")
+    # [추가] WebRTC 연결 상태 (offline, connecting, connected)
+    connection_status = Column(String(20), default="offline")
 
 
 # =======================================================================

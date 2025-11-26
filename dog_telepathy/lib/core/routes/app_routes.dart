@@ -4,49 +4,97 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../storage/app_prefs_provider.dart';
-import '../storage/secure_storage_service.dart';
-
-import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
-import '../../features/mode_select/mode_select_screen.dart';
 import '../../features/cam/camera_main_screen.dart';
-import '../../features/manager/manager_home_screen.dart';
+import '../../features/manager/calendar/calendar_screen.dart';
+import '../../features/manager/home/manager_home_screen.dart';
+import '../../features/manager/manager_navigation.dart';
+import '../../features/manager/notification/notification_screen.dart';
+import '../../features/manager/pet_regi/pet_regi_screen.dart';
+import '../../features/manager/realtime/realtime_screen.dart';
+import '../../features/manager/setting/setting_screen.dart';
+import '../../features/mode_select/mode_select_screen.dart';
+import '../../features/onboarding/onboarding_screen.dart';
+import '../storage/app_prefs_provider.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (_, __) => const EntryGate(),
+class AppRoutes {
+  static const String main = '/';
+  static const String onboarding = '/onboarding';
+  static const String login = '/login';
+  static const String signup = '/signup';
+  static const String modeSelect = '/mode-select';
+  static const String cameraHome = '/camera';
+  static const String managerHome = '/manager';
+  static const String managerNotification = '/manager/notification';
+  static const String managerSettings = '/manager/settings';
+  static const String managerPetRegistration = '/manager/pet-registration';
+  static const String managerRealtime = '/manager/realtime';
+  static const String managerCalendar = '/manager/calendar';
+}
+
+final appRouter = createAppRouter();
+
+GoRouter createAppRouter({String initialLocation = AppRoutes.main}) {
+  return GoRouter(
+    initialLocation: initialLocation,
+    routes: [
+      GoRoute(
+        path: AppRoutes.main,
+        builder: (_, __) => const EntryGate(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (_, __) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (_, __) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.signup,
+        builder: (_, __) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.modeSelect,
+        builder: (_, __) => const ModeSelectScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.cameraHome,
+        builder: (_, __) => const CameraMainScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerHome,
+        builder: (_, __) => const MainNavigation(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerNotification,
+        builder: (_, __) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerSettings,
+        builder: (_, __) => const SettingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerPetRegistration,
+        builder: (_, __) => const PetRegiScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerRealtime,
+        builder: (_, __) => const RealtimeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerCalendar,
+        builder: (_, __) => const CalendarScreen(),
+      ),
+    ],
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Text('페이지를 찾을 수 없습니다: ${state.uri}'),
+      ),
     ),
-    GoRoute(
-      path: '/onboarding',
-      builder: (_, __) => const OnboardingScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (_, __) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (_, __) => const SignupScreen(),
-    ),
-    GoRoute(
-      path: '/mode-select',
-      builder: (_, __) => const ModeSelectScreen(),
-    ),
-    GoRoute(
-      path: '/camera',
-      builder: (_, __) => const CameraMainScreen(),
-    ),
-    GoRoute(
-      path: '/manager',
-      builder: (_, __) => const ManagerHomeScreen(),
-    ),
-  ],
-);
+  );
+}
 
 class EntryGate extends ConsumerWidget {
   const EntryGate({super.key});
@@ -68,45 +116,32 @@ class EntryGate extends ConsumerWidget {
     }
 
     final prefs = prefsAsync.value!;
+    final hasSeen = prefs.hasSeenOnboarding;
+    final auto = prefs.autoLogin;
+    final mode = prefs.mode;
 
-    return FutureBuilder(
-      future: ref.read(secureStorageServiceProvider).readToken(),
-      builder: (context, tokenSnapshot) {
-        if (tokenSnapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    String next = AppRoutes.login;
 
-        final token = tokenSnapshot.data;
-        final hasSeen = prefs.hasSeenOnboarding;
-        final auto = prefs.autoLogin;
-        final mode = prefs.mode;
+    if (!hasSeen) {
+      next = AppRoutes.onboarding;
+    } else if (auto) {
+      if (mode == null) {
+        next = AppRoutes.modeSelect;
+      } else if (mode == 'cam') {
+        next = AppRoutes.cameraHome;
+      } else if (mode == 'manager') {
+        next = AppRoutes.managerHome;
+      }
+    } else {
+      next = AppRoutes.login;
+    }
 
-        String next = '/login';
+    Future.microtask(() {
+      if (context.mounted) context.go(next);
+    });
 
-        if (!hasSeen) {
-          next = '/onboarding';
-        } else if (auto && token != null) {
-          if (mode == null) {
-            next = '/mode-select';
-          } else if (mode == 'cam') {
-            next = '/camera';
-          } else if (mode == 'manager') {
-            next = '/manager';
-          }
-        } else {
-          next = '/login';
-        }
-
-        Future.microtask(() {
-          if (context.mounted) context.go(next);
-        });
-
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
-      },
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

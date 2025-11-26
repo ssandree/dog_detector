@@ -124,6 +124,11 @@ class LoginScreen extends HookConsumerWidget {
                 ),
               ),
             ),
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () => context.go('/manager'),
+              child: const Text('임시 관리자 화면 이동'),
+            ),
           ],
         ),
       ),

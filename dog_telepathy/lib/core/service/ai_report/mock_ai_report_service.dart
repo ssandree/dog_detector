@@ -1,6 +1,6 @@
 import '../../data/report_mock.dart';
 import '../../exceptions.dart';
-import 'report_service.dart';
+import 'report_ai_service.dart';
 
 /// Mock 리포트 서비스 구현체
 /// API 없이도 동작하는 가짜 구현체

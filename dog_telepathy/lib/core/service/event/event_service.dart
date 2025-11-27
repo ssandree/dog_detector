@@ -32,5 +32,95 @@ abstract class EventService {
     int skip = 0,
     int limit = 100,
   });
+
+  /// 하루 단위 이벤트 목록 조회
+  ///
+  /// [petId]: 반려동물 ID
+  /// [date]: 조회할 날짜 (로컬 타임존 기준)
+  /// 반환값: DailyPetEvents (선택한 날짜의 이벤트 묶음)
+  /// 예외: NetworkException, DataException
+  Future<DailyPetEvents> getDailyPetEvents({
+    required int petId,
+    required DateTime date,
+  });
+
+  Future<MonthlyEventsSummary> getMonthlyEvents({
+    required int petId,
+    required int year,
+    required int month,
+  });
+}
+
+class MonthlyEventsSummary {
+  final int petId;
+  final int year;
+  final int month;
+  final Map<int, MonthlyEventStat> days;
+
+  const MonthlyEventsSummary({
+    required this.petId,
+    required this.year,
+    required this.month,
+    required this.days,
+  });
+
+  factory MonthlyEventsSummary.fromJson(Map<String, dynamic> json) {
+    final daysJson = json['days'] as Map<String, dynamic>? ?? {};
+    final parsedDays = <int, MonthlyEventStat>{};
+
+    for (final entry in daysJson.entries) {
+      final day = int.tryParse(entry.key);
+      if (day == null) continue;
+      parsedDays[day] =
+          MonthlyEventStat.fromJson(entry.value as Map<String, dynamic>);
+    }
+
+    return MonthlyEventsSummary(
+      petId: json['pet_id'] as int,
+      year: json['year'] as int,
+      month: json['month'] as int,
+      days: parsedDays,
+    );
+  }
+}
+
+class MonthlyEventStat {
+  final int happy;
+  final int calm;
+  final int angry;
+  final int fear;
+  final int totalEvents;
+  final int score;
+
+  const MonthlyEventStat({
+    required this.happy,
+    required this.calm,
+    required this.angry,
+    required this.fear,
+    required this.totalEvents,
+    required this.score,
+  });
+
+  factory MonthlyEventStat.fromJson(Map<String, dynamic> json) {
+    return MonthlyEventStat(
+      happy: json['happy'] as int? ?? 0,
+      calm: json['calm'] as int? ?? 0,
+      angry: json['angry'] as int? ?? 0,
+      fear: json['fear'] as int? ?? 0,
+      totalEvents: json['total_events'] as int? ?? 0,
+      score: json['score'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'happy': happy,
+      'calm': calm,
+      'angry': angry,
+      'fear': fear,
+      'total_events': totalEvents,
+      'score': score,
+    };
+  }
 }
 

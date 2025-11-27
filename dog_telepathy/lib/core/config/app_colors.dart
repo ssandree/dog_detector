@@ -11,7 +11,7 @@ class AppColors {
   static const background = Colors.white;
 
     // 베이지
-  static const Color beige1 = Color(0xFFffebcc);
+  static const Color beige1 = Color(0xFFccbe9d);
   static const Color beige2 = Color(0xFFe3caa3);
   static const Color beige3 = Color(0xFFcfb182);
   static const Color beige4 = Color(0xFFbd9c68);

@@ -31,7 +31,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     switch (_currentIndex) {
       case 0:
         return BaseScaffold(
-          title: '견심술',
+          title: '홈',
           showNotification: true,
           bottomNavigationBar: bottomNav,
           body: currentScreen,

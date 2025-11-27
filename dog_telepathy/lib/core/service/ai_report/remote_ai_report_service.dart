@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../exceptions.dart';
 import '../../config/api_config.dart';
-import 'report_service.dart';
+import 'report_ai_service.dart';
 
 class RemoteReportService implements ReportService {
   final Dio _dio;
@@ -14,21 +14,10 @@ class RemoteReportService implements ReportService {
     try {
       final dateStr = _format(date);
 
-      // 1) 기존 생성된 리포트 조회
-      final response = await _dio.get('/reports/$petId');
-      final List<dynamic> list = response.data;
-
-      final existing = list.firstWhere(
-        (r) => r['report_date'] == dateStr,
-        orElse: () => null,
-      );
-
-      if (existing != null) {
-        return _convert(existing);
-      }
-
-      // 2) 없으면 생성 API 호출
-      final created = await _dio.post(
+      // API 명세에 따르면 POST /reports/generate만 호출하면 됩니다.
+      // 서버가 내부적으로 기존 리포트 존재 여부를 확인하고,
+      // 존재하면 기존 리포트를 반환하고, 없으면 새로 생성합니다.
+      final response = await _dio.post(
         '/reports/generate',
         queryParameters: {
           'pet_id': petId,
@@ -36,10 +25,20 @@ class RemoteReportService implements ReportService {
         },
       );
 
-      return _convert(created.data);
-
+      if (response.statusCode == 200) {
+        return _convert(response.data as Map<String, dynamic>);
+      } else {
+        throw NetworkException('리포트를 불러오는데 실패했습니다');
+      }
     } on DioException catch (e) {
       throw _handleDioError(e, "리포트를 불러오는데 실패했습니다");
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException(
+        "리포트를 불러오는데 실패했습니다",
+        e,
+      );
     }
   }
 
@@ -63,8 +62,23 @@ class RemoteReportService implements ReportService {
     }
     if (e.response != null) {
       final code = e.response!.statusCode;
-      if (code == 401) return AuthException("인증이 필요합니다", e);
-      if (code == 404) return NetworkException("리포트를 찾을 수 없습니다", e);
+      if (code == 401) {
+        return AuthException("인증이 필요합니다. 다시 로그인해주세요", e);
+      }
+      if (code == 404) {
+        // 리포트가 없는 경우를 명확히 구분하기 위해 특별한 예외 사용
+        final detail = e.response?.data['detail'] as String?;
+        final message = detail ?? "리포트를 찾을 수 없습니다";
+        return NetworkException(message, e);
+      }
+      if (code == 422) {
+        // Validation Error
+        final detail = e.response?.data['detail'] as List?;
+        final errorMessage = detail?.isNotEmpty == true
+            ? detail![0]['msg'] as String? ?? '입력값을 확인해주세요'
+            : '입력값을 확인해주세요';
+        return ValidationException(errorMessage);
+      }
       if (code != null && code >= 500) {
         return NetworkException("서버 오류가 발생했습니다", e);
       }

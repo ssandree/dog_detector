@@ -78,3 +78,35 @@ class EventInfo {
     };
   }
 }
+
+/// 하루 단위 이벤트 응답 모델
+class DailyPetEvents {
+  final int petId;
+  final DateTime date;
+  final List<EventInfo> events;
+
+  DailyPetEvents({
+    required this.petId,
+    required this.date,
+    required this.events,
+  });
+
+  factory DailyPetEvents.fromJson(Map<String, dynamic> json) {
+    final eventsJson = json['events'] as List<dynamic>? ?? [];
+    return DailyPetEvents(
+      petId: json['pet_id'] as int,
+      date: DateTime.parse(json['date'] as String),
+      events: eventsJson
+          .map((eventJson) => EventInfo.fromJson(eventJson as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pet_id': petId,
+      'date': date.toIso8601String(),
+      'events': events.map((event) => event.toJson()).toList(),
+    };
+  }
+}

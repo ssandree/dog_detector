@@ -19,7 +19,7 @@ class NotificationMessage {
 final List<NotificationMessage> mockNotificationMessages = [
   NotificationMessage(
     id: 'notif-001',
-    title: '견이 안심하고 쉬고 있어요',
+    title: '강아지가 안심하고 쉬고 있어요',
     body: '최근 2시간 동안 스트레스 지수가 안정적으로 유지되고 있어요. 지속적으로 좋은 상태를 유지하고 있습니다.',
     sentAt: DateTime.now().subtract(const Duration(minutes: 18)),
   ),
@@ -33,7 +33,7 @@ final List<NotificationMessage> mockNotificationMessages = [
   NotificationMessage(
     id: 'notif-003',
     title: 'AI 리포트 업데이트',
-    body: '주간 감정 리포트가 업데이트되었어요. 이번 주에는 행복 지수가 12% 상승했어요!',
+    body: '주간 건강 리포트가 업데이트되었어요. 이번 주에는 행복 지수가 12% 상승했어요!',
     sentAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
     isRead: true,
   ),

@@ -14,6 +14,7 @@ import '../../features/manager/notification/notification_screen.dart';
 import '../../features/manager/pet_regi/pet_regi_screen.dart';
 import '../../features/manager/realtime/realtime_screen.dart';
 import '../../features/manager/setting/setting_screen.dart';
+import '../../features/manager/event_timeline/event_timeline_screen.dart';
 import '../../features/mode_select/mode_select_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../storage/app_prefs_provider.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String managerPetRegistration = '/manager/pet-registration';
   static const String managerRealtime = '/manager/realtime';
   static const String managerCalendar = '/manager/calendar';
+  static const String managerEventTimeline = '/manager/calendar/timeline';
 }
 
 final appRouter = createAppRouter();
@@ -86,6 +88,11 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.main}) {
       GoRoute(
         path: AppRoutes.managerCalendar,
         builder: (_, __) => const CalendarScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerEventTimeline,
+        name: 'eventTimeline',
+        builder: (_, state) => EventTimelineRoutePage(state: state),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

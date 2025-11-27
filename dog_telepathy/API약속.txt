@@ -1,0 +1,273 @@
+GET
+/pets/{pet_id}/events
+Read Events For Pet
+
+
+특정 반려동물의 이벤트 기록을 시간순(최신순)으로 조회합니다.
+
+Parameters
+Try it out
+Name	Description
+pet_id *
+integer
+(path)
+pet_id
+skip
+integer
+(query)
+Default value : 0
+
+0
+limit
+integer
+(query)
+Default value : 100
+
+100
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "pet_id": 0,
+    "device_id": 0,
+    "start_time": "2025-11-27T15:47:18.040Z",
+    "end_time": "2025-11-27T15:47:18.040Z",
+    "video_duration_sec": 0,
+    "video_url": "string",
+    "thumbnail_url": "string",
+    "detected_features": "string",
+    "final_emotion": "string",
+    "patella_analysis_result": "string",
+    "event_id": 0
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/pets/{pet_id}/events/daily
+Read Daily Events
+
+
+특정 날짜(YYYY-MM-DD)에 발생한 모든 이벤트 목록을 조회합니다.
+
+Parameters
+Try it out
+Name	Description
+pet_id *
+integer
+(path)
+pet_id
+target_date *
+string($date)
+(query)
+target_date
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "pet_id": 0,
+    "device_id": 0,
+    "start_time": "2025-11-27T15:47:18.044Z",
+    "end_time": "2025-11-27T15:47:18.044Z",
+    "video_duration_sec": 0,
+    "video_url": "string",
+    "thumbnail_url": "string",
+    "detected_features": "string",
+    "final_emotion": "string",
+    "patella_analysis_result": "string",
+    "event_id": 0
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+
+GET
+/pets/{pet_id}/events/monthly
+Read Monthly Events
+
+
+특정 년/월(YYYY, MM)에 발생한 모든 이벤트 목록을 조회합니다. 캘린더에 점을 찍거나 월간 통계를 낼 때 사용합니다.
+
+Parameters
+Try it out
+Name	Description
+pet_id *
+integer
+(path)
+pet_id
+year *
+integer
+(query)
+year
+month *
+integer
+(query)
+month
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "pet_id": 0,
+    "device_id": 0,
+    "start_time": "2025-11-27T15:47:18.054Z",
+    "end_time": "2025-11-27T15:47:18.054Z",
+    "video_duration_sec": 0,
+    "video_url": "string",
+    "thumbnail_url": "string",
+    "detected_features": "string",
+    "final_emotion": "string",
+    "patella_analysis_result": "string",
+    "event_id": 0
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No links
+Reports
+
+
+POST
+/reports/generate
+Generate Daily Report Api
+
+
+특정 날짜의 이벤트를 분석하여 Gemini가 작성한 리포트를 생성 및 저장합니다.
+
+Parameters
+Try it out
+Name	Description
+pet_id *
+integer
+(query)
+pet_id
+target_date *
+string($date)
+(query)
+target_date
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "report_id": 0,
+  "pet_id": 0,
+  "report_date": "2025-11-27",
+  "summary_text": "string",
+  "created_at": "2025-11-27T15:47:18.067Z"
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+No link

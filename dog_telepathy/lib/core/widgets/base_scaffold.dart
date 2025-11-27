@@ -56,7 +56,16 @@ class BaseScaffold extends StatelessWidget {
   }
 
   /// ===== AppBar =====
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget? _buildAppBar(BuildContext context) {
+    final hasTitle = title != null && title!.isNotEmpty;
+    final hasActions = (actions?.isNotEmpty ?? false) || showNotification;
+    final shouldShowAppBar =
+        hasTitle || showBackButton || hasActions || bottom != null;
+
+    if (!shouldShowAppBar) {
+      return null;
+    }
+
     List<Widget> appBarActions = actions ?? [];
 
     if (showNotification) {

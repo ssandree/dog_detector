@@ -55,8 +55,9 @@ flutter:
 
   assets:
     - assets/onboarding/
-    - lib/core/picture/logo.png
-    - lib/core/picture/puppy.jpg
-    - lib/core/picture/onboarding_1st.jpg
-    - lib/core/picture/onboarding_2nd.jpg
-    - lib/core/picture/onboarding_3rd.jpg
+    - lib/core/image/logo.png
+    - lib/core/image/puppy.jpg
+    - lib/core/image/dog_imo.png
+    - lib/core/image/onboarding_1st.jpg
+    - lib/core/image/onboarding_2nd.jpg
+    - lib/core/image/onboarding_3rd.jpg

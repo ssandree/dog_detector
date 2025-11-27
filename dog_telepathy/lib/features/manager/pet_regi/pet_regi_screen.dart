@@ -9,18 +9,10 @@ import '../../../core/widgets/app_toast.dart';
 import '../../../core/models/pet_info.dart';
 import '../../../core/provider/pet_provider.dart';
 import '../../../core/provider/current_pet_provider.dart';
-import 'widgets/basic_info_section.dart';
-import 'widgets/age_section.dart';
-import 'widgets/weight_section.dart';
 
 
 class PetRegiScreen extends ConsumerStatefulWidget {
-  final PetInfo? existingPetInfo;
-  
-  const PetRegiScreen({
-    super.key,
-    this.existingPetInfo,
-  });
+  const PetRegiScreen({super.key});
 
   @override
   ConsumerState<PetRegiScreen> createState() => _PetRegiScreenState();
@@ -29,19 +21,15 @@ class PetRegiScreen extends ConsumerStatefulWidget {
 class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _ageController = TextEditingController();
   final _weightController = TextEditingController();
-  final _ageSectionKey = GlobalKey<AgeSectionState>();
   
   bool _isInitialized = false;
+  DateTime? _selectedBirthday;
+  PetInfo? _existingPetInfo;
   
   @override
   void initState() {
     super.initState();
-    // widget.existingPetInfo가 있으면 초기화
-    if (widget.existingPetInfo != null) {
-      _initializeForm(widget.existingPetInfo!);
-    }
   }
   
   void _initializeForm(PetInfo petInfo) {
@@ -50,20 +38,36 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
     _nameController.text = petInfo.name;
     _weightController.text = petInfo.weightKg?.toString() ?? '';
     
-    // AgeSection은 initialBirthday와 initialHasBirthday를 통해 초기화됨
-    if (petInfo.age != null && petInfo.birthDate == null) {
-      _ageController.text = petInfo.age.toString();
-    }
+    // 생일 정보 초기화
+    _selectedBirthday = petInfo.birthDate;
     _isInitialized = true;
   }
   
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Provider에서 현재 반려동물 정보 로드 (widget.existingPetInfo가 없을 때만)
-    if (!_isInitialized && widget.existingPetInfo == null) {
+    if (!_isInitialized) {
+      // GoRouter를 통해 extra 받기
+      try {
+        final router = GoRouter.maybeOf(context);
+        if (router != null) {
+          final location = router.routerDelegate.currentConfiguration;
+          final extra = location?.extra;
+          
+          if (extra is PetInfo) {
+            _existingPetInfo = extra;
+            _initializeForm(extra);
+            return;
+          }
+        }
+      } catch (e) {
+        // GoRouterState를 가져올 수 없으면 무시
+      }
+      
+      // extra가 없으면 currentPetProvider에서 가져오기
       final petInfo = ref.read(currentPetProvider);
       if (petInfo != null) {
+        _existingPetInfo = petInfo;
         _initializeForm(petInfo);
       }
     }
@@ -72,7 +76,6 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _ageController.dispose();
     _weightController.dispose();
     super.dispose();
   }
@@ -80,10 +83,11 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
   @override
   Widget build(BuildContext context) {
     // 기존 정보가 있으면 수정 모드, 없으면 등록 모드
-    final isEditMode = widget.existingPetInfo != null;
+    final isEditMode = _existingPetInfo != null;
     
     return BaseScaffold(
       title: isEditMode ? '강아지 정보 수정' : '강아지 등록',
+      showBackButton: true,
       body: SingleChildScrollView(
         child: HorizontalPadding(
           child: Form(
@@ -92,45 +96,135 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppConstants.h12,
-                // 프로필 이미지 섹션
-                Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.beige3,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.grey5, width: 2),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '🐕',
-                        style: TextStyle(fontSize: 60),
-                      ),
-                    ),
-                  ),
-                ),
+
                 AppConstants.h24,
                 
                 // 기본 정보 입력 폼
-                BasicInfoSection(
-                  nameController: _nameController,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '기본 정보',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.black,
+                      ),
+                    ),
+                    AppConstants.h16,
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: '강아지 이름',
+                        hintText: '강아지 이름을 입력해주세요',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.pets),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '강아지 이름을 입력해주세요';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
                 AppConstants.h24,
                 
-                // 생일/나이 선택 섹션
-                AgeSection(
-                  key: _ageSectionKey,
-                  ageController: _ageController,
-                  initialBirthday: widget.existingPetInfo?.birthDate,
-                  initialHasBirthday: widget.existingPetInfo?.birthDate != null,
+                // 생일 입력 섹션
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '생일 정보',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.black,
+                      ),
+                    ),
+                    AppConstants.h16,
+                    
+                    // 생일 입력 필드
+                    InkWell(
+                      onTap: _selectBirthday,
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.grey5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.calendar_today, color: AppColors.grey7),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _selectedBirthday != null
+                                    ? '${_selectedBirthday!.year}.${_selectedBirthday!.month.toString().padLeft(2, '0')}.${_selectedBirthday!.day.toString().padLeft(2, '0')}'
+                                    : '생일을 선택해주세요',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: _selectedBirthday != null ? AppColors.black : AppColors.grey7,
+                                ),
+                              ),
+                            ),
+                            const Icon(Icons.arrow_drop_down),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_selectedBirthday != null) ...[
+                      AppConstants.h8,
+                      Text(
+                        '나이: ${_calculateAge(_selectedBirthday!)}살',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.grey8,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 AppConstants.h24,
                 
                 // 몸무게 입력 섹션
-                WeightSection(
-                  weightController: _weightController,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '몸무게',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.black,
+                      ),
+                    ),
+                    AppConstants.h16,
+                    TextFormField(
+                      controller: _weightController,
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: '몸무게',
+                        hintText: '몸무게를 입력해주세요',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.monitor_weight),
+                        suffixText: 'kg',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '몸무게를 입력해주세요';
+                        }
+                        final weight = double.tryParse(value);
+                        if (weight == null || weight <= 0 || weight > 100) {
+                          return '올바른 몸무게를 입력해주세요 (0.1-100kg)';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
                 AppConstants.h32,
                 
@@ -155,50 +249,49 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
       return;
     }
 
-    final name = _nameController.text.trim();
-    final weight = double.parse(_weightController.text.trim());
-    
-    final ageSectionState = _ageSectionKey.currentState;
-    final hasBirthday = ageSectionState?.hasBirthday ?? false;
-    final selectedBirthday = ageSectionState?.selectedBirthday;
-    
-    int? age;
-    DateTime? birthday;
-    
-    if (hasBirthday && selectedBirthday != null) {
-      birthday = selectedBirthday;
-      age = _calculateAge(birthday);
-    } else if (!hasBirthday && _ageController.text.isNotEmpty) {
-      age = int.parse(_ageController.text.trim());
-      birthday = DateTime.now().subtract(Duration(days: age * 365));
+    if (_selectedBirthday == null) {
+      AppToast.error(context, '생일을 선택해주세요');
+      return;
     }
 
+    final name = _nameController.text.trim();
+    final weight = double.parse(_weightController.text.trim());
+    final birthday = _selectedBirthday!;
+    final age = _calculateAge(birthday);
+
     final petInfo = PetInfo(
-      petId: widget.existingPetInfo?.petId,
-      userId: widget.existingPetInfo?.userId,
+      petId: _existingPetInfo?.petId,
+      userId: _existingPetInfo?.userId,
       name: name,
-      breed: widget.existingPetInfo?.breed,
+      breed: _existingPetInfo?.breed,
       birthDate: birthday,
       weightKg: weight,
-      photoUrl: widget.existingPetInfo?.photoUrl,
+      photoUrl: _existingPetInfo?.photoUrl,
       age: age,
-      gender: widget.existingPetInfo?.gender,
+      gender: _existingPetInfo?.gender,
     );
 
     try {
       final petNotifier = ref.read(petProvider.notifier);
       
-      if (widget.existingPetInfo != null) {
+      if (_existingPetInfo != null) {
         // 수정 모드: 기존 정보 업데이트
-        // TODO: 실제 petId 사용 (현재는 mock 데이터이므로 임시로 'current' 사용)
-        await petNotifier.updatePetInfo('current', petInfo);
+        final petId = _existingPetInfo!.petId;
+        if (petId == null) {
+          if (mounted) {
+            AppToast.error(context, '반려동물 ID를 찾을 수 없습니다.');
+          }
+          return;
+        }
+        
+        await petNotifier.updatePetInfo(petId.toString(), petInfo);
         
         if (mounted) {
           AppToast.success(context, '$name의 정보가 성공적으로 수정되었습니다!');
           context.pop();
         }
       } else {
-        // 등록 모드: 새 정보 생성
+        // 등록 모드: 새 정보 생성 (POST /pets/)
         await petNotifier.createPetInfo(petInfo);
         
         if (mounted) {
@@ -208,8 +301,11 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
       }
     } catch (e) {
       if (mounted) {
-        final action = widget.existingPetInfo != null ? '수정' : '등록';
-        AppToast.error(context, '$action에 실패했습니다. 다시 시도해주세요.');
+        final action = _existingPetInfo != null ? '수정' : '등록';
+        final errorMessage = e.toString().contains('Exception:')
+            ? e.toString().split('Exception:').last.trim()
+            : '$action에 실패했습니다. 다시 시도해주세요.';
+        AppToast.error(context, errorMessage);
       }
     }
   }
@@ -222,5 +318,21 @@ class _PetRegiScreenState extends ConsumerState<PetRegiScreen> {
       age--;
     }
     return age;
+  }
+
+  Future<void> _selectBirthday() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthday ?? DateTime.now().subtract(const Duration(days: 365 * 2)),
+      firstDate: DateTime.now().subtract(const Duration(days: 365 * 30)),
+      lastDate: DateTime.now(),
+      helpText: '생일 선택',
+    );
+
+    if (selectedDate != null && mounted) {
+      setState(() {
+        _selectedBirthday = selectedDate;
+      });
+    }
   }
 }

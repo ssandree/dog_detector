@@ -1,36 +1,27 @@
-// lib/features/manager/manager_home_screen.dart
 import 'package:flutter/material.dart';
-import '../../../core/config/app_colors.dart';
-import '../../../core/app_constants.dart';
-import 'widgets/pet_greeting_card.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import '../../../../core/app_constants.dart';
+import '../../../../core/widgets/base_scaffold.dart';
+import 'widgets/pet_greeting.dart';
 import 'widgets/emotion_gauge_card.dart';
 
-/// 매니저 홈 화면
-class ManagerHomeScreen extends StatelessWidget {
+class ManagerHomeScreen extends ConsumerWidget {
   const ManagerHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.beige1, // 베이지색 배경
-            AppColors.beige2,
-          ],
-        ),
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SingleChildScrollView(
+      child: HorizontalPadding(
+        horizontalPadding: AppConstants.defaultSpacing,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: const [
-            PetGreetingCard(),
-            AppConstants.h16,
+            SizedBox(height: AppConstants.defaultSpacing),
+            PetGreeting(),
+            SizedBox(height: AppConstants.defaultSpacing),
             EmotionGaugeCard(),
-            AppConstants.h32,
+            SizedBox(height: AppConstants.defaultSpacing),
           ],
         ),
       ),

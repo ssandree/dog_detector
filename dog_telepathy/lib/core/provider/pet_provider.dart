@@ -2,13 +2,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/pet_info.dart';
 import '../service/pet/pet_service.dart';
 import '../service/pet/mock_pet_service.dart';
+import '../service/pet/remote_pet_service.dart';
 import '../exceptions.dart';
 
 /// PetService provider
 /// Mock/Remote 서비스 전환을 위해 사용
 final petServiceProvider = Provider<PetService>((ref) {
-  // TODO: 환경에 따라 MockPetService 또는 RemotePetService 선택
-  return MockPetService();
+  const useMock = bool.fromEnvironment('USE_MOCK_PET_SERVICE', defaultValue: false);
+  return useMock ? MockPetService() : RemotePetService();
 });
 
 /// Pet 목록을 관리하는 Notifier

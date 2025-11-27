@@ -25,7 +25,7 @@ class OnboardingSlideData {
     OnboardingSlideData(
       image: 'assets/onboarding/onboarding_3.jpg',
       title: '보고서 제공',
-      description: '하루 감정 리포트를 자동 생성합니다.',
+      description: '하루 건강 리포트를 자동 생성합니다.',
     ),
   ];
 }

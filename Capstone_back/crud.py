@@ -2,6 +2,8 @@
 #데이터베이스 생성, 조회, 수정, 삭제(CRUD) 로직
 from sqlalchemy.orm import Session
 import models, schemas, security
+from sqlalchemy import cast, Date, extract
+from datetime import date
 
 # 회원가입 part
 # =======================================================================
@@ -134,4 +136,21 @@ def get_events_by_pet(db: Session, pet_id: int, skip: int = 0, limit: int = 100)
 #    db.commit()
 #    db.refresh(db_event)
 #    return db_event
+
+# [추가 1] 특정 날짜의 이벤트 조회 (일일 리포트용)
+def get_daily_events(db: Session, pet_id: int, target_date: date):
+    return db.query(models.Event).filter(
+        models.Event.pet_id == pet_id,
+        # start_time의 날짜 부분만 잘라서 비교 (YYYY-MM-DD)
+        cast(models.Event.start_time, Date) == target_date
+    ).order_by(models.Event.start_time.asc()).all()
+
+# [추가 2] 특정 년/월의 이벤트 조회 (월간 캘린더용)
+def get_monthly_events(db: Session, pet_id: int, year: int, month: int):
+    return db.query(models.Event).filter(
+        models.Event.pet_id == pet_id,
+        # 연도와 월을 추출해서 비교
+        extract('year', models.Event.start_time) == year,
+        extract('month', models.Event.start_time) == month
+    ).order_by(models.Event.start_time.asc()).all()
 

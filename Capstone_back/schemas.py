@@ -2,7 +2,7 @@
 from pydantic import BaseModel, EmailStr # pydantic은 데이터 검증 라이브러리
 from typing import List, Optional
 from datetime import *
-from typing import Optional
+from uuid import UUID
 
 # 회원가입 시 받을 데이터 (Request Body)
 class UserCreate(BaseModel):
@@ -201,20 +201,55 @@ class DailyReportResponse(BaseModel):
 class DeviceStatusUpdate(BaseModel):
     connection_status: str  # 'offline', 'connecting', 'connected' 중 하나
 
-# SDP (Session Description Protocol): 연결 정보(코덱, 해상도 등)가 담긴 문자열
-class RTCOffer(BaseModel):
-    sender_device_id: int
-    receiver_device_id: int
+# ==========================================
+# [WebRTC] 고급 시그널링 (New! 요청서 반영)
+# ==========================================
+
+# 1. TURN 서버 정보 응답용
+class IceServer(BaseModel):
+    urls: List[str]
+    username: Optional[str] = None
+    credential: Optional[str] = None
+
+class WebRTCConfigResponse(BaseModel):
+    iceServers: List[IceServer]
+
+# 2. Offer (Cam -> Server)
+class RTCOfferRequest(BaseModel):
+    sender_device_id: str
+    receiver_device_id: str
     sdp_offer: str
 
-class RTCAnswer(BaseModel):
-    sender_device_id: int # 답변을 보내는 사람 (Manager)
-    receiver_device_id: int # 답변을 받을 사람 (Cam)
+class RTCOfferResponse(BaseModel):
+    session_id: str
+
+# 3. Answer (Manager <-> Server)
+class RTCAnswerRequest(BaseModel):
+    session_id: str
     sdp_answer: str
 
-class RTCCandidate(BaseModel):
-    device_id: int
-    candidate: str
-    sdp_mid: Optional[str] = None
-    sdp_m_line_index: Optional[int] = None
+class RTCAnswerResponse(BaseModel):
+    sdp_answer: Optional[str]
 
+# 4. Candidate (양방향)
+class RTCCandidateRequest(BaseModel):
+    session_id: str
+    sender_device_id: str
+    receiver_device_id: str
+    candidate: str
+
+class RTCCandidateResponse(BaseModel):
+    from_device_id: str
+    candidate: str
+
+class RTCCandidateListResponse(BaseModel):
+    candidates: List[RTCCandidateResponse]
+
+# [추가] GET /stream/offer 응답용 모델 (DTO)
+class RTCOfferCheckResponse(BaseModel):
+    session_id: Optional[str] = None
+    sdp_offer: Optional[str] = None
+
+# [추가] 알림 설정 변경용 스키마
+class NotificationSetting(BaseModel):
+    enabled: bool

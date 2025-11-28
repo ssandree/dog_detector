@@ -21,7 +21,8 @@ class User(Base):
     phone_number = Column(String(20), unique=True, nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     fcm_token = Column(String(255), nullable=True)
-
+    # [추가] 알림 수신 여부 (기본값 True)
+    notification_enabled = Column(Boolean, default=True)
 
     # --- 이 관계 설정이 추가됩니다 ---
     # User 객체에서 user.pets를 통해 이 유저의 모든 반려동물 목록에 접근할 수 있습니다.

@@ -1,7 +1,7 @@
 from fastapi import *
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from typing import List  # 리스트 형태의 응답을 위해 추가
+from typing import Dict, List  # 리스트 형태의 응답을 위해 추가
 from datetime import *
 import os
 from urllib.parse import urlparse
@@ -21,7 +21,10 @@ from sqlalchemy import cast, Date # 이것도 없으면 추가
 # 알림푸시기능을 위한 모듈
 from utils import fcm
 
-from schemas import RTCOffer, RTCAnswer, RTCCandidate, DeviceStatusUpdate # import 추가
+from schemas import DeviceStatusUpdate # import 추가
+
+import uuid
+import time
 
 # 임시 저장소 (메모리)
 
@@ -106,6 +109,22 @@ def update_user_me(
     if user_update.phone_number and crud.get_user_by_phone_number(db, phone_number=user_update.phone_number):
         raise HTTPException(status_code=400, detail="이미 등록된 전화번호입니다.")
     return crud.update_user(db=db, db_user=current_user, user_update=user_update)
+
+# [추가] 알림 수신 여부 변경 API
+@app.put("/users/notification", tags=["Users"])
+def update_notification_setting(
+    setting: schemas.NotificationSetting,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    알림 수신 여부를 변경합니다. (enabled: true/false)
+    """
+    current_user.notification_enabled = setting.enabled
+    db.commit()
+    
+    status = "켜짐" if setting.enabled else "꺼짐"
+    return {"message": f"알림 설정이 '{status}'으로 변경되었습니다."}
 
 
 # =======================================================================
@@ -461,66 +480,142 @@ def update_fcm_token(
                 title="🐕 행동 분석 완료!",
                 body=f"방금 업로드한 영상 분석이 끝났습니다. 결과를 확인해보세요."
             )
+        else:
+            print("🔕 알림이 꺼져있거나 토큰이 없어 전송하지 않았습니다.")
     except Exception as e:
         print(f"알림 에러(무시): {e}")
 
     return new_event
 
+# ==========================================
+# [WebRTC] 고급 시그널링 (세션 기반) - NEW!
+# ==========================================
+
 # 임시 저장소 (실제 배포시엔 Redis를 쓰지만, 지금은 딕셔너리로 충분함)
 # 구조: { target_device_id: "SDP 문자열" }
-offers = {} 
-answers = {}
-candidates = {}
+# offers = {} 
+# answers = {}
+# candidates = {}
 
-# 1. (Cam -> Server) 연결 요청(Offer) 보내기
-@app.post("/stream/offer",tags=["WebRTC"])
-def send_offer(data: RTCOffer):
-    # 영희(Receiver)가 가져갈 수 있게 철수(Sender)의 제안을 저장해둠
-    offers[data.receiver_device_id] = data.sdp_offer
+sessions: Dict[str, dict] = {}
+
+# 1. TURN 서버 정보 제공 (요청서 2번)
+@app.get("/webrtc/config", response_model=schemas.WebRTCConfigResponse, tags=["WebRTC"])
+def get_webrtc_config():
+    return {
+        "iceServers": [
+            {
+                "urls": ["stun:54.206.79.248:3478"] # STUN
+            },
+            {
+                "urls": [
+                    "turn:54.206.79.248:3478?transport=udp",
+                    "turn:54.206.79.248:3478?transport=tcp"
+                ],
+                "username": "webrtcuser",
+                "credential": "webrtcpass"
+            }
+        ]
+    }
+
+# 2. Offer 전송 및 세션 생성 (Cam -> Server)
+@app.post("/stream/offer", response_model=schemas.RTCOfferResponse, tags=["WebRTC"])
+def send_offer(data: schemas.RTCOfferRequest):
+    # 세션 ID 생성
+    session_id = str(uuid.uuid4())
     
-    # 팁: 여기서 바로 Answer를 리턴해주려면 Long-Polling이 필요한데, 
-    # 보통은 저장만 하고 'OK'를 줍니다. 요청서에는 바로 Answer를 달라고 되어있는데,
-    # 이는 프론트가 주기적으로 "답장 왔나?" 하고 찔러봐야(Polling) 가능합니다.
-    return {"message": "Offer stored successfully"}
+    # 세션 저장
+    sessions[session_id] = {
+        "sender": data.sender_device_id,
+        "receiver": data.receiver_device_id,
+        "offer": data.sdp_offer,
+        "answer": None,
+        "candidates": [], # 후보군 리스트
+        "created_at": time.time()
+    }
+    
+    return {"session_id": session_id}
 
-# 2. (Manager -> Server) 연결 요청 확인하기 (프론트가 호출해야 함)
-@app.get("/stream/offer/{device_id}",tags=["WebRTC"])
-def get_offer(device_id: int):
-    # 나한테 온 Offer가 있는지 확인
-    if device_id in offers:
-        return {"sdp_offer": offers[device_id]}
-    return {"message": "No offer yet"}
+# 2-1. [수정] Offer 조회 (Manager -> Server)
+@app.get("/stream/offer", response_model=schemas.RTCOfferCheckResponse, tags=["WebRTC"])
+def get_offer(session_id: str):
+    """
+    Session ID를 통해 저장된 SDP Offer를 조회합니다.
+    - Offer 존재 시: {"session_id": "...", "sdp_offer": "..."}
+    - Offer 대기 중: {"session_id": null, "sdp_offer": null}
+    """
+    # 세션이 존재하고, Offer가 있는 경우
+    if session_id in sessions and sessions[session_id].get("offer"):
+        return {
+            "session_id": session_id,
+            "sdp_offer": sessions[session_id]["offer"]
+        }
+    
+    # 세션이 없거나 Offer가 없는 경우 (JSON null 반환)
+    return {
+        "session_id": None,
+        "sdp_offer": None
+    }
 
-# 3. (Manager -> Server) 수락(Answer) 보내기
-@app.post("/stream/answer",tags=["WebRTC"])
-def send_answer(data: RTCAnswer):
-    answers[data.receiver_device_id] = data.sdp_answer
-    return {"message": "Answer stored successfully"}
+# 3. Answer 저장 (Manager -> Server)
+@app.post("/stream/answer", tags=["WebRTC"])
+def send_answer(data: schemas.RTCAnswerRequest):
+    if data.session_id in sessions:
+        sessions[data.session_id]["answer"] = data.sdp_answer
+        return {"message": "Answer saved"}
+    raise HTTPException(status_code=404, detail="Session not found")
 
-# 4. (Cam -> Server) 수락 확인하기
-@app.get("/stream/answer/{device_id}",tags=["WebRTC"])
-def get_answer(device_id: int):
-    if device_id in answers:
-        return {"sdp_answer": answers[device_id]}
-    return {"message": "No answer yet"}
+# 4. Answer 조회 (Cam -> Server)
+@app.get("/stream/answer", response_model=schemas.RTCAnswerResponse, tags=["WebRTC"])
+def get_answer(session_id: str):
+    if session_id in sessions:
+        return {"sdp_answer": sessions[session_id]["answer"]}
+    # 세션이 없거나 답장이 아직 없으면 null 반환
+    return {"sdp_answer": None}
 
-# 5. ICE Candidate 교환 (네트워크 주소 교환)
-@app.post("/stream/candidate",tags=["WebRTC"])
-def send_candidate(data: RTCCandidate):
-    if data.device_id not in candidates:
-        candidates[data.device_id] = []
-    candidates[data.device_id].append(data.candidate)
-    return {"message": "Candidate stored"}
+# 5. Candidate 등록 (양방향)
+@app.post("/stream/candidate", tags=["WebRTC"])
+def send_candidate(data: schemas.RTCCandidateRequest):
+    if data.session_id in sessions:
+        # 상대방이 읽어갈 수 있게 저장
+        sessions[data.session_id]["candidates"].append({
+            "from_device_id": data.sender_device_id,
+            "target_device_id": data.receiver_device_id, # 누가 읽어야 하는지
+            "candidate": data.candidate
+        })
+        return {"message": "Candidate saved"}
+    raise HTTPException(status_code=404, detail="Session not found")
 
-@app.get("/stream/candidate/{device_id}",tags=["WebRTC"])
-def get_candidates(device_id: int):
-    if device_id in candidates:
-        return {"candidates": candidates[device_id]}
-    return {"candidates": []}
+# 6. Candidate 조회 및 삭제 (읽으면 사라짐)
+@app.get("/stream/candidates", response_model=schemas.RTCCandidateListResponse, tags=["WebRTC"])
+def get_candidates(session_id: str, device_id: str):
+    if session_id not in sessions:
+        return {"candidates": []}
+    
+    all_candidates = sessions[session_id]["candidates"]
+    my_candidates = []
+    remaining_candidates = []
+    
+    # 나한테 온 메시지만 골라내기
+    for cand in all_candidates:
+        if cand["target_device_id"] == str(device_id):
+            my_candidates.append({
+                "from_device_id": cand["from_device_id"],
+                "candidate": cand["candidate"]
+            })
+        else:
+            remaining_candidates.append(cand)
+            
+    # 읽은 건 삭제하고 나머지만 다시 저장 (Queue 방식)
+    sessions[session_id]["candidates"] = remaining_candidates
+    
+    return {"candidates": my_candidates}
 
-# --- 2. 디바이스 상태 관리 (New!) ---
 
-# (1) 상태 업데이트 API (카메라가 호출)
+# ==========================================
+# [유지] 디바이스 상태 관리
+# ==========================================
+
 @app.put("/devices/{device_id}/status", response_model=schemas.DeviceResponse, tags=["Devices"])
 def update_device_status(
     device_id: int,
@@ -542,6 +637,53 @@ def update_device_status(
     db.refresh(db_device)
     
     return db_device
+
+# ... (기존 코드들) ...
+
+# =======================================================================
+# [추가] 날짜별/월별 이벤트 조회 API
+# =======================================================================
+
+# 1. 📅 일일 이벤트 목록 조회 (데일리 리포트용)
+@app.get("/pets/{pet_id}/events/daily", response_model=List[schemas.EventResponse], tags=["Events"])
+def read_daily_events(
+    pet_id: int,
+    target_date: date, # 쿼리 파라미터 (?target_date=2025-11-27)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    특정 날짜(YYYY-MM-DD)에 발생한 모든 이벤트 목록을 조회합니다.
+    """
+    # 1. 권한 확인
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+
+    # 2. 조회 및 반환
+    return crud.get_daily_events(db, pet_id=pet_id, target_date=target_date)
+
+
+# 2. 🗓️ 월간 이벤트 목록 조회 (캘린더용)
+@app.get("/pets/{pet_id}/events/monthly", response_model=List[schemas.EventResponse], tags=["Events"])
+def read_monthly_events(
+    pet_id: int,
+    year: int,  # 쿼리 파라미터 (?year=2025)
+    month: int, # 쿼리 파라미터 (?month=11)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    특정 년/월(YYYY, MM)에 발생한 모든 이벤트 목록을 조회합니다.
+    캘린더에 점을 찍거나 월간 통계를 낼 때 사용합니다.
+    """
+    # 1. 권한 확인
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+
+    # 2. 조회 및 반환
+    return crud.get_monthly_events(db, pet_id=pet_id, year=year, month=month)
 
 # --- 루트 주소 추가 ---
 @app.get("/", tags=["Root"])

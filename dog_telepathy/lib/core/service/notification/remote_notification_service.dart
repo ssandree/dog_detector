@@ -63,6 +63,18 @@ class RemoteNotificationService implements NotificationService {
     }
   }
 
+  @override
+  Future<void> toggleNotification(bool enabled) async {
+    try {
+      await _dio.put(
+        '/users/notification',
+        data: {'enabled': enabled},
+      );
+    } on DioException catch (e) {
+      throw _handleError(e, '알림 설정을 변경하지 못했습니다');
+    }
+  }
+
   AppException _handleError(DioException e, String defaultMessage) {
     if (e.response != null) {
       final status = e.response!.statusCode ?? 0;

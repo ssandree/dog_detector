@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/app_constants.dart';
 import '../../../../core/config/app_colors.dart';
-import '../../../../core/provider/ai_report_provider.dart';
 import '../../../../core/provider/current_pet_provider.dart';
 import '../../../../core/provider/event_provider.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_cards.dart';
 
@@ -30,29 +31,29 @@ class AiReportButton extends ConsumerWidget {
     return eventsAsync.when(
       data: (dailyEvents) {
         final hasEvents = dailyEvents.events.isNotEmpty;
-        final statusText = hasEvents
-            ? '오늘의 감정 리포트 생성 준비됨'
-            : '아직 분석할 데이터가 없어요';
         return AppCards.basic(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                statusText,
+                '오늘의 리포트 보기',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: hasEvents ? AppColors.black : AppColors.grey8,
+                  color: AppColors.black,
                 ),
               ),
               AppConstants.h12,
-              AppButton.primary(
-                text: hasEvents ? 'AI 리포트 보기' : '데이터가 부족해요',
-                onPressed: hasEvents
-                    ? () => _showAiReport(context, ref, petId)
-                    : () {},
-                height: 48,
-              ),
+              hasEvents
+                  ? AppButton.primary(
+                      text: 'AI 리포트 보기',
+                      onPressed: () => context.push(AppRoutes.managerTodayReport),
+                      height: 48,
+                    )
+                  : AppButton.disabled(
+                      text: '데이터가 부족해요',
+                      height: 48,
+                    ),
             ],
           ),
         );
@@ -97,63 +98,5 @@ class AiReportButton extends ConsumerWidget {
     );
   }
 
-  String _formatCreatedAt(DateTime? createdAt) {
-    if (createdAt == null) return '';
-    return '${createdAt.month}/${createdAt.day} ${createdAt.hour.toString().padLeft(2, '0')}:${createdAt.minute.toString().padLeft(2, '0')}';
-  }
-
-  Future<void> _showAiReport(
-    BuildContext context,
-    WidgetRef ref,
-    int petId,
-  ) async {
-    final request = DailyReportRequest(
-      petId: petId,
-      date: DateTime.now(),
-    );
-
-    final report = await ref.read(dailyAiReportProvider(request).future);
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        final hasSummary = report.summary.trim().isNotEmpty;
-        final createdAtText = report.createdAt != null
-            ? '생성 시간: ${_formatCreatedAt(report.createdAt)}'
-            : '';
-        
-        return AlertDialog(
-          title: const Text('건강 리포트'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (createdAtText.isNotEmpty) ...[
-                Text(
-                  createdAtText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.grey8,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-              Text(
-                hasSummary
-                    ? report.summary
-                    : '아직 생성된 리포트가 없습니다.\n조금만 더 기다려주세요!',
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('닫기'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 

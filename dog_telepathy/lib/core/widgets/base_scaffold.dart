@@ -76,7 +76,11 @@ class BaseScaffold extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
+            icon: const Icon(
+              Icons.notifications,
+              color: AppColors.grey7,
+              size: 28,
+            ),
             onPressed: onNotificationPressed ?? () => context.push(AppRoutes.managerNotification),
           ),
         ),
@@ -94,7 +98,7 @@ class BaseScaffold extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 20,
                   ),
                 ),
               )

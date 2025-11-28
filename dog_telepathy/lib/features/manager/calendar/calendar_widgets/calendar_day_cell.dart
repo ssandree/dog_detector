@@ -56,6 +56,8 @@ class CalendarDayCell extends StatelessWidget {
   final bool isWeekend;
   /// 현재 포커스된 월과 같은 월인지 여부
   final bool isCurrentMonth;
+  /// 오늘 날짜인지 여부
+  final bool isToday;
 
   const CalendarDayCell({
     super.key,
@@ -66,6 +68,7 @@ class CalendarDayCell extends StatelessWidget {
     this.isFutureDay = false,
     this.isWeekend = false,
     this.isCurrentMonth = true,
+    this.isToday = false,
   });
 
   @override
@@ -87,7 +90,7 @@ class CalendarDayCell extends StatelessWidget {
     
     return LayoutBuilder(
       builder: (context, constraints) {
-        final targetHeight = constraints.maxHeight * 0.8;
+        final targetHeight = constraints.maxHeight * 0.85;
 
         return Container(
           margin: const EdgeInsets.all(3),
@@ -99,6 +102,12 @@ class CalendarDayCell extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cellColor,
                 borderRadius: BorderRadius.circular(8),
+                border: isToday
+                    ? Border.all(
+                        color: AppColors.grey12,
+                        width: 2,
+                      )
+                    : null,
               ),
               alignment: Alignment.center,
               child: Text(

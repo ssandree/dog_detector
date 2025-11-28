@@ -5,5 +5,6 @@ abstract class NotificationService {
   Future<NotificationSettings> updateSettings(NotificationSettings settings);
   Future<void> registerFcmToken(String token);
   Future<List<NotificationMessage>> fetchMessages();
+  Future<void> toggleNotification(bool enabled);
 }
 

@@ -112,25 +112,83 @@ final emotionDataProvider = FutureProvider.autoDispose
     '행복': '#FFD700',
     'calm': '#87CEEB',
     '평온': '#87CEEB',
+    '편안': '#87CEEB',
+    '안정': '#87CEEB',
     '활발': '#FF6B6B',
     // 부정 감정
     'anxiety': '#FFA500',
     '불안': '#FFA500',
     'aggressive': '#FF4500',
+    '공격성': '#FF4500',
     'angry': '#FF4500',
     '화남': '#FF4500',
     'fear': '#9370DB',
     '외로움': '#9370DB',
+    '슬픔': '#9370DB',
+    'sad': '#9370DB',
+  };
+  
+  // 감정 키워드별 색상 매핑 (부분 매칭용)
+  final emotionKeywordColors = {
+    '편안': '#87CEEB',
+    '안정': '#87CEEB',
+    '공격': '#FF4500',
+    '공격성': '#FF4500',
+    '불안': '#FFA500',
+    '슬픔': '#9370DB',
+    '행복': '#FFD700',
+    '활발': '#FF6B6B',
+    '평온': '#87CEEB',
   };
 
   // 감정별 비율 계산 (퍼센트)
   final emotionData = emotionCount.entries.map((entry) {
     final percentage = ((entry.value / totalCount) * 100).round();
     final emotionKey = entry.key.toLowerCase().trim();
-    // 영어/한글 모두 지원하는 색상 매핑
-    final color = emotionColors[entry.key] ?? 
-                  emotionColors[emotionKey] ?? 
-                  '#808080';
+    final originalKey = entry.key;
+    
+    // 색상 매핑 (정확한 매칭 우선, 부분 매칭도 시도)
+    String? color;
+    
+    // 1. 정확한 매칭 시도
+    color = emotionColors[originalKey] ?? emotionColors[emotionKey];
+    
+    // 2. 슬래시로 구분된 경우 처리 (예: "편안/안정")
+    if (color == null && originalKey.contains('/')) {
+      final parts = originalKey.split('/');
+      for (final part in parts) {
+        final trimmedPart = part.trim();
+        color = emotionColors[trimmedPart] ?? 
+                emotionColors[trimmedPart.toLowerCase()] ??
+                emotionKeywordColors[trimmedPart] ??
+                emotionKeywordColors[trimmedPart.toLowerCase()];
+        if (color != null) break;
+      }
+    }
+    
+    // 3. 키워드 기반 부분 매칭
+    if (color == null) {
+      for (final keyword in emotionKeywordColors.keys) {
+        if (originalKey.contains(keyword) || emotionKey.contains(keyword.toLowerCase())) {
+          color = emotionKeywordColors[keyword];
+          break;
+        }
+      }
+    }
+    
+    // 4. 기본 emotionColors 맵에서 부분 매칭
+    if (color == null) {
+      for (final key in emotionColors.keys) {
+        if (originalKey.contains(key) || emotionKey.contains(key.toLowerCase())) {
+          color = emotionColors[key];
+          break;
+        }
+      }
+    }
+    
+    // 5. 기본값
+    color ??= '#808080';
+    
     return {
       'emotion': entry.key,
       'percentage': percentage,
@@ -215,12 +273,12 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
                   ? '${isToday ? '오늘' : '어제'} ${petName}의 기분 점수는 0점'
                   : '${isToday ? '오늘' : '어제'} ${petName}의 기분 점수는 ${positivePercent}점',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: isEmpty ? AppColors.grey9 : AppColors.grey12,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 4),
               // 버튼
               TextButton(
                 onPressed: () {
@@ -233,16 +291,16 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
                   });
                 },
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  alignment: Alignment.centerLeft,
                 ),
                 child: Text(
                   isToday ? '어제의 건강 보기' : '오늘의 건강 보기',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     color: isToday ? AppColors.grey8 : AppColors.grey9,
                   ),
                 ),
@@ -257,7 +315,7 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
                 color: gaugeColor,
               ),
               
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               
               // 작은 사각 인디케이터들 (감정별) - 그래프 아래
               Row(
@@ -305,47 +363,51 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
                     : emotionData.take(3).map((data) {
                   final emotion = data['emotion'] as String;
                   final percentage = data['percentage'] as int;
+                  final colorString = data['color'] as String;
                   final color = Color(
-                    int.parse((data['color'] as String).replaceFirst('#', '0xFF')),
+                    int.parse(colorString.replaceFirst('#', '0xFF')),
                   );
 
-                        return Container(
-                          width: 85, // 너비 줄임
-                          margin: const EdgeInsets.symmetric(horizontal: 8), // 간격 조정
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
+                  // 감정별 배경색 (색상 코드에서 가져온 색상 사용, 더 진하게)
+                  final backgroundColor = color.withValues(alpha: 0.6);
+
+                  return Container(
+                    width: 85, // 너비 줄임
+                    margin: const EdgeInsets.symmetric(horizontal: 8), // 간격 조정
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          emotion,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.grey12,
                           ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(14),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$percentage%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: color,
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                emotion,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.grey12,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$percentage%',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: color,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
+                        ),
+                      ],
+                    ),
+                  );
                 }).toList(),
               ),
               const SizedBox(height: 24)
@@ -359,7 +421,22 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
         padding: const EdgeInsets.all(20),
         child: const Center(child: CircularProgressIndicator()),
       ),
-      error: (error, stack) => const SizedBox.shrink(),
+      error: (error, stack) => AppCards.basic(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Text(
+              '건강 이벤트를 불러오지 못했어요',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.error,
+              ),
+            ),
+            Text(error.toString()),
+          ],
+        ),
+      ),
     );
   }
 

@@ -101,7 +101,7 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
         firstDay: DateTime.utc(2016, 1, 1),
         lastDay: _today,
         focusedDay: _focusedDay,
-        rowHeight: 50.0, // 행 높이를 약간 줄여서 공간 확보
+        rowHeight: 53.0, // 행 높이 증가 (0.8 -> 0.85 비율에 맞춰 증가)
 
         // ✅ 선택된 날짜 표시 로직
         selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
@@ -140,7 +140,7 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
             // selectedDecoration은 제거 (defaultBuilder에서 직접 처리)
             todayDecoration: BoxDecoration(
               color: Colors.transparent,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: AppColors.grey12,
                 width: 2,
@@ -199,6 +199,9 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
             
             // 현재 포커스된 월과 같은 월인지 확인
             final isCurrentMonth = day.month == _focusedDay.month;
+            
+            // 오늘 날짜인지 확인
+            final isToday = isSameDay(day, _today);
 
             return CalendarDayCell(
               day: day,
@@ -208,6 +211,7 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
               isFutureDay: isFutureDay,
               isWeekend: isWeekend,
               isCurrentMonth: isCurrentMonth,
+              isToday: isToday,
             );
           },
         ),

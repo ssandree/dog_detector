@@ -15,8 +15,9 @@ class NotificationSettingsNotifier
     extends AsyncNotifier<NotificationSettings> {
   @override
   Future<NotificationSettings> build() async {
-    final service = ref.read(notificationServiceProvider);
-    return service.fetchSettings();
+    // 초기 상태는 기본값으로 설정 (GET 요청 없음)
+    // 설정 변경 시에만 PUT 요청을 보냄
+    return const NotificationSettings.initial();
   }
 
   Future<void> refresh() async {
@@ -31,9 +32,21 @@ class NotificationSettingsNotifier
   }
 
   Future<void> toggleInstantAlert(bool value) async {
-    final current = state.value;
-    if (current == null) return;
-    await _saveSettings(current.copyWith(instantAlert: value));
+    try {
+      final service = ref.read(notificationServiceProvider);
+      await service.toggleNotification(value);
+      // 성공 시 로컬 상태 업데이트
+      final current = state.value;
+      if (current != null) {
+        state = AsyncValue.data(current.copyWith(instantAlert: value));
+      } else {
+        // 상태가 없으면 기본값으로 설정
+        state = AsyncValue.data(NotificationSettings(instantAlert: value));
+      }
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
   }
 
   Future<void> registerFcmToken(String token) async {

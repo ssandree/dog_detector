@@ -28,7 +28,6 @@ class StreamSummaryBar extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(
-        horizontal: AppConstants.defaultSpacing,
         vertical: AppConstants.defaultSpacing / 2,
       ),
       padding: EdgeInsets.all(AppConstants.defaultSpacing),

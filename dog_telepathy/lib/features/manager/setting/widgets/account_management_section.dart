@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/storage/app_prefs_provider.dart';
 import '../../../../core/provider/user_provider.dart';
+import '../../../../core/widgets/app_dialog.dart';
+import '../../../auth/providers/auth_controller.dart';
 import 'setting_row.dart';
 
 /// 계정 관리 섹션
@@ -34,8 +36,13 @@ class AccountManagementSection extends ConsumerWidget {
         ),
         ActionRow(
           title: '현재 기기 모드 재설정',
-          subtitle: '매니저모드와 캠모드 중 선택',
+          subtitle: '매니저모드/캠모드 중 선택하여 재설정',
           onTap: () => _resetMode(context, ref),
+        ),
+        ActionRow(
+          title: '로그아웃',
+          subtitle: '로그아웃 후 로그인 화면으로 이동합니다',
+          onTap: () => _handleLogout(context, ref),
         ),
       ],
     );
@@ -45,6 +52,27 @@ class AccountManagementSection extends ConsumerWidget {
     // 모드 리셋 후 메인 화면으로 이동
     ref.read(appPrefsProvider.notifier).setMode(null);
     context.go(AppRoutes.modeSelect);
+  }
+
+  Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    // 확인 다이얼로그 표시
+    final confirm = await showConfirmDialog(
+      context: context,
+      title: '로그아웃',
+      content: '로그아웃 하시겠습니까?',
+      confirmText: '로그아웃',
+      cancelText: '취소',
+    );
+
+    if (confirm == true && context.mounted) {
+      // 로그아웃 처리
+      await ref.read(authControllerProvider.notifier).signOut();
+      
+      // 로그인 화면으로 이동
+      if (context.mounted) {
+        context.go(AppRoutes.login);
+      }
+    }
   }
 }
 

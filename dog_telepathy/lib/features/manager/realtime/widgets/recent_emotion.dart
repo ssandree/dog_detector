@@ -30,63 +30,78 @@ class RecentEmotionPanel extends ConsumerWidget {
         final currentInfo = _emotionInfo(latest.finalEmotion);
         final delayText = _formatDelay(latest.startTime);
 
-        return AppCards.basic(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '현재 감정 (지연 포함)',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: AppColors.grey12,
-                ),
-              ),
-              AppConstants.h12,
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 현재 감정 카드
+            AppCards.basic(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(currentInfo.emoji, style: const TextStyle(fontSize: 42)),
-                  AppConstants.w12,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const Text(
+                    '현재 감정',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                      color: AppColors.grey12,
+                    ),
+                  ),
+                  AppConstants.h8,
+                  const Text(
+                    '※ 감정 분석은 최대 1분 지연될 수 있어요.',
+                    style: TextStyle(fontSize: 12, color: AppColors.grey7),
+                  ),
+                  AppConstants.h12,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        currentInfo.label,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.grey12,
-                        ),
-                      ),
-                      Text(
-                        '최근 분석됨 ($delayText)',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.grey7,
-                        ),
+                      Text(currentInfo.emoji, style: const TextStyle(fontSize: 42)),
+                      AppConstants.w12,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentInfo.label,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.grey12,
+                            ),
+                          ),
+                          Text(
+                            '최근 분석됨 ($delayText)',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.grey7,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-              AppConstants.h20,
-              const Text(
-                '최근 분석된 감정',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.grey12,
-                ),
+            ),
+            AppConstants.h16,
+            // 최근 분석된 감정 카드
+            AppCards.basic(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '최근 분석된 감정',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.grey12,
+                    ),
+                  ),
+                  AppConstants.h12,
+                  ...recentItems.map(_RecentEmotionRow.new),
+                ],
               ),
-              AppConstants.h12,
-              ...recentItems.map(_RecentEmotionRow.new),
-              AppConstants.h20,
-              const Text(
-                '※ 감정 분석은 최대 1분 지연될 수 있어요.',
-                style: TextStyle(fontSize: 12, color: AppColors.grey7),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
       loading: () => AppCards.basic(

@@ -31,4 +31,10 @@ class MockNotificationService implements NotificationService {
     _settings = settings;
     return _settings;
   }
+
+  @override
+  Future<void> toggleNotification(bool enabled) async {
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    _settings = _settings.copyWith(instantAlert: enabled);
+  }
 }

@@ -167,6 +167,18 @@ class AuthController extends AsyncNotifier<AuthState> {
 
     await _prefsNotifier.setAutoLogin(auth.autoLogin);
   }
+
+  /// 로그아웃 처리
+  Future<void> signOut() async {
+    // 토큰 삭제
+    await _secure.deleteToken();
+    
+    // 자동 로그인 해제
+    await _prefsNotifier.setAutoLogin(false);
+    
+    // 상태 초기화
+    state = AsyncData(AuthState.initial());
+  }
 }
 
 final authControllerProvider =

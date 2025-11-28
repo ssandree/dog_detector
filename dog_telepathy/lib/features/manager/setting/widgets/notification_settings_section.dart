@@ -1,93 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../../core/app_constants.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/models/notification_models.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../../../../core/widgets/onoff_button.dart';
 import 'setting_row.dart';
 
-class NotificationSettingsSection extends StatelessWidget {
+class NotificationSettingsSection extends StatefulWidget {
   final AsyncValue<NotificationSettings> settings;
   final Future<void> Function(bool value) onToggleInstantAlert;
-  final Future<void> Function() onRetry;
 
   const NotificationSettingsSection({
     super.key,
     required this.settings,
     required this.onToggleInstantAlert,
-    required this.onRetry,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return settings.when(
-      data: (settings) {
-        return SettingsSection(
-          title: '알림 설정',
-          children: [
-            SettingRow(
-              title: '리포트 발행 알림 받기',
-              subtitle: '캠모드에서 촬영을 종료하면 자동으로 리포트가 발행돼요.',
-              trailing: OnOffButton(
-                value: settings.instantAlert,
-                onChanged: (value) => onToggleInstantAlert(value),
-              ),
-            ),
-          ],
-        );
-      },
-      loading: () => SettingsSection(
-        title: '알림 설정',
-        children: [
-          _LoadingRow(title: '리포트 발행 알림 불러오는 중...'),
-          AppConstants.h8,
-        ],
-      ),
-      error: (error, _) => SettingsSection(
-        title: '알림 설정',
-        children: [
-          Padding(
-            padding: EdgeInsets.all(AppConstants.defaultSpacing),
-            child: Text(
-              '알림 설정을 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
-              style: const TextStyle(
-                color: AppColors.errorRed,
-                fontSize: AppConstants.defaultFontSize,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => onRetry(),
-            child: const Text('다시 시도'),
-          ),
-        ],
-      ),
-    );
-  }
+  State<NotificationSettingsSection> createState() => _NotificationSettingsSectionState();
 }
 
-class _LoadingRow extends StatelessWidget {
-  final String title;
-
-  const _LoadingRow({required this.title});
+class _NotificationSettingsSectionState extends State<NotificationSettingsSection> {
+  bool? _localEnabled;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    // settings에서 현재 값을 가져와서 로컬 상태 초기화
+    final currentEnabled = widget.settings.value?.instantAlert ?? false;
+    final enabled = _localEnabled ?? currentEnabled;
+
+    return SettingsSection(
+      title: '알림 설정',
       children: [
-        const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        AppConstants.w12,
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.grey7,
-            ),
+        SettingRow(
+          title: '리포트 발행 알림 받기',
+          subtitle: '캠모드에서 촬영을 종료하면 자동으로 리포트가 발행돼요.',
+          trailing: OnOffButton(
+            value: enabled,
+            onChanged: (value) async {
+              // 즉시 UI 업데이트
+              setState(() {
+                _localEnabled = value;
+              });
+
+              try {
+                await widget.onToggleInstantAlert(value);
+                if (mounted) {
+                  AppToast.success(
+                    context,
+                    value ? '리포트 발행 알림이 켜졌어요' : '리포트 발행 알림이 꺼졌어요',
+                  );
+                }
+              } catch (e) {
+                // 에러 발생 시 이전 값으로 되돌림
+                setState(() {
+                  _localEnabled = null;
+                });
+                if (mounted) {
+                  AppToast.error(
+                    context,
+                    '알림 설정 변경에 실패했습니다. 다시 시도해주세요.',
+                  );
+                }
+              }
+            },
           ),
         ),
       ],

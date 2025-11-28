@@ -32,9 +32,8 @@ class SettingScreen extends ConsumerWidget {
                   children: [
                      // 알림 설정 섹션
                      NotificationSettingsSection(
-                       settings: settingsAsync,
-                       onToggleInstantAlert: settingsNotifier.toggleInstantAlert,
-                       onRetry: settingsNotifier.refresh,
+                        settings: settingsAsync,
+                        onToggleInstantAlert: settingsNotifier.toggleInstantAlert,
                      ),
                      AppConstants.h16,
                      

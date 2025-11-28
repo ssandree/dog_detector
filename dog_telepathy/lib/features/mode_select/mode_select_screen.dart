@@ -23,6 +23,7 @@ class ModeSelectScreen extends StatelessWidget {
                   child: SimpleDescription(),
                 ),
                 SizedBox(
+                  width: double.infinity,
                   height: 320.h,
                   child: const ModeButtons(),
                 ),

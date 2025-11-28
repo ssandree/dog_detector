@@ -128,16 +128,16 @@ class _MonthlyChartContent extends StatelessWidget {
           Text(
             '${summary.year}년 ${summary.month}월 이벤트 요약',
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColors.grey12,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            '이달의 슬개골 탈구 감지: $patellaCount회',
+            '슬개골 탈구 감지: $patellaCount회',
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 17,
               color: AppColors.grey8,
             ),
           ),
@@ -273,7 +273,7 @@ class _ChartContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppConstants.defaultSpacing),
+      padding: EdgeInsets.all(AppConstants.defaultSpacing),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),

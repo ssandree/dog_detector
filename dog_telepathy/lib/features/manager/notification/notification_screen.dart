@@ -3,6 +3,7 @@ import '../../../core/config/app_colors.dart';
 import '../../../core/widgets/base_scaffold.dart';
 import '../../../core/widgets/app_section.dart';
 import '../../../core/data/notification_mock.dart';
+import '../../../core/models/notification_models.dart';
 import 'notification_item.dart';
 
 class NotificationScreen extends StatelessWidget {

@@ -108,7 +108,7 @@ class AppToast {
     _show(
       context: context,
       message: message,
-      backgroundColor: AppColors.appBarColor,
+      backgroundColor: AppColors.beige4,
       textColor: Colors.white,
     );
   }

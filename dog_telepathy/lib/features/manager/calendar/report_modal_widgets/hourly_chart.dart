@@ -20,10 +20,6 @@ class HourlyChart extends StatelessWidget {
     return Container(
       height: 210,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.beige2.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

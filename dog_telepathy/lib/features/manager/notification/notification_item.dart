@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/config/app_colors.dart';
-import '../../../../core/app_constants.dart';
-import '../../../../core/data/notification_mock.dart';
+import '../../../../core/models/notification_models.dart';
 
 class NotificationItem extends StatelessWidget {
   final NotificationMessage notification;
@@ -16,7 +15,7 @@ class NotificationItem extends StatelessWidget {
     final titleStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.grey12,
-          fontSize: 14,
+          fontSize: 16,
         );
     final bodyStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
           color: AppColors.grey8,

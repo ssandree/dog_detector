@@ -10,29 +10,22 @@ class SummaryChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+    return Row(
       children: [
-        _SummaryChip(
-          label: '전체',
-          value: '${stats.totalEvents}건',
-          color: AppColors.green6,
+        Expanded(
+          child: _SummaryChip(
+            label: '전체',
+            value: '${stats.totalEvents}건',
+            color: AppColors.green6,
+          ),
         ),
-        _SummaryChip(
-          label: '분석 완료',
-          value: '${stats.completedEvents}건',
-          color: AppColors.green4,
-        ),
-        _SummaryChip(
-          label: '분석 대기',
-          value: '${stats.pendingEvents}건',
-          color: AppColors.warning,
-        ),
-        _SummaryChip(
-          label: '총 영상 길이',
-          value: stats.totalDurationLabel,
-          color: AppColors.good,
+        const SizedBox(width: 12),
+        Expanded(
+          child: _SummaryChip(
+            label: '총 영상 길이',
+            value: stats.totalDurationLabel,
+            color: AppColors.good,
+          ),
         ),
       ],
     );

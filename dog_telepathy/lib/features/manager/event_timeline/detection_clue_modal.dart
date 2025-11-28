@@ -18,7 +18,7 @@ class DetectionClueModal extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
         child: Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultSpacing),
+          padding: EdgeInsets.all(AppConstants.defaultSpacing),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

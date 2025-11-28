@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../report_modal.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../../../core/provider/calendar_provider.dart';
 import '../../../../core/service/calendar/mock_calendar_service.dart';
 import 'calendar_day_cell.dart';
@@ -138,8 +139,12 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
             ),
             // selectedDecoration은 제거 (defaultBuilder에서 직접 처리)
             todayDecoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.3),
+              color: Colors.transparent,
               shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.grey12,
+                width: 2,
+              ),
             ),
             markersMaxCount: 1,
             markerDecoration: const BoxDecoration(

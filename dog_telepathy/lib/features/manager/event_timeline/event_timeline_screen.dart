@@ -74,10 +74,10 @@ class EventTimelineScreen extends ConsumerWidget {
         data: (daily) {
           final events = daily.events;
           if (events.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(AppConstants.defaultSpacing),
-                child: ReportEmptyState(
+                child: const ReportEmptyState(
                   title: '이날의 이벤트가 없어요',
                   message: '카메라가 감지한 이벤트가 없어서 타임라인을 만들 수 없어요.',
                 ),
@@ -91,7 +91,7 @@ class EventTimelineScreen extends ConsumerWidget {
               '${args.date.year}.${args.date.month.toString().padLeft(2, '0')}.${args.date.day.toString().padLeft(2, '0')}';
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppConstants.defaultSpacing),
+            padding: EdgeInsets.all(AppConstants.defaultSpacing),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -128,7 +128,7 @@ class EventTimelineScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppConstants.defaultSpacing),
+            padding: EdgeInsets.all(AppConstants.defaultSpacing),
             child: ReportEmptyState(
               title: '데이터를 불러오지 못했어요',
               message: error.toString(),

@@ -44,16 +44,14 @@ class DailyEventsView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AiReportSection(reportAsync: reportAsync),
         if (statsSection != null) ...[
-          const SizedBox(height: 16),
           statsSection!,
+          const SizedBox(height: 16),
         ],
         if (hourlySection != null) ...[
-          const SizedBox(height: 16),
           hourlySection!,
+          const SizedBox(height: 16),
         ],
-        const SizedBox(height: 16),
         Text(
           '이벤트 타임라인',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -84,6 +82,8 @@ class DailyEventsView extends StatelessWidget {
             );
           },
         ),
+        const SizedBox(height: 16),
+        AiReportSection(reportAsync: reportAsync),
       ],
     );
   }

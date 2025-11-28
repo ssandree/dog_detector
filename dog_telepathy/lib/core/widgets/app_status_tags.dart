@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../config/app_colors.dart';
+
 import '../app_constants.dart';
+import '../config/app_colors.dart';
 
 /// 상태를 나타내는 태그 위젯들
 class AppStatusTags {
@@ -12,7 +13,7 @@ class AppStatusTags {
   }) {
     return _buildTag(
       text: text,
-      borderColor: AppColors.tagDefault,
+      borderColor: AppColors.grey4,
       textColor: AppColors.black,
       onTap: onTap,
       padding: padding,
@@ -27,7 +28,7 @@ class AppStatusTags {
   }) {
     return _buildTag(
       text: text,
-      borderColor: AppColors.tagGood,
+      borderColor: AppColors.green2,
       textColor: AppColors.black,
       onTap: onTap,
       padding: padding,
@@ -42,7 +43,7 @@ class AppStatusTags {
   }) {
     return _buildTag(
       text: text,
-      borderColor: AppColors.tagNormal,
+      borderColor: AppColors.coral3,
       textColor: AppColors.black,
       onTap: onTap,
       padding: padding,
@@ -57,7 +58,7 @@ class AppStatusTags {
   }) {
     return _buildTag(
       text: text,
-      borderColor: AppColors.tagBad,
+      borderColor: AppColors.coral4,
       textColor: AppColors.black,
       onTap: onTap,
       padding: padding,
@@ -72,7 +73,7 @@ class AppStatusTags {
   }) {
     return _buildTag(
       text: text,
-      borderColor: AppColors.tagPain,
+      borderColor: AppColors.coral5,
       textColor: AppColors.black,
       onTap: onTap,
       padding: padding,
@@ -108,10 +109,11 @@ class AppStatusTags {
     EdgeInsets? padding,
   }) {
     final tagWidget = Container(
-      padding: padding ?? const EdgeInsets.symmetric(
-        horizontal: AppConstants.defaultSpacing,
-        vertical: AppConstants.smallSpacing,
-      ),
+      padding: padding ??
+          EdgeInsets.symmetric(
+            horizontal: AppConstants.defaultSpacing,
+            vertical: AppConstants.smallSpacing,
+          ),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius),

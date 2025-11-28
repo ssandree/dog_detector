@@ -15,10 +15,10 @@ class CalendarScreen extends ConsumerWidget {
       child: HorizontalPadding(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            CalendarSection(modalHorizontalMargin: 24),
+          children: [
+            const CalendarSection(modalHorizontalMargin: 24),
             SizedBox(height: AppConstants.defaultSpacing),
-            MonthlyEventsChart(),
+            const MonthlyEventsChart(),
           ],
         ),
       ),

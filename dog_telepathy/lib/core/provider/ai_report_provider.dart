@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../exceptions.dart';
 import '../service/ai_report/mock_ai_report_service.dart';
 import '../service/ai_report/remote_ai_report_service.dart';
 import '../service/ai_report/report_ai_service.dart';
@@ -38,11 +39,13 @@ class DailyAiReport {
   final int petId;
   final DateTime date;
   final String summary;
+  final DateTime? createdAt;
 
   const DailyAiReport({
     required this.petId,
     required this.date,
     required this.summary,
+    this.createdAt,
   });
 
   bool get hasSummary => summary.trim().isNotEmpty;
@@ -77,10 +80,23 @@ final dailyAiReportProvider =
       return '';
     }
 
+    DateTime? _extractCreatedAt(Map<String, dynamic> json) {
+      final createdAt = json['created_at'];
+      if (createdAt is String) {
+        final parsed = DateTime.tryParse(createdAt);
+        if (parsed != null) {
+          // UTC를 UTC+9로 변환
+          return parsed.add(const Duration(hours: 9));
+        }
+      }
+      return null;
+    }
+
     return DailyAiReport(
       petId: request.petId,
       date: parsedDate ?? request.normalizedDate,
       summary: _extractSummary(raw),
+      createdAt: _extractCreatedAt(raw),
     );
   } on NetworkException catch (e) {
     // 404 에러 (리포트가 없는 경우) - 빈 리포트 반환
@@ -89,6 +105,7 @@ final dailyAiReportProvider =
         petId: request.petId,
         date: request.normalizedDate,
         summary: '',
+        createdAt: null,
       );
     }
     rethrow;
@@ -98,6 +115,7 @@ final dailyAiReportProvider =
       petId: request.petId,
       date: request.normalizedDate,
       summary: '',
+      createdAt: null,
     );
   }
 });

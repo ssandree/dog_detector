@@ -20,7 +20,7 @@ class AppColors {
   // 코랄
   static const Color coral1 = Color(0xFFdea28c);
   static const Color coral2 = Color(0xFFd48368);
-  static const Color coral3 = Color(0xFFc27359);
+  static const Color coral3 = Color(0xFFc2759);
   static const Color coral4 = Color(0xFFb56b53);
   static const Color coral5 = Color(0xFFa85d45);
 
@@ -57,60 +57,30 @@ class AppColors {
   static const Color warning = Color(0xFFD86E4A);
   static const Color error = Color(0xFFC74B21);
 
-  // AppBar 색상
-  static const Color appBarColor = beige4;    // 매니저모드
-  static const Color whiteAppBarColor = white;
-  static const Color greyAppBarColor = grey2;
-  
-  // AppBar 텍스트 색상
-  static const Color whiteAppBarTextColor = white;
-  static const Color blackAppBarTextColor = black;
-  
-  // 배경색
-  static const Color whiteBackgroundColor = white;
-  
   // BottomNavigationBar 색상
-  static const Color bottomNavSelectedColor = appBarColor;
+  static const Color bottomNavSelectedColor = beige5;
   static const Color bottomNavUnselectedColor = grey6;
   
   // 에러/경고 색상 (표준 색상)
   static const Color errorRed = Color(0xFFE53E3E);
   static const Color warningRed = Color(0xFFFF0000);
-  
-
-  // UI 요소 색상
-  static const Color primaryButtonColor = beige4;
-  static const Color secondaryButtonColor = coral4;
-  static const Color analysisResultTitleColor = beige5;
-  static const Color painStatusColor = coral5;
-  static const Color emotionStatusColor = coral3;
-  static const Color activityStatusColor = Color(0xFFFF9800);
-
-  // 버튼 상태 색상
-  static const Color buttonNormal = coral2;      // 일반버튼 배경색
-  static const Color buttonPressed = coral3;      // 눌린버튼 배경색
-  static const Color buttonDisabled = grey2;      // 비활성버튼 배경색
-  static const Color buttonOutline = coral4;      // 테두리버튼 테두리색
-
-  // 상태 태그 색상
-  static const Color tagGood = green2;            // 좋음 - 연한 녹색
-  static const Color tagNormal = coral3;          // 보통 - 코랄색
-  static const Color tagBad = coral4;             // 나쁨 - 진한 코랄색
-  static const Color tagPain = coral5;            // 아픔 - 가장 진한 코랄색
-  static const Color tagDefault = grey4;          // 기본 태그 - 회색
 
   //캘린더 비율 색상
-  static const List<Color> blended = [
-    Color(0xFF71AF46), // 0%
-    Color(0xFF82B553), // 10%
-    Color(0xFF94BB60), // 20%
-    Color(0xFFA6C26E), // 30%
-    Color(0xFFB7C87B), // 40%
-    Color(0xFFC9CE88), // 50%
-    Color(0xFFDAC496), // 60%
-    Color(0xFFE0B9A0), // 70%
-    Color(0xFFE5AD9D), // 80%
-    Color(0xFFEA9F8B), // 90%
-    Color(0xFFD9967A), // 100%
+  static final List<Color> blended = [
+    Color(0xFF71AF46).withOpacity(0.5), // 0%
+    Color(0xFF82B553).withOpacity(0.5), // 10%
+    Color(0xFF94BB60).withOpacity(0.5), // 20%
+    Color(0xFFA6C26E).withOpacity(0.5), // 30%
+    Color(0xFFB7C87B).withOpacity(0.5), // 40%
+    Color(0xFFC9CE88).withOpacity(0.5), // 50%
+    Color(0xFFDAC496).withOpacity(0.5), // 60%
+    Color(0xFFDDBF9C).withOpacity(0.5), // 65%
+    Color(0xFFE0B9A0).withOpacity(0.5), // 70%
+    Color(0xFFE3B3A1).withOpacity(0.5), // 75%
+    Color(0xFFE5AD9D).withOpacity(0.5), // 80%
+    Color(0xFFE8A894).withOpacity(0.5), // 85%
+    Color(0xFFEA9F8B).withOpacity(0.5), // 90%
+    Color(0xFFE39D7F).withOpacity(0.5), // 95%
+    Color(0xFFD9967A).withOpacity(0.5), // 100%
   ];
 }

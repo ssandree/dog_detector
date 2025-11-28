@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../core/config/app_colors.dart';
+
 import '../../../../core/app_constants.dart';
-import '../../../../core/widgets/app_cards.dart';
-import '../../../../core/provider/pet_provider.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../../../core/models/pet_info.dart';
-import '../../../../core/routes/app_routes.dart';
+import '../../../../core/provider/pet_provider.dart';
+import '../../../../core/widgets/app_cards.dart';
+import '../../../../core/widgets/app_status_tags.dart';
+import '../../pet_regi/pet_regi_modal.dart';
 
 class PetGreeting extends ConsumerWidget {
   const PetGreeting({super.key});
@@ -15,72 +16,55 @@ class PetGreeting extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final petsAsync = ref.watch(petProvider);
 
-    // 상태에 관계없이 클릭 가능하도록 GestureDetector로 감싸기
-    return GestureDetector(
-      onTap: () {
-        // 펫 정보가 있으면 수정 모드로, 없으면 등록 모드로 이동
-        petsAsync.whenData((pets) {
-          final pet = pets.isNotEmpty ? pets.first : null;
-          context.push(
-            AppRoutes.managerPetRegistration,
-            extra: pet,
-          );
-        });
-        // 로딩/에러 상태에서도 등록 모드로 이동
-        if (!petsAsync.hasValue) {
-          context.push(AppRoutes.managerPetRegistration);
-        }
+    return petsAsync.when(
+      data: (pets) {
+        final pet = pets.isNotEmpty ? pets.first : null;
+        return _buildPetCard(context, pet);
       },
-      child: petsAsync.when(
-        data: (pets) {
-          if (pets.isEmpty) {
-            // 펫 정보가 없을 때
-            return _buildEmptyState(context);
-          } else {
-            // 펫 정보가 있을 때
-            final pet = pets.first;
-            return _buildPetInfo(context, pet);
-          }
-        },
-        loading: () => _buildLoadingState(),
-        error: (error, stack) => _buildErrorState(context),
-      ),
+      loading: () => _buildLoadingState(context),
+      error: (error, stack) => _buildErrorState(context),
     );
   }
 
-  /// 펫 정보가 없을 때 UI
-  Widget _buildEmptyState(BuildContext context) {
-    return AppCards.basic(
-        child: Row(
+  Widget _buildPetCard(
+    BuildContext context,
+    PetInfo? pet,
+  ) {
+    const cardPadding = EdgeInsets.all(12);
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: cardPadding,
+        child: Stack(
           children: [
-            // 왼쪽: 동그란 사진
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: const DecorationImage(
-                  image: AssetImage('lib/core/image/dog_imo.png'),
-                  fit: BoxFit.cover,
+            if (pet == null)
+              _buildEmptyBody(cardPadding)
+            else
+              _buildPetInfoBody(pet, cardPadding),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: TextButton(
+                onPressed: () => showPetRegiModal(
+                  context,
+                  existingPetInfo: pet,
                 ),
-              ),
-            ),
-            AppConstants.w16,
-            // 오른쪽: 텍스트
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '강아지 정보를 등록해주세요',
-                    style: TextStyle(
-                      fontSize: AppConstants.defaultFontSize,
-                      color: AppColors.grey7,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('수정하기'),
               ),
             ),
           ],
@@ -89,12 +73,48 @@ class PetGreeting extends ConsumerWidget {
     );
   }
 
-  /// 펫 정보가 있을 때 UI
-  Widget _buildPetInfo(BuildContext context, PetInfo pet) {
-    // 나이 텍스트 생성
+  Widget _buildEmptyBody(EdgeInsets cardPadding) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 60),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: AssetImage('lib/core/image/dog_imo.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          AppConstants.w16,
+          Expanded(
+            child: Text(
+              '강아지 정보를 등록해주세요',
+              style: TextStyle(
+                fontSize: AppConstants.defaultFontSize,
+                color: AppColors.grey7,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPetInfoBody(
+    PetInfo pet,
+    EdgeInsets cardPadding,
+  ) {
     String ageText = '';
     if (pet.age != null) {
-      ageText = '${pet.age}세';
+      ageText = '${pet.age}살';
     } else if (pet.birthDate != null) {
       final now = DateTime.now();
       int age = now.year - pet.birthDate!.year;
@@ -102,42 +122,37 @@ class PetGreeting extends ConsumerWidget {
           (now.month == pet.birthDate!.month && now.day < pet.birthDate!.day)) {
         age--;
       }
-      ageText = '${age}세';
+      ageText = '${age}살';
     }
 
-    // 몸무게 텍스트 생성
-    String weightText = '';
-    if (pet.weightKg != null) {
-      weightText = '${pet.weightKg}kg';
-    }
+    final weightText =
+        pet.weightKg != null ? '${pet.weightKg!.toStringAsFixed(1)}kg' : '';
 
-    return AppCards.basic(
+    return Padding(
+      padding: const EdgeInsets.only(right: 60),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 왼쪽: 동그란 사진
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: const DecorationImage(
-                image: AssetImage('lib/core/image/dog_imo.png'),
-                fit: BoxFit.cover,
-              ),
-              border: Border.all(
-                color: AppColors.grey4,
-                width: 2,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: AssetImage('lib/core/image/dog_imo.png'),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: AppConstants.defaultSpacing),
-          // 오른쪽: 텍스트 정보
+          SizedBox(width: AppConstants.defaultSpacing),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 이름 (크게)
                 Text(
                   pet.name,
                   style: TextStyle(
@@ -146,39 +161,31 @@ class PetGreeting extends ConsumerWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
-                // 나이와 몸무게 (작게)
-                if (ageText.isNotEmpty || weightText.isNotEmpty)
-                  Row(
+                if (ageText.isNotEmpty || weightText.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
                     children: [
-                      if (ageText.isNotEmpty) ...[
-                        Text(
-                          ageText,
-                          style: TextStyle(
-                            fontSize: AppConstants.defaultFontSize,
-                            color: AppColors.textSecondary,
+                      if (ageText.isNotEmpty)
+                        AppStatusTags.defaultTag(
+                          text: ageText,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                         ),
-                        if (weightText.isNotEmpty) ...[
-                          Text(
-                            ' • ',
-                            style: TextStyle(
-                              fontSize: AppConstants.defaultFontSize,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
                       if (weightText.isNotEmpty)
-                        Text(
-                          weightText,
-                          style: TextStyle(
-                            fontSize: AppConstants.defaultFontSize,
-                            color: AppColors.textSecondary,
+                        AppStatusTags.defaultTag(
+                          text: weightText,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                         ),
                     ],
                   ),
+                ],
               ],
             ),
           ),
@@ -187,15 +194,17 @@ class PetGreeting extends ConsumerWidget {
     );
   }
 
+
   /// 로딩 상태 UI
-  Widget _buildLoadingState() {
-    return AppCards.basic(
-      child: Row(
+  Widget _buildLoadingState(BuildContext context) {
+    return _buildSkeletonCard(
+      context,
+      body: Row(
         children: [
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.grey2,
             ),
@@ -203,7 +212,7 @@ class PetGreeting extends ConsumerWidget {
               child: CircularProgressIndicator(),
             ),
           ),
-          const SizedBox(width: AppConstants.defaultSpacing),
+          SizedBox(width: AppConstants.defaultSpacing),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,13 +245,14 @@ class PetGreeting extends ConsumerWidget {
 
   /// 에러 상태 UI
   Widget _buildErrorState(BuildContext context) {
-    return AppCards.basic(
-      child: Row(
+    return _buildSkeletonCard(
+      context,
+      body: Row(
         children: [
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.grey2,
             ),
@@ -251,7 +261,7 @@ class PetGreeting extends ConsumerWidget {
               color: AppColors.error,
             ),
           ),
-          const SizedBox(width: AppConstants.defaultSpacing),
+          SizedBox(width: AppConstants.defaultSpacing),
           Expanded(
             child: Text(
               '반려동물 정보를 불러올 수 없습니다',
@@ -265,5 +275,46 @@ class PetGreeting extends ConsumerWidget {
       ),
     );
   }
-}
 
+  Widget _buildSkeletonCard(BuildContext context, {required Widget body}) {
+    const cardPadding = EdgeInsets.all(12);
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: cardPadding,
+        child: Stack(
+          children: [
+            body,
+            Positioned(
+              top: 0,
+              right: 0,
+              child: TextButton(
+                onPressed: () => showPetRegiModal(
+                  context,
+                  existingPetInfo: null,
+                ),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('수정하기'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+}

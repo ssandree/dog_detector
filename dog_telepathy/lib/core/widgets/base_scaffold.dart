@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../config/app_colors.dart';
-import '../app_constants.dart';
 import '../routes/app_routes.dart';
 
 /// 앱 전체에서 사용할 기본 Scaffold 위젯
@@ -52,7 +52,10 @@ class BaseScaffold extends StatelessWidget {
       content = SafeArea(child: content);
     }
 
-    return content;
+    return Container(
+      color: AppColors.white,
+      child: content,
+    );
   }
 
   /// ===== AppBar =====
@@ -73,7 +76,7 @@ class BaseScaffold extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: IconButton(
-            icon: const Icon(Icons.notifications_none, color: AppColors.blackAppBarTextColor),
+            icon: const Icon(Icons.notifications_none, color: Colors.black),
             onPressed: onNotificationPressed ?? () => context.push(AppRoutes.managerNotification),
           ),
         ),
@@ -81,7 +84,7 @@ class BaseScaffold extends StatelessWidget {
     }
 
     return PreferredSize(
-      preferredSize: Size.fromHeight(AppConstants.appBarHeight),
+      preferredSize: Size.fromHeight(60),
       child: AppBar(
         title: title != null
             ? Padding(
@@ -89,26 +92,25 @@ class BaseScaffold extends StatelessWidget {
                 child: Text(
                   title!,
                   style: const TextStyle(
-                    color: AppColors.blackAppBarTextColor,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: AppConstants.appBarTitleFontSize,
+                    fontSize: 18,
                   ),
                 ),
               )
             : null,
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.blackAppBarTextColor,
-              elevation: AppConstants.appBarElevation,
-              centerTitle: AppConstants.appBarCenterTitle,
-              automaticallyImplyLeading: showBackButton,
-              titleSpacing: 0,
-              leadingWidth: showBackButton ? 56 : 0,
-              leading: showBackButton
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: AppColors.blackAppBarTextColor),
-                  onPressed: onBackPressed ?? () => Navigator.pop(context),
-                  padding: EdgeInsets.zero,
-                )
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        centerTitle: false,
+        automaticallyImplyLeading: showBackButton,
+        titleSpacing: 0,
+        leadingWidth: showBackButton ? 56 : 0,
+        leading: showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+                onPressed: onBackPressed ?? () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+              )
             : const SizedBox.shrink(),
         actions: appBarActions,
         bottom: bottom,
@@ -132,7 +134,7 @@ class HorizontalPadding extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding ?? 16.0,
+        horizontal: (horizontalPadding ?? 16.0).w,
       ),
       child: child,
     );

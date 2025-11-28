@@ -102,10 +102,10 @@ class CalendarModal extends ConsumerWidget {
                       color: AppColors.grey8,
                     ),
                   ),
-                  const SizedBox(height: AppConstants.defaultSpacing),
+                  SizedBox(height: AppConstants.defaultSpacing),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(
+                      padding: EdgeInsets.only(
                         bottom: AppConstants.defaultSpacing,
                       ),
                       child: buildBodyContent(),

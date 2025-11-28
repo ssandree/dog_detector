@@ -11,7 +11,6 @@ import '../../features/manager/calendar/calendar_screen.dart';
 import '../../features/manager/home/manager_home_screen.dart';
 import '../../features/manager/manager_navigation.dart';
 import '../../features/manager/notification/notification_screen.dart';
-import '../../features/manager/pet_regi/pet_regi_screen.dart';
 import '../../features/manager/realtime/realtime_screen.dart';
 import '../../features/manager/setting/setting_screen.dart';
 import '../../features/manager/event_timeline/event_timeline_screen.dart';
@@ -29,7 +28,6 @@ class AppRoutes {
   static const String managerHome = '/manager';
   static const String managerNotification = '/manager/notification';
   static const String managerSettings = '/manager/settings';
-  static const String managerPetRegistration = '/manager/pet-registration';
   static const String managerRealtime = '/manager/realtime';
   static const String managerCalendar = '/manager/calendar';
   static const String managerEventTimeline = '/manager/calendar/timeline';
@@ -76,10 +74,6 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.main}) {
       GoRoute(
         path: AppRoutes.managerSettings,
         builder: (_, __) => const SettingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.managerPetRegistration,
-        builder: (_, __) => const PetRegiScreen(),
       ),
       GoRoute(
         path: AppRoutes.managerRealtime,

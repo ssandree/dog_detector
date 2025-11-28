@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../config/app_colors.dart';
 import '../app_constants.dart';
 
@@ -15,7 +16,7 @@ class AppCards {
   }) {
     return Container(
       margin: margin,
-      padding: padding ?? const EdgeInsets.all(AppConstants.defaultSpacing),
+      padding: padding ?? EdgeInsets.all(AppConstants.defaultSpacing),
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.white,
         borderRadius: BorderRadius.circular(borderRadius ?? AppConstants.defaultBorderRadius),
@@ -78,7 +79,7 @@ class AppCards {
   }) {
     return Container(
       margin: margin,
-      padding: padding ?? const EdgeInsets.all(AppConstants.defaultSpacing),
+      padding: padding ?? EdgeInsets.all(AppConstants.defaultSpacing),
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.green1,
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
@@ -91,10 +92,10 @@ class AppCards {
         children: [
           if (icon != null) ...[
             Container(
-              padding: const EdgeInsets.all(AppConstants.smallSpacing - 2),
+              padding: EdgeInsets.all(AppConstants.smallSpacing - 2.w),
               decoration: BoxDecoration(
                 color: iconColor ?? AppColors.green5,
-                borderRadius: BorderRadius.circular(AppConstants.smallSpacing - 2),
+                borderRadius: BorderRadius.circular(AppConstants.smallSpacing - 2.w),
               ),
               child: Icon(
                 icon,
@@ -102,7 +103,7 @@ class AppCards {
                 size: AppConstants.defaultSpacing,
               ),
             ),
-            const SizedBox(width: AppConstants.smallSpacing + 4),
+            SizedBox(width: AppConstants.smallSpacing + 4.w),
           ],
           Expanded(
             child: Text(

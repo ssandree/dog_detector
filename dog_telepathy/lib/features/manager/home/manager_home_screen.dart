@@ -5,6 +5,8 @@ import '../../../../core/app_constants.dart';
 import '../../../../core/widgets/base_scaffold.dart';
 import 'widgets/pet_greeting.dart';
 import 'widgets/emotion_gauge_card.dart';
+import 'widgets/event_count.dart';
+import 'widgets/ai_report_button.dart';
 
 class ManagerHomeScreen extends ConsumerWidget {
   const ManagerHomeScreen({super.key});
@@ -16,11 +18,15 @@ class ManagerHomeScreen extends ConsumerWidget {
         horizontalPadding: AppConstants.defaultSpacing,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
+          children: [
             SizedBox(height: AppConstants.defaultSpacing),
-            PetGreeting(),
+            const PetGreeting(),
             SizedBox(height: AppConstants.defaultSpacing),
-            EmotionGaugeCard(),
+            const EmotionGaugeCard(),
+            SizedBox(height: AppConstants.defaultSpacing),
+            const EventCountCard(),
+            SizedBox(height: AppConstants.defaultSpacing),
+            const AiReportButton(),
             SizedBox(height: AppConstants.defaultSpacing),
           ],
         ),

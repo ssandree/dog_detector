@@ -59,7 +59,7 @@ class AppButton extends StatelessWidget {
           icon: icon,
           width: width,
           height: height,
-          backgroundColor: backgroundColor ?? AppColors.buttonNormal,
+          backgroundColor: backgroundColor ?? AppColors.beige2,
           textColor: AppColors.black,
           fontSize: fontSize,
           subtitle: subtitle,
@@ -83,7 +83,7 @@ class AppButton extends StatelessWidget {
           icon: icon,
           width: width,
           height: height,
-          backgroundColor: AppColors.buttonPressed,
+          backgroundColor: AppColors.beige4,
           textColor: AppColors.black,
           fontSize: fontSize,
           variant: AppButtonVariant.pressed,
@@ -103,7 +103,7 @@ class AppButton extends StatelessWidget {
           icon: icon,
           width: width,
           height: height,
-          backgroundColor: AppColors.buttonDisabled,
+          backgroundColor: AppColors.grey2,
           textColor: AppColors.grey6,
           fontSize: fontSize,
           variant: AppButtonVariant.disabled,
@@ -127,7 +127,7 @@ class AppButton extends StatelessWidget {
           icon: icon,
           width: width,
           height: height,
-          backgroundColor: backgroundColor ?? AppColors.appBarColor,
+          backgroundColor: backgroundColor ?? AppColors.beige4,
           textColor: AppColors.white,
           fontSize: fontSize,
           variant: AppButtonVariant.primary,
@@ -154,7 +154,7 @@ class AppButton extends StatelessWidget {
           height: height,
           backgroundColor: AppColors.white,
           textColor: textColor ?? AppColors.black,
-          borderColor: borderColor ?? AppColors.buttonOutline,
+          borderColor: borderColor ?? AppColors.beige5,
           fontSize: fontSize,
           variant: AppButtonVariant.outline,
         );
@@ -204,7 +204,7 @@ class AppButton extends StatelessWidget {
       ),
       side: _variant == AppButtonVariant.outline
           ? BorderSide(
-              color: borderColor ?? AppColors.buttonOutline,
+              color: borderColor ?? AppColors.beige5,
               width: 2.0,
             )
           : null,
@@ -215,7 +215,7 @@ class AppButton extends StatelessWidget {
     if (_variant == AppButtonVariant.outline) {
       return backgroundColor ?? AppColors.white;
     }
-    return backgroundColor ?? AppColors.buttonNormal;
+    return backgroundColor ?? AppColors.beige2;
   }
 
   Color _resolveTextColor() {
@@ -256,7 +256,7 @@ class AppButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: AppConstants.defaultIconSize),
-          const SizedBox(width: AppConstants.smallSpacing),
+          SizedBox(width: AppConstants.smallSpacing),
           textWidget,
         ],
       );

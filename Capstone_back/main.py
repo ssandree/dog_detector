@@ -659,6 +659,32 @@ def get_latest_session():
         "created_at": data.get("created_at")
     }
 
+# 3. [NEW!] 특정 디바이스의 최신 세션 (Manager 자동 연결용 - 권장)
+@app.get("/stream/latest-session", response_model=schemas.RTCLatestSessionResponse, tags=["WebRTC"])
+def get_latest_session_by_device(device_id: str):
+    """
+    특정 Cam(sender_device_id)이 생성한 세션 중 가장 최신 세션을 반환합니다.
+    FE가 session_id를 몰라도 자동으로 가져와 연결할 수 있습니다.
+    """
+    # 1. sender가 device_id인 세션들만 필터링
+    found = [
+        (sid, data)
+        for sid, data in sessions.items()
+        if str(data.get("sender")) == device_id
+    ]
+
+    # 2. 없으면 null 반환
+    if not found:
+        return {"session_id": None, "created_at": None}
+
+    # 3. 그 중 created_at이 가장 큰(최신) 것 찾기
+    latest = max(found, key=lambda item: item[1].get("created_at", 0))
+
+    return {
+        "session_id": latest[0],
+        "created_at": latest[1].get("created_at")
+    }
+
 # ==========================================
 # [유지] 디바이스 상태 관리
 # ==========================================

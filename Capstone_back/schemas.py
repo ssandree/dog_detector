@@ -268,3 +268,8 @@ class SessionListResponse(BaseModel):
 # [추가] 2. 최신 세션 단건 응답 (없을 수도 있으므로 Optional)
 # SessionInfo를 그대로 써도 되지만, 명확성을 위해 별칭 사용 가능
 # 여기서는 SessionInfo를 그대로 리턴 타입으로 씁니다.
+
+# [추가] 특정 디바이스의 최신 세션 조회 응답 (DTO)
+class RTCLatestSessionResponse(BaseModel):
+    session_id: Optional[str] = None
+    created_at: Optional[float] = None

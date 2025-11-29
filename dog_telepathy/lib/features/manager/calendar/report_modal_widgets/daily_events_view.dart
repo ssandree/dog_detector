@@ -8,7 +8,6 @@ import '../../../../core/models/event_info.dart';
 import '../../../../core/provider/ai_report_provider.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../event_timeline/event_timeline_screen.dart';
 import '../../event_timeline/widgets/event_card.dart';
 import 'ai_report_section.dart';
 import 'empty_state.dart';
@@ -67,21 +66,19 @@ class DailyEventsView extends StatelessWidget {
           itemBuilder: (context, index) => EventCard(event: latestEvents[index]),
           separatorBuilder: (_, __) => const SizedBox(height: 8),
         ),
-        const SizedBox(height: 12),
-        AppButton.outline(
-          text: '더보기',
-          icon: Icons.chevron_right,
-          width: double.infinity,
-          onPressed: () {
-            context.push(
-              AppRoutes.managerEventTimeline,
-              extra: EventTimelineArgs(
-                petId: dailyEvents.petId,
-                date: selectedDate,
-              ),
-            );
-          },
-        ),
+        if (events.length > 5) ...[
+          const SizedBox(height: 12),
+          AppButton.outline(
+            text: '더보기',
+            icon: Icons.chevron_right,
+            width: double.infinity,
+            height: 44,
+            fontSize: 14,
+            onPressed: () {
+              context.push(AppRoutes.managerEventTimeline);
+            },
+          ),
+        ],
         const SizedBox(height: 16),
         AiReportSection(reportAsync: reportAsync),
       ],

@@ -55,11 +55,8 @@ class CalendarState {
 }
 
 class CalendarNotifier extends Notifier<CalendarState> {
-  late final dynamic _service;
-
   @override
   CalendarState build() {
-    _service = ref.watch(calendarServiceProvider);
     final now = DateTime.now();
     final currentPet = ref.watch(currentPetProvider);
     final petId = currentPet?.petId;
@@ -109,9 +106,10 @@ class CalendarNotifier extends Notifier<CalendarState> {
       }
     }
 
+    final service = ref.read(calendarServiceProvider);
     state = state.copyWith(monthlyData: const AsyncValue.loading());
     try {
-      final response = await _service.getMonthlyEvents(
+      final response = await service.getMonthlyEvents(
         petId: state.petId,
         year: state.year,
         month: state.month,

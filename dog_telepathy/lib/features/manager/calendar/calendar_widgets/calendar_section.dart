@@ -126,34 +126,44 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
           ref.read(calendarProvider.notifier).changeMonth(focusedDay);
         },
 
-         // 📗 달력 스타일 커스터마이징
-          calendarStyle: CalendarStyle(
-            outsideDaysVisible: false,
-            weekendTextStyle: const TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-            ),
-            holidayTextStyle: const TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-            ),
-            // selectedDecoration은 제거 (defaultBuilder에서 직접 처리)
-            todayDecoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: AppColors.grey12,
-                width: 2,
-              ),
-            ),
-            markersMaxCount: 1,
-            markerDecoration: const BoxDecoration(
-              color: Colors.amber,
-              shape: BoxShape.circle,
-            ),
-            cellPadding: const EdgeInsets.all(6), // 패딩 조정
-            cellMargin: const EdgeInsets.all(1.5), // 마진 조정
+        // 📗 달력 스타일 커스터마이징
+        calendarStyle: CalendarStyle(
+          outsideDaysVisible: false,
+          weekendTextStyle: const TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
           ),
+          holidayTextStyle: const TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+          // 기본 선택/오늘 데코레이션은 모두 제거하고,
+          // 실제 스타일은 CalendarDayCell에서만 처리
+          selectedDecoration: const BoxDecoration(
+            color: Colors.transparent,
+            shape: BoxShape.rectangle,
+          ),
+          // 선택된 날짜 텍스트 스타일: CalendarDayCell에서 처리하므로 기본 색상 유지
+          selectedTextStyle: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+          todayDecoration: const BoxDecoration(
+            color: Colors.transparent,
+          ),
+          // 오늘 날짜 텍스트 스타일: CalendarDayCell에서 처리하므로 기본 색상 유지
+          todayTextStyle: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+          markersMaxCount: 1,
+          markerDecoration: const BoxDecoration(
+            color: Colors.amber,
+            shape: BoxShape.circle,
+          ),
+          cellPadding: const EdgeInsets.all(6), // 패딩 조정
+          cellMargin: const EdgeInsets.all(1.5), // 마진 조정
+        ),
           
          // 주말과 공휴일 스타일 적용을 위한 추가 설정
           daysOfWeekStyle : const DaysOfWeekStyle(

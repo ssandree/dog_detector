@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
-
 import '../../../../core/app_constants.dart';
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/widgets/app_status_tags.dart';
 import '../../../../core/models/event_info.dart';
 import '../detection_clue_modal.dart';
 
@@ -15,9 +14,13 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final start = _formatTime(event.startTime);
-    final end = _formatTime(event.endTime);
+    final durationLabel = '${event.videoDurationSec}s';
     final emotion = event.finalEmotion ?? '분석 중';
     final statusColor = _statusColor(event.analysisStatus);
+    final features = event.detectedFeatures?.trim();
+    final patellaResult = event.patellaAnalysisResult?.trim();
+    final hasPatellaAbnormal = patellaResult == '이상';
+    final thumbnailUrl = event.thumbnailUrl;
 
     return InkWell(
       borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
@@ -43,16 +46,21 @@ class EventCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.16),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.timeline,
-                color: statusColor,
+            ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(AppConstants.smallBorderRadius),
+              child: SizedBox(
+                width: 80,
+                height: 56,
+                child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
+                  ? Image.network(
+                      thumbnailUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _ThumbnailFallback(color: statusColor);
+                      },
+                    )
+                  : _ThumbnailFallback(color: statusColor),
               ),
             ),
             const SizedBox(width: 12),
@@ -60,58 +68,76 @@ class EventCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '$start ~ $end',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.grey12,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        start,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppColors.grey12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        durationLabel,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.grey7,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    emotion,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.grey8,
+                  const SizedBox(height: 6),
+                  if (features != null && features.isNotEmpty) ...[
+                    Text(
+                      features,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.grey9,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 4),
+                  ],
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AppStatusTags.emotionTag(
+                        emotion: emotion,
+                      ),
+                      if (hasPatellaAbnormal) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: AppColors.error,
+                              width: 0.8,
+                            ),
+                          ),
+                          child: const Text(
+                            '슬개 이상',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${event.videoDurationSec}s',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.grey7,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    event.analysisStatus == AnalysisStatus.completed
-                        ? '완료'
-                        : event.analysisStatus == AnalysisStatus.pending
-                            ? '대기'
-                            : '실패',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -122,7 +148,8 @@ class EventCard extends StatelessWidget {
   String _formatTime(DateTime time) {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+    final second = time.second.toString().padLeft(2, '0');
+    return '$hour:$minute:$second';
   }
 
   Color _statusColor(AnalysisStatus status) {
@@ -135,5 +162,22 @@ class EventCard extends StatelessWidget {
       default:
         return AppColors.error;
     }
+  }
+}
+
+class _ThumbnailFallback extends StatelessWidget {
+  final Color color;
+
+  const _ThumbnailFallback({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.beige2,
+      child: Icon(
+        Icons.videocam,
+        color: AppColors.beige5,
+      ),
+    );
   }
 }

@@ -37,9 +37,9 @@ class PetGreeting extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
+            color: AppColors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -125,8 +125,7 @@ class PetGreeting extends ConsumerWidget {
       ageText = '${age}살';
     }
 
-    final weightText =
-        pet.weightKg != null ? '${pet.weightKg!.toStringAsFixed(1)}kg' : '';
+    final breedText = pet.breed ?? '';
 
     return Padding(
       padding: const EdgeInsets.only(right: 60),
@@ -161,28 +160,16 @@ class PetGreeting extends ConsumerWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                if (ageText.isNotEmpty || weightText.isNotEmpty) ...[
+                if (ageText.isNotEmpty || breedText.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
                     children: [
                       if (ageText.isNotEmpty)
-                        AppStatusTags.defaultTag(
-                          text: ageText,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                        ),
-                      if (weightText.isNotEmpty)
-                        AppStatusTags.defaultTag(
-                          text: weightText,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                        ),
+                        _buildSmallTag(ageText),
+                      if (breedText.isNotEmpty)
+                        _buildSmallTag(breedText),
                     ],
                   ),
                 ],
@@ -276,6 +263,31 @@ class PetGreeting extends ConsumerWidget {
     );
   }
 
+  Widget _buildSmallTag(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 6,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppConstants.circularBorderRadius),
+        border: Border.all(
+          color: AppColors.grey4,
+          width: 1,
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: AppConstants.smallFontSize,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSkeletonCard(BuildContext context, {required Widget body}) {
     const cardPadding = EdgeInsets.all(12);
     return Container(
@@ -284,9 +296,9 @@ class PetGreeting extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
+            color: AppColors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),

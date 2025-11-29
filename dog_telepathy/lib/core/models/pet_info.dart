@@ -64,13 +64,13 @@ class PetInfo {
   Map<String, dynamic> toApiJson() {
     return {
       'name': name,
-      if (breed != null) 'breed': breed,
-      if (birthDate != null)
-        'birth_date':
-            "${birthDate!.year}-${birthDate!.month.toString().padLeft(2, '0')}-${birthDate!.day.toString().padLeft(2, '0')}",
-      if (weightKg != null) 'weight_kg': weightKg,
-      if (heightCm != null) 'height_cm': heightCm,
-      if (photoUrl != null) 'photo_url': photoUrl,
+      'breed': breed,
+      'birth_date': birthDate != null
+          ? "${birthDate!.year}-${birthDate!.month.toString().padLeft(2, '0')}-${birthDate!.day.toString().padLeft(2, '0')}"
+          : null,
+      'weight_kg': weightKg,
+      'height_cm': heightCm,
+      'photo_url': photoUrl,
     };
   }
 

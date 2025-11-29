@@ -44,7 +44,9 @@ class PetRegiModal extends ConsumerStatefulWidget {
 class _PetRegiModalState extends ConsumerState<PetRegiModal> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _breedController = TextEditingController();
   final _weightController = TextEditingController();
+  final _heightController = TextEditingController();
 
   bool _isInitialized = false;
   DateTime? _selectedBirthday;
@@ -74,7 +76,9 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
   @override
   void dispose() {
     _nameController.dispose();
+    _breedController.dispose();
     _weightController.dispose();
+    _heightController.dispose();
     super.dispose();
   }
 
@@ -82,7 +86,9 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
     if (_isInitialized) return;
 
     _nameController.text = petInfo.name;
+    _breedController.text = petInfo.breed ?? '';
     _weightController.text = petInfo.weightKg?.toString() ?? '';
+    _heightController.text = petInfo.heightCm?.toString() ?? '';
     _selectedBirthday = petInfo.birthDate;
     _isInitialized = true;
   }
@@ -131,9 +137,9 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
             SizedBox(height: AppConstants.largeSpacing),
             _buildNameField(),
             SizedBox(height: AppConstants.largeSpacing),
-            _buildBirthdayField(),
+            _buildBirthField(),
             SizedBox(height: AppConstants.largeSpacing),
-            _buildWeightField(),
+            _buildBodyField(),
             SizedBox(height: AppConstants.extraLargeSpacing),
             AppButton.primary(
               text: isEditMode ? '정보 수정하기' : '강아지 등록하기',
@@ -152,10 +158,10 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '기본 정보',
+          '이름',
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
             color: AppColors.black,
           ),
         ),
@@ -179,19 +185,29 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
     );
   }
 
-  Widget _buildBirthdayField() {
+  Widget _buildBirthField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '생일 정보',
+          '출생',
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
             color: AppColors.black,
           ),
         ),
         AppConstants.h16,
+        TextFormField(
+          controller: _breedController,
+          decoration: const InputDecoration(
+            labelText: '강아지 종',
+            hintText: '강아지 종을 입력해주세요 (예: 골든 리트리버)',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.category),
+          ),
+        ),
+        const SizedBox(height: 16),
         InkWell(
           onTap: _selectBirthday,
           child: Container(
@@ -237,15 +253,15 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
     );
   }
 
-  Widget _buildWeightField() {
+  Widget _buildBodyField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '몸무게',
+          '신체',
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
             color: AppColors.black,
           ),
         ),
@@ -271,6 +287,27 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
             return null;
           },
         ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _heightController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: '키',
+            hintText: '키를 입력해주세요',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.height),
+            suffixText: 'cm',
+          ),
+          validator: (value) {
+            if (value != null && value.trim().isNotEmpty) {
+              final height = double.tryParse(value);
+              if (height == null || height <= 0 || height > 200) {
+                return '올바른 키를 입력해주세요 (0.1-200cm)';
+              }
+            }
+            return null;
+          },
+        ),
       ],
     );
   }
@@ -286,7 +323,13 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
     }
 
     final name = _nameController.text.trim();
+    final breed = _breedController.text.trim().isEmpty 
+        ? null 
+        : _breedController.text.trim();
     final weight = double.parse(_weightController.text.trim());
+    final height = _heightController.text.trim().isEmpty
+        ? null
+        : double.parse(_heightController.text.trim());
     final birthday = _selectedBirthday!;
     final age = _calculateAge(birthday);
 
@@ -294,9 +337,10 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
       petId: _existingPetInfo?.petId,
       userId: _existingPetInfo?.userId,
       name: name,
-      breed: _existingPetInfo?.breed,
+      breed: breed,
       birthDate: birthday,
       weightKg: weight,
+      heightCm: height,
       photoUrl: _existingPetInfo?.photoUrl,
       age: age,
       gender: _existingPetInfo?.gender,

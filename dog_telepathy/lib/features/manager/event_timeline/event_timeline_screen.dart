@@ -3,23 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/app_constants.dart';
-import '../../../core/provider/ai_report_provider.dart';
+import '../../../core/config/app_colors.dart';
+import '../../../core/provider/current_pet_provider.dart';
 import '../../../core/provider/event_provider.dart';
-import '../calendar/report_modal_widgets/ai_report_section.dart';
+import '../../../core/widgets/base_scaffold.dart';
 import '../calendar/report_modal_widgets/empty_state.dart';
-import '../calendar/report_modal_widgets/hourly_chart.dart';
-import '../calendar/report_modal_widgets/summary_chips.dart';
 import 'widgets/event_card.dart';
-
-class EventTimelineArgs {
-  final int petId;
-  final DateTime date;
-
-  const EventTimelineArgs({
-    required this.petId,
-    required this.date,
-  });
-}
+import 'widgets/event_date_picker_dialog.dart';
 
 class EventTimelineRoutePage extends StatelessWidget {
   final GoRouterState state;
@@ -28,114 +18,288 @@ class EventTimelineRoutePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final extra = state.extra;
-    if (extra is! EventTimelineArgs) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('오류')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('잘못된 요청입니다.'),
-              const SizedBox(height: 16),
-              Text('Extra type: ${extra?.runtimeType}'),
-              Text('URI: ${state.uri}'),
-            ],
+    // 현재는 탭용 타임라인 화면 구현을 그대로 재사용합니다.
+    // GoRouter의 state.extra는 사용하지 않습니다.
+    return const EventTimelineTabScreen();
+  }
+}
+
+/// 탭에서 사용할 타임라인 화면 (날짜 선택 가능, 현재 반려동물 사용)
+class EventTimelineTabScreen extends ConsumerStatefulWidget {
+  const EventTimelineTabScreen({super.key});
+
+  @override
+  ConsumerState<EventTimelineTabScreen> createState() =>
+      _EventTimelineTabScreenState();
+}
+
+class _EventTimelineTabScreenState
+    extends ConsumerState<EventTimelineTabScreen> {
+  DateTime _selectedDate = DateTime.now();
+  final Set<String> _selectedEmotions = {};
+
+  DateTime get _today =>
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+  DateTime get _normalizedSelected =>
+      DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+
+  void _goToPreviousDay() {
+    setState(() {
+      _selectedDate = _normalizedSelected.subtract(const Duration(days: 1));
+      _selectedEmotions.clear();
+    });
+  }
+
+  void _goToNextDay() {
+    // 오늘 이후로는 이동 불가
+    if (_normalizedSelected.isAtSameMomentAs(_today) ||
+        _normalizedSelected.isAfter(_today)) {
+      return;
+    }
+    setState(() {
+      _selectedDate = _normalizedSelected.add(const Duration(days: 1));
+      _selectedEmotions.clear();
+    });
+  }
+
+  Future<void> _pickDate(BuildContext context, int petId) async {
+    final picked = await showEventDatePickerDialog(
+      context: context,
+      petId: petId,
+      initialDate: _normalizedSelected,
+    );
+
+    if (picked != null && mounted) {
+      setState(() {
+        _selectedDate = DateTime(picked.year, picked.month, picked.day);
+        _selectedEmotions.clear();
+      });
+    }
+  }
+
+  String _formatDateLabel(DateTime date) {
+    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final petInfo = ref.watch(currentPetProvider);
+    final petId = petInfo?.petId;
+
+    if (petId == null) {
+      return Center(
+        child: Padding(
+          padding: AppConstants.defaultPadding,
+          child: const ReportEmptyState(
+            title: '반려견 정보를 찾을 수 없어요',
+            message: '마이 펫 정보를 먼저 등록하고 다시 시도해 주세요.',
           ),
         ),
       );
     }
 
-    return EventTimelineScreen(args: extra);
-  }
-}
-
-class EventTimelineScreen extends ConsumerWidget {
-  final EventTimelineArgs args;
-
-  const EventTimelineScreen({
-    super.key,
-    required this.args,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final eventRequest = DailyEventRequest(petId: args.petId, date: args.date);
-    final reportRequest = DailyReportRequest(petId: args.petId, date: args.date);
-
+    final eventRequest =
+        DailyEventRequest(petId: petId, date: _normalizedSelected);
     final dailyEventsAsync = ref.watch(dailyEventsProvider(eventRequest));
-    final dailyReportAsync = ref.watch(dailyAiReportProvider(reportRequest));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('이벤트 타임라인'),
-      ),
-      body: dailyEventsAsync.when(
-        data: (daily) {
-          final events = daily.events;
-          if (events.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppConstants.defaultSpacing),
-                child: const ReportEmptyState(
-                  title: '이날의 이벤트가 없어요',
-                  message: '카메라가 감지한 이벤트가 없어서 타임라인을 만들 수 없어요.',
-                ),
+    return dailyEventsAsync.when(
+      data: (daily) {
+        final events = daily.events;
+        final dateLabel = _formatDateLabel(_normalizedSelected);
+
+        final emotions = events
+            .map((e) => e.finalEmotion)
+            .whereType<String>()
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+        final filteredEvents = _selectedEmotions.isEmpty
+            ? events
+            : events
+                .where((e) =>
+                    e.finalEmotion != null &&
+                    _selectedEmotions.contains(e.finalEmotion))
+                .toList();
+
+        return SingleChildScrollView(
+          padding: AppConstants.defaultPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _DateSelector(
+                dateLabel: dateLabel,
+                onPrev: _goToPreviousDay,
+                onNext: _goToNextDay,
+                canGoNext:
+                    _normalizedSelected.isBefore(_today), // 오늘 전날까지만 허용
+                onTapDate: () => _pickDate(context, petId),
               ),
-            );
-          }
-
-          final stats = DailyStats.fromEvents(events);
-          final buckets = HourlyBuckets.fromEvents(events);
-          final dateLabel =
-              '${args.date.year}.${args.date.month.toString().padLeft(2, '0')}.${args.date.day.toString().padLeft(2, '0')}';
-
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(AppConstants.defaultSpacing),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$dateLabel 타임라인',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 16),
-                AiReportSection(reportAsync: dailyReportAsync),
-                const SizedBox(height: 16),
-                SummaryChips(stats: stats),
-                const SizedBox(height: 16),
-                HourlyChart(buckets: buckets),
-                const SizedBox(height: 16),
-                Text(
-                  '이벤트 타임라인',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                ...events.map(
-                  (event) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: EventCard(event: event),
+              const SizedBox(height: 16),
+              if (events.isEmpty)
+                const SizedBox(
+                  height: 220,
+                  child: ReportEmptyState(
+                    title: '이날의 이벤트가 없어요',
+                    message:
+                      '카메라가 감지한 이벤트가 없어서 타임라인을 만들 수 없어요.',
                   ),
-                ),
+                )
+              else ...[
+                if (emotions.isNotEmpty) ...[
+                  _EmotionFilterChips(
+                    emotions: emotions,
+                    selectedEmotions: _selectedEmotions,
+                    onToggle: (emotion) {
+                      setState(() {
+                        if (_selectedEmotions.contains(emotion)) {
+                          _selectedEmotions.remove(emotion);
+                        } else {
+                          _selectedEmotions.add(emotion);
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (filteredEvents.isEmpty)
+                  const ReportEmptyState(
+                    title: '선택한 감정의 이벤트가 없어요',
+                    message: '다른 감정을 선택하거나 필터를 해제해 보세요.',
+                  )
+                else ...[
+                  ...filteredEvents.map(
+                    (event) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: EventCard(event: event),
+                    ),
+                  ),
+                ],
               ],
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: EdgeInsets.all(AppConstants.defaultSpacing),
-            child: ReportEmptyState(
-              title: '데이터를 불러오지 못했어요',
-              message: error.toString(),
-            ),
+            ],
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Center(
+        child: Padding(
+          padding: AppConstants.defaultPadding,
+          child: ReportEmptyState(
+            title: '데이터를 불러오지 못했어요',
+            message: error.toString(),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 상단 날짜 선택 위젯
+class _DateSelector extends StatelessWidget {
+  final String dateLabel;
+  final VoidCallback onPrev;
+  final VoidCallback onNext;
+  final bool canGoNext;
+  final VoidCallback onTapDate;
+
+  const _DateSelector({
+    required this.dateLabel,
+    required this.onPrev,
+    required this.onNext,
+    required this.canGoNext,
+    required this.onTapDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row( // 날짜 선택 위젯
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: onPrev,
+        ),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTapDate,
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text( // 날짜 라벨
+                dateLabel,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.grey12,
+                ),
+              ),
+            ),
+          ),
+        ),
+        IconButton( // 다음 날짜 버튼
+          icon: Icon(
+            Icons.chevron_right,
+            color: canGoNext ? AppColors.grey9 : AppColors.grey5,
+          ),
+          onPressed: canGoNext ? onNext : null,
+        ),
+      ],
+    );
+  }
+}
+
+/// 감정 필터 태그 영역
+class _EmotionFilterChips extends StatelessWidget {
+  final List<String> emotions;
+  final Set<String> selectedEmotions;
+  final ValueChanged<String> onToggle;
+
+  const _EmotionFilterChips({
+    required this.emotions,
+    required this.selectedEmotions,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: emotions.map((emotion) {
+        final isSelected = selectedEmotions.contains(emotion);
+        return FilterChip(
+          label: Text(
+            emotion,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? AppColors.white : AppColors.grey12,
+            ),
+          ),
+          selected: isSelected,
+          onSelected: (_) => onToggle(emotion),
+          backgroundColor: AppColors.white,
+          selectedColor: AppColors.green6,
+          showCheckmark: false,
+          shape: StadiumBorder(
+            side: BorderSide(
+              color: isSelected ? AppColors.green6 : AppColors.grey4,
+            ),
+          ),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        );
+      }).toList(),
     );
   }
 }

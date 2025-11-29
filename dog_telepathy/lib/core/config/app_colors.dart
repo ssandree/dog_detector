@@ -20,9 +20,10 @@ class AppColors {
   // 코랄
   static const Color coral1 = Color(0xFFdea28c);
   static const Color coral2 = Color(0xFFd48368);
-  static const Color coral3 = Color(0xFFc2759);
+  static const Color coral3 = Color(0xFFCD785B);
   static const Color coral4 = Color(0xFFb56b53);
   static const Color coral5 = Color(0xFFa85d45);
+  static const Color coral6 = Color(0xFF9b4f37);
 
   // 초록색
   static const Color green1 = Color(0xFFEAF7D8);

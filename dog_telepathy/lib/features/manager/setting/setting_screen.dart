@@ -22,7 +22,7 @@ class SettingScreen extends ConsumerWidget {
       return BaseScaffold(
          title: '환경설정',
          showBackButton: bottomNavigationBar == null,
-         showNotification: true,
+         showNotification: false,
          bottomNavigationBar: bottomNavigationBar,
          body: SingleChildScrollView(
             child: HorizontalPadding(

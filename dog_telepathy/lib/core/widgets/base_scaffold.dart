@@ -13,7 +13,7 @@ class BaseScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final PreferredSizeWidget? bottom;
   final bool showNotification;
-  final VoidCallback? onNotificationPressed;
+  final bool showSettings;
   final bool useSafeArea;
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
@@ -27,7 +27,7 @@ class BaseScaffold extends StatelessWidget {
     this.actions,
     this.bottom,
     this.showNotification = false,
-    this.onNotificationPressed,
+    this.showSettings = false,
     this.useSafeArea = true,
     this.floatingActionButton,
     this.bottomNavigationBar,
@@ -61,7 +61,7 @@ class BaseScaffold extends StatelessWidget {
   /// ===== AppBar =====
   PreferredSizeWidget? _buildAppBar(BuildContext context) {
     final hasTitle = title != null && title!.isNotEmpty;
-    final hasActions = (actions?.isNotEmpty ?? false) || showNotification;
+    final hasActions = (actions?.isNotEmpty ?? false) || showNotification || showSettings;
     final shouldShowAppBar =
         hasTitle || showBackButton || hasActions || bottom != null;
 
@@ -74,14 +74,30 @@ class BaseScaffold extends StatelessWidget {
     if (showNotification) {
       appBarActions.add(
         Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 8.0, top: 4.0),
           child: IconButton(
             icon: const Icon(
               Icons.notifications,
               color: AppColors.grey7,
               size: 28,
             ),
-            onPressed: onNotificationPressed ?? () => context.push(AppRoutes.managerNotification),
+            onPressed: () => context.push(AppRoutes.managerNotification),
+          ),
+        ),
+      );
+    }
+
+    if (showSettings) {
+      appBarActions.add(
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0, top: 4.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.settings,
+              color: AppColors.grey7,
+              size: 28,
+            ),
+            onPressed: () => context.push(AppRoutes.managerSettings),
           ),
         ),
       );
@@ -92,7 +108,7 @@ class BaseScaffold extends StatelessWidget {
       child: AppBar(
         title: title != null
             ? Padding(
-                padding: const EdgeInsets.only(left: 32.0, right: 8.0, top: 4.0),
+                padding: const EdgeInsets.only(left: 32.0, right: 8.0, top: 8.0),
                 child: Text(
                   title!,
                   style: const TextStyle(
@@ -103,13 +119,13 @@ class BaseScaffold extends StatelessWidget {
                 ),
               )
             : null,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        centerTitle: false,
-        automaticallyImplyLeading: showBackButton,
-        titleSpacing: 0,
-        leadingWidth: showBackButton ? 56 : 0,
-        leading: showBackButton
+              backgroundColor: AppColors.white,
+              elevation: 0,
+              centerTitle: false,
+              automaticallyImplyLeading: showBackButton,
+              titleSpacing: 0,
+              leadingWidth: showBackButton ? 56 : 0,
+              leading: showBackButton
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
                 onPressed: onBackPressed ?? () => Navigator.pop(context),

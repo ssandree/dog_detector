@@ -32,7 +32,7 @@ abstract class PetService {
 
   /// 반려동물 정보 삭제
   /// 
-  /// [petId]: 반려동물 ID (현재는 사용하지 않음)
+  /// [petId]: 반려동물 ID
   /// 예외: NetworkException
   Future<void> deletePetInfo(String petId);
 

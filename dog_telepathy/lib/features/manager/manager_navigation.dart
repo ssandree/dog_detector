@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../core/widgets/base_scaffold.dart';
 import '../../core/config/app_colors.dart';
+import '../../core/provider/current_pet_provider.dart';
 import 'home/manager_home_screen.dart';
 import 'calendar/calendar_screen.dart';
 import 'realtime/realtime_screen.dart';
-import 'setting/setting_screen.dart';
+import 'event_timeline/event_timeline_screen.dart';
 
 /// 메인 네비게이션 위젯
 /// 하단 네비게이션 바와 화면 전환을 관리합니다.
@@ -33,6 +34,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         return BaseScaffold(
           title: '홈',
           showNotification: true,
+          showSettings: true,
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );
@@ -41,20 +43,28 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         return BaseScaffold(
           title: '실시간 모니터링',
           showNotification: true,
+          showSettings: true,
+          bottomNavigationBar: bottomNav,
+          body: currentScreen,
+        );
+      /// 타임라인 화면 콘텐츠
+      case 2:
+        return BaseScaffold(
+          title: '타임라인',
+          showNotification: true,
+          showSettings: true,
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );
       /// 캘린더 화면 콘텐츠
-      case 2:
+      case 3:
         return BaseScaffold(
           title: '캘린더',
           showNotification: true,
+          showSettings: true,
           bottomNavigationBar: bottomNav,
           body: currentScreen,
         );
-      /// 설정 화면 콘텐츠
-      case 3:
-        return SettingScreen(bottomNavigationBar: bottomNav);
 
       default:
         return BaseScaffold(body: currentScreen, bottomNavigationBar: bottomNav);
@@ -68,9 +78,9 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
       case 1:
         return const RealtimeScreen();
       case 2:
-        return const CalendarScreen();
+        return const EventTimelineTabScreen();
       case 3:
-        return const SizedBox.shrink(); // SettingScreen은 case 3에서 직접 처리
+        return const CalendarScreen();
       default:
         return const SizedBox.shrink();
     }
@@ -107,12 +117,12 @@ class BottomNavBar extends StatelessWidget {
           label: '실시간',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: '캘린더',
+          icon: Icon(Icons.timeline),
+          label: '타임라인',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: '설정',
+          icon: Icon(Icons.calendar_today),
+          label: '캘린더',
         ),
       ],
     );

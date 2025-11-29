@@ -221,7 +221,7 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
     // positiveRatio: 0.0 (완전 부정) ~ 1.0 (완전 긍정)
     final red = (255 * (1 - positiveRatio)).round();
     final green = (255 * positiveRatio).round();
-    return Color.fromRGBO(red, green, 0, 1.0);
+    return Color.fromRGBO(red, green, 0, 0.9);
   }
 
 
@@ -257,9 +257,9 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
             borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: AppColors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
-                offset: const Offset(0, 4),
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -315,7 +315,7 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
                 color: gaugeColor,
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
               // 작은 사각 인디케이터들 (감정별) - 그래프 아래
               Row(
@@ -368,8 +368,8 @@ class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
                     int.parse(colorString.replaceFirst('#', '0xFF')),
                   );
 
-                  // 감정별 배경색 (색상 코드에서 가져온 색상 사용, 더 진하게)
-                  final backgroundColor = color.withValues(alpha: 0.6);
+                  // 감정별 배경색 (색상 코드에서 가져온 색상 사용)
+                  final backgroundColor = color.withValues(alpha: 0.4);
 
                   return Container(
                     width: 85, // 너비 줄임

@@ -253,3 +253,18 @@ class RTCOfferCheckResponse(BaseModel):
 # [추가] 알림 설정 변경용 스키마
 class NotificationSetting(BaseModel):
     enabled: bool
+
+# [추가] 세션 정보 요약 (조회용)
+class SessionInfo(BaseModel):
+    session_id: Optional[str] = None
+    sender: Optional[str] = None
+    receiver: Optional[str] = None
+    created_at: Optional[float] = None
+
+# [추가] 1. 전체 세션 목록 응답
+class SessionListResponse(BaseModel):
+    sessions: List[SessionInfo]
+
+# [추가] 2. 최신 세션 단건 응답 (없을 수도 있으므로 Optional)
+# SessionInfo를 그대로 써도 되지만, 명확성을 위해 별칭 사용 가능
+# 여기서는 SessionInfo를 그대로 리턴 타입으로 씁니다.

@@ -611,6 +611,53 @@ def get_candidates(session_id: str, device_id: str):
     
     return {"candidates": my_candidates}
 
+# ---------------------------------------------------------
+# [추가] 자동 연결을 위한 세션 조회 API (요청사항 반영)
+# ---------------------------------------------------------
+
+# 1. 활성 세션 목록 조회 (최신순 정렬)
+@app.get("/stream/sessions", response_model=schemas.SessionListResponse, tags=["WebRTC"])
+def get_active_sessions():
+    """
+    현재 서버 메모리에 저장된 모든 WebRTC 세션 목록을 반환합니다.
+    (created_at 기준 내림차순 정렬)
+    """
+    active_list = []
+    
+    for session_id, data in sessions.items():
+        active_list.append({
+            "session_id": session_id,
+            "sender": str(data.get("sender")),   # 혹시 int일까봐 str변환
+            "receiver": str(data.get("receiver")),
+            "created_at": data.get("created_at")
+        })
+    
+    # 최신순 정렬 (created_at이 큰 게 앞으로)
+    active_list.sort(key=lambda x: x["created_at"] or 0, reverse=True)
+    
+    return {"sessions": active_list}
+
+
+# 2. 가장 최신 세션 자동 반환
+@app.get("/stream/latest", response_model=schemas.SessionInfo, tags=["WebRTC"])
+def get_latest_session():
+    """
+    가장 최근에 생성된 세션 하나를 반환합니다. (Manager 자동 연결용)
+    세션이 없으면 null을 반환합니다.
+    """
+    if not sessions:
+        return {"session_id": None}
+    
+    # 딕셔너리에서 created_at이 가장 큰(최신) 키 찾기
+    latest_session_id = max(sessions, key=lambda k: sessions[k].get("created_at", 0))
+    data = sessions[latest_session_id]
+    
+    return {
+        "session_id": latest_session_id,
+        "sender": str(data.get("sender")),
+        "receiver": str(data.get("receiver")),
+        "created_at": data.get("created_at")
+    }
 
 # ==========================================
 # [유지] 디바이스 상태 관리

@@ -12,8 +12,11 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/mode_select/mode_select_screen.dart';
 import '../../features/cam/camera_main_screen.dart';
-import '../../features/manager/manager_home_screen.dart';
-import '../../features/report/presentation/today_report_screen.dart';
+import '../../manager/manager_navigation.dart';
+import '../../manager/calendar/calendar_screen.dart';
+import '../../manager/notification/notification_screen.dart';
+import '../../manager/realtime/realtime_screen.dart';
+import '../../manager/today_report/today_report_screen.dart';
 
 class AppRoutes {
   static const onboarding = '/onboarding';
@@ -22,6 +25,10 @@ class AppRoutes {
   static const modeSelect = '/mode-select';
   static const camera = '/camera';
   static const managerHome = '/manager';
+  static const calendar = '/manager/calendar';
+  static const eventTimeline = '/manager/timeline';
+  static const notification = '/manager/notification';
+  static const realtime = '/manager/realtime';
   static const todayReport = '/today-report';
 }
 
@@ -54,9 +61,29 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.managerHome,
-      builder: (_, __) => const ManagerHomeScreen(),
+      builder: (context, state) => MainNavigation(state: state),
     ),
-
+    GoRoute(
+      path: AppRoutes.calendar,
+      builder: (_, __) => const CalendarScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.eventTimeline,
+      redirect: (context, state) {
+        // 날짜 파라미터가 있으면 그대로 전달, 없으면 오늘 날짜로 설정
+        final dateStr = state.uri.queryParameters['date'] ?? 
+            DateTime.now().toIso8601String().split('T')[0];
+        return '${AppRoutes.managerHome}?date=$dateStr';
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.notification,
+      builder: (_, __) => const NotificationScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.realtime,
+      builder: (_, __) => const RealtimeScreen(),
+    ),
     GoRoute(
       path: AppRoutes.todayReport,
       builder: (_, __) => const TodayReportScreen(),

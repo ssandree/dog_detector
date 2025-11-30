@@ -1,7 +1,4 @@
-// lib/features/realtime/widgets/remote_video_view.dart
-
 import 'package:flutter/material.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../../../../core/config/app_constants.dart';
 
@@ -11,7 +8,6 @@ class RemoteVideoView extends StatelessWidget {
   final bool isFrozen;
   final bool isPaused;
   final int videoWidth;
-  final RTCVideoRenderer? renderer;
 
   const RemoteVideoView({
     super.key,
@@ -20,7 +16,6 @@ class RemoteVideoView extends StatelessWidget {
     required this.isFrozen,
     required this.isPaused,
     required this.videoWidth,
-    required this.renderer,
   });
 
   @override
@@ -36,33 +31,28 @@ class RemoteVideoView extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: renderer != null && renderer!.srcObject != null
-                ? RTCVideoView(
-                    renderer!,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
-                  )
-                : Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.black87, Colors.black54],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: Container(
-                        width: 1280,
-                        height: 720,
-                        color: Colors.black,
-                        child: const Icon(
-                          Icons.videocam,
-                          size: 120,
-                          color: Colors.white30,
-                        ),
-                      ),
-                    ),
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black87, Colors.black54],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: Container(
+                  width: 1280,
+                  height: 720,
+                  color: Colors.black,
+                  child: const Icon(
+                    Icons.videocam,
+                    size: 120,
+                    color: Colors.white30,
                   ),
+                ),
+              ),
+            ),
           ),
           if (isLoading)
             const Center(child: CircularProgressIndicator(color: Colors.white)),

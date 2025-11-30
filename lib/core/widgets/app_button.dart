@@ -12,6 +12,7 @@ class AppButton extends StatelessWidget {
   final double height;
   final Color backgroundColor;
   final Color textColor;
+  final Color? _outlineBorder;
 
   const AppButton({
     super.key,
@@ -22,7 +23,8 @@ class AppButton extends StatelessWidget {
     this.height = 52,
     this.backgroundColor = AppColors.beige4,
     this.textColor = Colors.white,
-  });
+    Color? outlineBorder,
+  }) : _outlineBorder = outlineBorder;
 
   factory AppButton.primary({
     Key? key,
@@ -39,6 +41,28 @@ class AppButton extends StatelessWidget {
       height: height,
       backgroundColor: AppColors.primary,
       textColor: Colors.white,
+    );
+  }
+
+  factory AppButton.outline({
+    Key? key,
+    required String text,
+    required VoidCallback onPressed,
+    bool isLoading = false,
+    double height = 52,
+    Color borderColor = AppColors.beige5,
+    Color textColor = AppColors.black,
+  }) {
+    return AppButton(
+      key: key,
+      text: text,
+      onPressed: onPressed,
+      enabled: true,
+      isLoading: isLoading,
+      height: height,
+      backgroundColor: Colors.transparent,
+      textColor: textColor,
+      outlineBorder: borderColor,
     );
   }
 
@@ -63,6 +87,8 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveOnPressed = enabled && !isLoading ? onPressed : null;
 
+    final isOutline = _outlineBorder != null;
+
     return SizedBox(
       width: double.infinity,
       height: height,
@@ -70,10 +96,14 @@ class AppButton extends StatelessWidget {
         onPressed: effectiveOnPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
+          side: _outlineBorder != null
+              ? BorderSide(color: _outlineBorder as Color, width: 1.6)
+              : null,
           shape: RoundedRectangleBorder(
             borderRadius:
                 BorderRadius.circular(AppConstants.defaultBorderRadius),
           ),
+          elevation: isOutline ? 0 : null,
         ),
         child: isLoading
             ? const SizedBox(

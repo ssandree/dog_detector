@@ -66,7 +66,7 @@ class LoginScreen extends HookConsumerWidget {
         header: Column(
           children: [
             Text(
-              '견심술',
+              '포노트',
               style: TextStyle(
                 fontSize: 32.sp,
                 fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class LoginScreen extends HookConsumerWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              '반려견의 마음을 읽어보세요',
+              '반려견의 몸과 마음을 읽는 리포트',
               style: TextStyle(
                 fontSize: 16.sp,
                 color: Colors.grey[600],

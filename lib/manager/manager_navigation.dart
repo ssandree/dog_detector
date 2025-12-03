@@ -23,24 +23,64 @@ class MainNavigation extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationState extends ConsumerState<MainNavigation> {
-  late int _currentIndex;
+  int _currentIndex = 0; // 기본값으로 초기화
   DateTime? _initialTimelineDate;
 
   @override
   void initState() {
     super.initState();
+    _updateFromQueryParams(useSetState: false);
+  }
+
+  @override
+  void didUpdateWidget(MainNavigation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // query parameter가 변경되었을 때 업데이트
+    final oldDateStr = oldWidget.state?.uri.queryParameters['date'];
+    final newDateStr = widget.state?.uri.queryParameters['date'];
+    if (oldDateStr != newDateStr) {
+      _updateFromQueryParams(useSetState: true);
+    }
+  }
+
+  void _updateFromQueryParams({required bool useSetState}) {
     // URL query parameter에서 날짜 확인
     final dateStr = widget.state?.uri.queryParameters['date'];
     if (dateStr != null) {
       try {
         final date = DateTime.parse(dateStr);
-        _initialTimelineDate = date;
-        _currentIndex = 2; // 타임라인 탭으로 설정
+        if (useSetState && mounted) {
+          setState(() {
+            _initialTimelineDate = date;
+            _currentIndex = 2; // 타임라인 탭으로 설정
+          });
+        } else {
+          _initialTimelineDate = date;
+          _currentIndex = 2; // 타임라인 탭으로 설정
+        }
       } catch (e) {
-        _currentIndex = 0;
+        if (useSetState && mounted) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        } else {
+          _currentIndex = 0;
+        }
       }
     } else {
-      _currentIndex = 0;
+      // date 파라미터가 없으면 현재 탭 유지 (이미 탭에 있다면)
+      if (_currentIndex == 2 && _initialTimelineDate != null) {
+        // 타임라인 탭에 있지만 date 파라미터가 사라진 경우는 그대로 유지
+        return;
+      }
+      // 초기 로드 시에만 홈으로 설정
+      if (useSetState && mounted) {
+        setState(() {
+          _currentIndex = 0;
+        });
+      } else {
+        _currentIndex = 0;
+      }
     }
   }
 

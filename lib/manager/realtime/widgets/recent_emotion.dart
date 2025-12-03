@@ -202,12 +202,15 @@ class RecentEmotionPanel extends ConsumerWidget {
   }
 
   Widget _buildDateMessageCard(String dateStr) {
-    return AppCards.basic(
-      child: Text(
-        '최근 분석 날짜가 $dateStr입니다',
-        style: const TextStyle(
-          fontSize: 14,
-          color: AppColors.grey12,
+    return SizedBox(
+      width: double.infinity,
+      child: AppCards.basic(
+        child: Text(
+          '최근 분석 날짜가 $dateStr입니다',
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.grey12,
+          ),
         ),
       ),
     );

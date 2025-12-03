@@ -33,6 +33,7 @@ class UploadService {
       'device_id': item.deviceId,
       'start_time': item.startTime.toUtc().toIso8601String(),
       'end_time': item.endTime.toUtc().toIso8601String(),
+      'video_duration_sec': item.durationSeconds,
     });
 
     final response = await _dio.post(

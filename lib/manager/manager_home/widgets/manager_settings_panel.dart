@@ -29,15 +29,6 @@ class _ManagerSettingsPanelState extends ConsumerState<ManagerSettingsPanel> {
   bool _isNotificationExpanded = false;
 
   @override
-  void initState() {
-    super.initState();
-    // 알림 설정을 서버에서 한 번 불러와서 초기 상태를 동기화
-    Future.microtask(() {
-      ref.read(notificationSettingsProvider.notifier).refresh();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final panelWidth = screenWidth * 0.85; // 화면 너비의 85%

@@ -24,7 +24,7 @@ class SimpleDescription extends StatelessWidget {
         Gap(26.h),
 
         Text(
-          '견심술',
+          '포노트',
           style: textTheme.headlineMedium!.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w700,

@@ -153,6 +153,7 @@ class RemoteEventService implements EventService {
 
 class _DayAccumulator {
   int happy = 0, calm = 0, angry = 0, fear = 0;
+  int patellaAbnormal = 0; // 슬개골 이상 개수
 
   void register(EventInfo e) {
     final em = (e.finalEmotion ?? "").toLowerCase().trim();
@@ -161,6 +162,11 @@ class _DayAccumulator {
     else if (_angry.contains(em)) angry++;
     else if (_fear.contains(em)) fear++;
     else calm++;
+    
+    // 슬개골 이상 체크
+    if (e.patellaAnalysisResult?.trim() == '이상') {
+      patellaAbnormal++;
+    }
   }
 
   MonthlyEventStat toStat() {
@@ -173,6 +179,7 @@ class _DayAccumulator {
       fear: fear,
       totalEvents: total,
       score: score,
+      patellaAbnormal: patellaAbnormal,
     );
   }
 }

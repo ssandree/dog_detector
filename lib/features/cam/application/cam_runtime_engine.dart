@@ -48,6 +48,8 @@ class CamRuntimeEngine {
     final recording = ref.read(recordingEngineProvider);
     final lastClip = await recording.stopRecording();
     if (lastClip != null) {
+      final duration = lastClip.endTime.difference(lastClip.startTime).inSeconds.toDouble();
+
       ref.read(uploadEngineProvider).enqueue(
         UploadQueueItem(
           filePath: lastClip.path,
@@ -55,6 +57,7 @@ class CamRuntimeEngine {
           deviceId: deviceId,
           startTime: lastClip.startTime,
           endTime: lastClip.endTime,
+          durationSeconds: duration,
         ),
       );
     }
@@ -102,7 +105,7 @@ class CamRuntimeEngine {
           frameBytes: frame,
           cameraId: cameraId,
         );
-
+        
         camController.setDetecting(true);
         camController.setSceneActive(result.isSceneActive);
 
@@ -111,6 +114,8 @@ class CamRuntimeEngine {
         } else if (!result.isSceneActive && recording.isRecording) {
           final clip = await recording.stopRecording();
           if (clip != null) {
+            final duration = clip.endTime.difference(clip.startTime).inSeconds.toDouble();
+
             ref.read(uploadEngineProvider).enqueue(
               UploadQueueItem(
                 filePath: clip.path,
@@ -118,6 +123,7 @@ class CamRuntimeEngine {
                 deviceId: deviceId,
                 startTime: clip.startTime,
                 endTime: clip.endTime,
+                durationSeconds: duration,
               ),
             );
           }

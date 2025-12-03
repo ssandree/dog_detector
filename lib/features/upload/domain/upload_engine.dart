@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../data/upload_service.dart';
@@ -59,7 +58,6 @@ class UploadEngine {
   }
 
   Future<bool> _isOnWifi() async {
-    final result = await Connectivity().checkConnectivity();
-    return result == ConnectivityResult.wifi;
+    return true; 
   }
 }

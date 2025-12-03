@@ -18,19 +18,31 @@ class DetectionClueModal extends StatefulWidget {
 class _DetectionClueModalState extends State<DetectionClueModal> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    final url = widget.event.videoUrl;
-    _controller = VideoPlayerController.networkUrl(Uri.parse(url))
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
-        }
-      });
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      final url = widget.event.videoUrl;
+      _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      await _controller.initialize();
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = '비디오를 불러올 수 없습니다: ${e.toString()}';
+        });
+      }
+    }
   }
 
   @override
@@ -84,26 +96,59 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
                 child: ClipRRect(
                   borderRadius:
                       BorderRadius.circular(AppConstants.defaultBorderRadius),
-                  child: _isInitialized
-                      ? Stack(
-                          alignment: Alignment.bottomCenter,
-                          children: [
-                            VideoPlayer(_controller),
-                            _ControlsOverlay(controller: _controller),
-                            VideoProgressIndicator(
-                              _controller,
-                              allowScrubbing: true,
-                              colors: const VideoProgressColors(
-                                playedColor: AppColors.green4,
-                                backgroundColor: Colors.black26,
-                                bufferedColor: Colors.white24,
+                  child: _errorMessage != null
+                      ? Container(
+                          color: Colors.black87,
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.error_outline,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         )
-                      : const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                      : _isInitialized
+                          ? Stack(
+                              alignment: Alignment.bottomCenter,
+                              children: [
+                                VideoPlayer(_controller),
+                                _ControlsOverlay(controller: _controller),
+                                VideoProgressIndicator(
+                                  _controller,
+                                  allowScrubbing: true,
+                                  colors: const VideoProgressColors(
+                                    playedColor: AppColors.green4,
+                                    backgroundColor: Colors.black26,
+                                    bufferedColor: Colors.white24,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Container(
+                              color: Colors.black87,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -141,15 +186,6 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
                 const SizedBox(height: 16),
               ],
               if ((emotion != null && emotion.isNotEmpty) || hasPatellaAbnormal) ...[
-                if (features != null && features.isNotEmpty) ...[
-                  Text(
-                    features,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.grey9,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
                 Row(
                   children: [
                     if (emotion != null && emotion.isNotEmpty)

@@ -71,10 +71,13 @@ class DailyEventsView extends StatelessWidget {
             text: '더보기',
             height: 44,
             onPressed: () {
-              // 날짜를 query parameter로 전달하여 타임라인 화면으로 이동
+              // 모달 닫기
+              Navigator.of(context).pop();
+              
+              // 날짜를 query parameter로 전달하여 타임라인 탭으로 이동
               final dateStr =
                   selectedDate.toIso8601String().split('T')[0]; // YYYY-MM-DD 형식
-              context.go('${AppRoutes.eventTimeline}?date=$dateStr');
+              context.go('${AppRoutes.managerHome}?date=$dateStr');
             },
           ),
         ],

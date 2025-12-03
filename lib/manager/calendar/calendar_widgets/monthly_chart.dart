@@ -113,7 +113,7 @@ class _MonthlyChartContent extends StatelessWidget {
 
     final patellaCount = summary.days.values.fold<int>(
       0,
-      (sum, stat) => sum + stat.fear,
+      (sum, stat) => sum + stat.patellaAbnormal,
     );
 
     final barMaxY = bars.fold<double>(
@@ -124,6 +124,7 @@ class _MonthlyChartContent extends StatelessWidget {
     return _ChartContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             '${summary.year}년 ${summary.month}월 이벤트 요약',
@@ -141,7 +142,7 @@ class _MonthlyChartContent extends StatelessWidget {
               color: AppColors.grey8,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Row(
             children: const [
               _LegendDot(color: Color(0xFF90A4AE), label: '에너지 레벨(감지 횟수)'),
@@ -149,7 +150,7 @@ class _MonthlyChartContent extends StatelessWidget {
               _LegendDot(color: AppColors.green5, label: '평균 감정 점수'),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           SizedBox(
             height: 220,
             child: Stack(

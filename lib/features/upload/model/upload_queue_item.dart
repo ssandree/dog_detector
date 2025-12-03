@@ -6,6 +6,7 @@ class UploadQueueItem {
   final String deviceId;
   final DateTime startTime;
   final DateTime endTime;
+  final double durationSeconds;
 
   UploadQueueItem({
     required this.filePath,
@@ -13,5 +14,6 @@ class UploadQueueItem {
     required this.deviceId,
     required this.startTime,
     required this.endTime,
+    required this.durationSeconds,
   });
 }

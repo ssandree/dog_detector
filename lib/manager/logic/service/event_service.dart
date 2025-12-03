@@ -62,6 +62,7 @@ class MonthlyEventStat {
   final int fear;
   final int totalEvents;
   final int score;
+  final int patellaAbnormal; // 슬개골 이상 개수
 
   const MonthlyEventStat({
     required this.happy,
@@ -70,6 +71,7 @@ class MonthlyEventStat {
     required this.fear,
     required this.totalEvents,
     required this.score,
+    this.patellaAbnormal = 0,
   });
 
   factory MonthlyEventStat.fromJson(Map<String, dynamic> json) {
@@ -80,6 +82,7 @@ class MonthlyEventStat {
       fear: json['fear'] as int? ?? 0,
       totalEvents: json['total_events'] as int? ?? 0,
       score: json['score'] as int? ?? 0,
+      patellaAbnormal: json['patella_abnormal'] as int? ?? 0,
     );
   }
 
@@ -90,6 +93,7 @@ class MonthlyEventStat {
         'fear': fear,
         'total_events': totalEvents,
         'score': score,
+        'patella_abnormal': patellaAbnormal,
       };
 }
 

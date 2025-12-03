@@ -124,81 +124,119 @@ class _EventTimelineTabScreenState
         final events = daily.events;
         final dateLabel = _formatDateLabel(_normalizedSelected);
 
-        final emotions = events
+        // 감정 목록 추출
+        final emotionSet = events
             .map((e) => e.finalEmotion)
             .whereType<String>()
             .map((e) => e.trim())
             .where((e) => e.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
+            .toSet();
+        
+        // '슬개 이상'이 있는지 확인
+        final hasPatellaAbnormal = events.any(
+          (e) => e.patellaAnalysisResult?.trim() == '이상',
+        );
+        
+        // 감정 목록에 '슬개 이상' 추가
+        final emotions = emotionSet.toList()..sort();
+        if (hasPatellaAbnormal) {
+          emotions.add('슬개 이상');
+        }
 
+        // 필터링 로직
         final filteredEvents = _selectedEmotions.isEmpty
             ? events
             : events
-                .where((e) =>
-                    e.finalEmotion != null &&
-                    _selectedEmotions.contains(e.finalEmotion))
+                .where((e) {
+                  // 감정 필터
+                  if (e.finalEmotion != null &&
+                      _selectedEmotions.contains(e.finalEmotion)) {
+                    return true;
+                  }
+                  // '슬개 이상' 필터
+                  if (_selectedEmotions.contains('슬개 이상') &&
+                      e.patellaAnalysisResult?.trim() == '이상') {
+                    return true;
+                  }
+                  return false;
+                })
                 .toList();
 
-        return SingleChildScrollView(
-          padding: AppConstants.defaultPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: _DateSelector(
-                  dateLabel: dateLabel,
-                  onPrev: _goToPreviousDay,
-                  onNext: _goToNextDay,
-                  canGoNext:
-                      _normalizedSelected.isBefore(_today), // 오늘 전날까지만 허용
-                  onTapDate: () => _pickDate(context, petId),
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (events.isEmpty)
-                const SizedBox(
-                  height: 220,
-                  child: ReportEmptyState(
-                    title: '이날의 이벤트가 없어요',
-                    message:
-                      '카메라가 감지한 이벤트가 없어서 타임라인을 만들 수 없어요.',
-                  ),
-                )
-              else ...[
-                if (emotions.isNotEmpty) ...[
-                  _EmotionFilterChips(
-                    emotions: emotions,
-                    selectedEmotions: _selectedEmotions,
-                    onToggle: (emotion) {
-                      setState(() {
-                        if (_selectedEmotions.contains(emotion)) {
-                          _selectedEmotions.remove(emotion);
-                        } else {
-                          _selectedEmotions.add(emotion);
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                if (filteredEvents.isEmpty)
-                  const ReportEmptyState(
-                    title: '선택한 감정의 이벤트가 없어요',
-                    message: '다른 감정을 선택하거나 필터를 해제해 보세요.',
-                  )
-                else ...[
-                  ...filteredEvents.map(
-                    (event) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: EventCard(event: event),
+        return Column(
+          children: [
+            // 고정된 상단 영역 (날짜 선택기 + 감정 필터)
+            Container(
+              padding: AppConstants.defaultPadding,
+              color: AppColors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: _DateSelector(
+                      dateLabel: dateLabel,
+                      onPrev: _goToPreviousDay,
+                      onNext: _goToNextDay,
+                      canGoNext:
+                          _normalizedSelected.isBefore(_today), // 오늘 전날까지만 허용
+                      onTapDate: () => _pickDate(context, petId),
                     ),
                   ),
+                  if (events.isNotEmpty && (emotions.isNotEmpty || hasPatellaAbnormal)) ...[
+                    const SizedBox(height: 16),
+                    _EmotionFilterChips(
+                      emotions: emotions,
+                      selectedEmotions: _selectedEmotions,
+                      onToggle: (emotion) {
+                        setState(() {
+                          if (_selectedEmotions.contains(emotion)) {
+                            _selectedEmotions.remove(emotion);
+                          } else {
+                            _selectedEmotions.add(emotion);
+                          }
+                        });
+                      },
+                    ),
+                  ],
                 ],
-              ],
-            ],
-          ),
+              ),
+            ),
+            // 스크롤 가능한 이벤트 리스트 영역
+            Expanded(
+              child: events.isEmpty
+                  ? Padding(
+                      padding: AppConstants.defaultPadding,
+                      child: const Center(
+                        child: ReportEmptyState(
+                          title: '이날의 이벤트가 없어요',
+                          message:
+                              '카메라가 감지한 이벤트가 없어서 타임라인을 만들 수 없어요.',
+                        ),
+                      ),
+                    )
+                  : filteredEvents.isEmpty
+                      ? Padding(
+                          padding: AppConstants.defaultPadding,
+                          child: const Center(
+                            child: ReportEmptyState(
+                              title: '선택한 감정의 이벤트가 없어요',
+                              message: '다른 감정을 선택하거나 필터를 해제해 보세요.',
+                            ),
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          padding: AppConstants.defaultPadding,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: filteredEvents.map(
+                              (event) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: EventCard(event: event),
+                              ),
+                            ).toList(),
+                          ),
+                        ),
+            ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

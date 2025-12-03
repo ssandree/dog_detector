@@ -1,0 +1,182 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/config/app_constants.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../../core/widgets/app_status_tags.dart';
+import '../../logic/model/event_info.dart';
+import '../detection_clue_modal.dart';
+
+class EventCard extends StatelessWidget {
+  final EventInfo event;
+
+  const EventCard({super.key, required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final start = _formatTime(event.startTime);
+    final durationLabel = '${event.videoDurationSec}s';
+    final emotion = event.finalEmotion ?? '분석 중';
+    final statusColor = _statusColor(event.analysisStatus);
+    final features = event.detectedFeatures?.trim();
+    final patellaResult = event.patellaAnalysisResult?.trim();
+    final hasPatellaAbnormal = patellaResult == '이상';
+    final thumbnailUrl = event.thumbnailUrl;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+      onTap: () {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (_) => DetectionClueModal(event: event),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(AppConstants.smallBorderRadius),
+              child: SizedBox(
+                width: 80,
+                height: 56,
+                child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
+                  ? Image.network(
+                      thumbnailUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _ThumbnailFallback(color: statusColor);
+                      },
+                    )
+                  : _ThumbnailFallback(color: statusColor),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        start,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppColors.grey12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        durationLabel,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.grey7,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  if (features != null && features.isNotEmpty) ...[
+                    Text(
+                      features,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.grey9,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AppStatusTags.emotionTag(
+                        emotion: emotion,
+                      ),
+                      if (hasPatellaAbnormal) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: AppColors.error,
+                              width: 0.8,
+                            ),
+                          ),
+                          child: const Text(
+                            '슬개 이상',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    final second = time.second.toString().padLeft(2, '0');
+    return '$hour:$minute:$second';
+  }
+
+  Color _statusColor(AnalysisStatus status) {
+    switch (status) {
+      case AnalysisStatus.completed:
+        return AppColors.green6;
+      case AnalysisStatus.pending:
+        return AppColors.warning;
+      case AnalysisStatus.failed:
+        return AppColors.error;
+    }
+  }
+}
+
+class _ThumbnailFallback extends StatelessWidget {
+  final Color color;
+
+  const _ThumbnailFallback({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.beige2,
+      child: Icon(
+        Icons.videocam,
+        color: AppColors.beige5,
+      ),
+    );
+  }
+}

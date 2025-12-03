@@ -7,24 +7,16 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/config/app_colors.dart';
 import '../../../core/widgets/app_cards.dart';
 import '../../../features/pet/domain/pet_info.dart';
-import '../../../features/pet/application/pet_provider.dart';
+import '../../../features/pet/application/current_pet_provider.dart';
 
 class PetGreeting extends ConsumerWidget {
   const PetGreeting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final petsAsync = ref.watch(petProvider);
-
-    return petsAsync.when(
-      data: (pets) {
-        final PetInfo? pet = pets.isNotEmpty ? pets.first : null;
-
-        return _buildPetCard(context, pet);
-      },
-      loading: () => _loading(),
-      error: (_, __) => _error(),
-    );
+    // currentPetProvider 사용 (petProvider 대신)
+    final pet = ref.watch(currentPetProvider);
+    return _buildPetCard(context, pet);
   }
 
   Widget _buildPetCard(BuildContext context, PetInfo? pet) {

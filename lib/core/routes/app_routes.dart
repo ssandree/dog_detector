@@ -14,6 +14,7 @@ import '../../features/mode_select/mode_select_screen.dart';
 import '../../features/cam/camera_main_screen.dart';
 import '../../manager/manager_navigation.dart';
 import '../../manager/calendar/calendar_screen.dart';
+import '../../manager/event_timeline/event_timeline_screen.dart';
 import '../../manager/notification/notification_screen.dart';
 import '../../manager/realtime/realtime_screen.dart';
 import '../../manager/today_report/today_report_screen.dart';
@@ -69,11 +70,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.eventTimeline,
-      redirect: (context, state) {
-        final dateStr = state.uri.queryParameters['date'] ?? 
-            DateTime.now().toIso8601String().split('T')[0];
-        return '${AppRoutes.managerHome}?date=$dateStr';
-      },
+      builder: (context, state) => EventTimelineRoutePage(state: state),
     ),
     GoRoute(
       path: AppRoutes.notification,

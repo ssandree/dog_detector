@@ -66,8 +66,9 @@ class _PetRegiModalState extends ConsumerState<PetRegiModal> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // currentPetProvider를 watch하여 펫 정보가 변경되면 업데이트
     if (!_initialized && _initialPet == null) {
-      final saved = ref.read(currentPetProvider);
+      final saved = ref.watch(currentPetProvider);
       if (saved != null) {
         _initialPet = saved;
         _loadFormData(saved);

@@ -15,9 +15,20 @@ class EventTimelineRoutePage extends StatelessWidget {
 
   const EventTimelineRoutePage({super.key, required this.state});
 
+  DateTime? _parseInitialDate() {
+    final dateStr = state.uri.queryParameters['date'];
+    if (dateStr == null) return null;
+    try {
+      return DateTime.parse(dateStr);
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const EventTimelineTabScreen();
+    final initialDate = _parseInitialDate();
+    return EventTimelineTabScreen(initialDate: initialDate);
   }
 }
 

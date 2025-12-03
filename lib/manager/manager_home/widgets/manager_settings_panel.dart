@@ -16,6 +16,7 @@ import '../../../manager/logic/provider/notification_provider.dart';
 import '../../../manager/logic/model/notification_models.dart';
 import '../../../manager/logic/provider/user_provider.dart';
 import '../../../features/pet/application/current_pet_provider.dart';
+import '../../../features/pet/application/pet_provider.dart';
 
 class ManagerSettingsPanel extends ConsumerStatefulWidget {
   const ManagerSettingsPanel({super.key});
@@ -26,6 +27,15 @@ class ManagerSettingsPanel extends ConsumerStatefulWidget {
 
 class _ManagerSettingsPanelState extends ConsumerState<ManagerSettingsPanel> {
   bool _isNotificationExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 알림 설정을 서버에서 한 번 불러와서 초기 상태를 동기화
+    Future.microtask(() {
+      ref.read(notificationSettingsProvider.notifier).refresh();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +102,12 @@ class _ManagerSettingsPanelState extends ConsumerState<ManagerSettingsPanel> {
                   );
                 },
               ),
+              _settingItem(
+                context,
+                Icons.swap_horiz,
+                "모드 재선택",
+                onTap: () => _handleModeReselect(context, ref),
+              ),
               const Divider(height: 32),
               _settingItem(
                 context,
@@ -105,6 +121,27 @@ class _ManagerSettingsPanelState extends ConsumerState<ManagerSettingsPanel> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleModeReselect(BuildContext context, WidgetRef ref) async {
+    // 확인 다이얼로그 표시
+    final confirm = await showConfirmDialog(
+      context: context,
+      title: '모드 재선택',
+      content: '모드 선택 화면으로 이동할까요?',
+      confirmText: '이동',
+      cancelText: '취소',
+    );
+
+    if (confirm == true && context.mounted) {
+      // 설정 패널 닫기
+      Navigator.of(context).pop();
+      
+      // 모드 선택 화면으로 이동
+      if (context.mounted) {
+        context.go(AppRoutes.modeSelect);
+      }
+    }
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
@@ -123,6 +160,12 @@ class _ManagerSettingsPanelState extends ConsumerState<ManagerSettingsPanel> {
       
       // 모드 리셋
       await ref.read(appPrefsProvider.notifier).setMode(null);
+      
+      // 액세스 토큰 리셋 (petProvider가 자동으로 감지하여 리셋됨)
+      await ref.read(appPrefsProvider.notifier).setAccessToken(null);
+      
+      // petProvider 명시적으로 리셋 (이전 사용자 데이터 제거)
+      ref.read(petProvider.notifier).reset();
       
       // 설정 패널 닫기
       if (context.mounted) {
@@ -197,10 +240,10 @@ class _ManagerSettingsPanelState extends ConsumerState<ManagerSettingsPanel> {
                     value: settings.instantAlert,
                     onChanged: (enabled) async {
                       try {
-                        final service = ref.read(notificationServiceProvider);
-                        await service.toggleNotification(enabled);
-                        // Provider 새로고침
-                        ref.invalidate(notificationSettingsProvider);
+                        // Riverpod notifier를 통해 상태 + 서버 설정을 함께 갱신
+                        final notifier =
+                            ref.read(notificationSettingsProvider.notifier);
+                        await notifier.toggleInstantAlert(enabled);
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(

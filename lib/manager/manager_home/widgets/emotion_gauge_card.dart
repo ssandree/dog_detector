@@ -18,11 +18,18 @@ class EmotionGaugeCard extends ConsumerStatefulWidget {
 class _EmotionGaugeCardState extends ConsumerState<EmotionGaugeCard> {
   DateTime _selectedDate = DateTime.now();
 
-  Color _calculateEmotionColor(double positiveRatio) {
-    final red = (255 * (1 - positiveRatio)).round();
-    final green = (255 * positiveRatio).round();
-    return Color.fromRGBO(red, green, 0, 0.9);
-  }
+Color _calculateEmotionColor(double positiveRatio) {
+  // 원하는 두 색
+  const startColor = Color(0xFF951818); // 어두운 붉은색
+  const endColor = Color(0xFF189546);   // 초록색
+
+  // 0~1 사이에서 두 색 보간
+  final color = Color.lerp(startColor, endColor, positiveRatio);
+
+  // opacity 0.9 적용
+  return color!.withOpacity(0.9);
+}
+
 
   @override
   Widget build(BuildContext context) {

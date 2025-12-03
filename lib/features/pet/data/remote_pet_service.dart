@@ -24,10 +24,12 @@ class RemotePetService implements PetService {
       final response = await _dio.get('/pets/');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
-        return data.map((e) => PetInfo.fromJson(e)).toList();
+        final pets = data.map((e) => PetInfo.fromJson(e)).toList();
+        return pets;
       }
       throw NetworkException("반려동물 목록 조회 실패");
     } on DioException catch (e) {
+      print('🐾 RemotePetService - 에러 발생: ${e.response?.statusCode} - ${e.response?.data}');
       throw _handleDioError(e, "반려동물 목록을 불러오는데 실패했습니다");
     }
   }

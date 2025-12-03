@@ -208,9 +208,6 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
             
             // 현재 포커스된 월과 같은 월인지 확인
             final isCurrentMonth = day.month == _focusedDay.month;
-            
-            // 오늘 날짜인지 확인
-            final isToday = isSameDay(day, _today);
 
             return CalendarDayCell(
               day: day,
@@ -220,7 +217,6 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
               isFutureDay: isFutureDay,
               isWeekend: isWeekend,
               isCurrentMonth: isCurrentMonth,
-              isToday: isToday,
             );
           },
         ),

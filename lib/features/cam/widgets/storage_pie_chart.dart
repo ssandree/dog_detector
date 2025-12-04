@@ -1,118 +1,115 @@
-// lib/features/cam/widgets/storage_pie_chart.dart
+/// lib/features/cam/widgets/storage_pie_chart.dart
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:path_provider/path_provider.dart';
+import '../model/storage_info.dart';
 
-class StoragePieChart extends StatefulWidget {
+class StoragePieChart extends StatelessWidget {
   const StoragePieChart({super.key});
 
-  @override
-  State<StoragePieChart> createState() => _StoragePieChartState();
-}
+  Future<Map<String, double>> _loadStorageInfo() async {
+    final storage = await StorageInfo.getStorage();
 
-class _StoragePieChartState extends State<StoragePieChart> {
-  int totalSpace = 0;
-  int usedSpace = 0;
-  int freeSpace = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStorageInfo();
-  }
-
-  Future<void> _loadStorageInfo() async {
     final dir = await getApplicationDocumentsDirectory();
-
-    final systemTemp = Directory.systemTemp;
-    final stat2 = await systemTemp.stat();
-
-    totalSpace = stat2.size;
-
-    final clips = Directory("${dir.path}/clips");
+    final clipsDir = Directory("${dir.path}/clips");
     int clipsSize = 0;
 
-    if (clips.existsSync()) {
-      for (final file in clips.listSync()) {
-        if (file is File && file.path.endsWith(".mp4")) {
-          clipsSize += await file.length();
-        }
+    if (clipsDir.existsSync()) {
+      for (final file in clipsDir.listSync(recursive: true)) {
+        if (file is File) clipsSize += await file.length();
       }
     }
 
-    usedSpace = clipsSize;
-    freeSpace = totalSpace - usedSpace;
-
-    if (freeSpace < 0) freeSpace = 0;
-
-    setState(() {});
+    return {
+      "total": storage["total"]!,
+      "used": storage["used"]!,
+      "free": storage["free"]!,
+      "clips": clipsSize.toDouble(),
+    };
   }
+
+  String _bytesToGB(double bytes) =>
+      (bytes / (1024 * 1024 * 1024)).toStringAsFixed(2);
 
   @override
   Widget build(BuildContext context) {
-    final used = usedSpace.toDouble();
+    return FutureBuilder(
+      future: _loadStorageInfo(),
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    final total = totalSpace.toDouble() == 0 ? 1 : totalSpace.toDouble();
+        final data = snap.data!;
+        final total = data["total"]!;
+        final used = data["used"]!;
+        final free = data["free"]!;
+        final clips = data["clips"]!;
 
-    final usedPercent = (used / total).clamp(0, 1);
+        final usedPercent = used / total;
+        final freePercent = free / total;
 
-    return Column(
-      children: [
-        const Text(
-          "저장 공간 현황",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
+        final isFull = usedPercent > 0.9;
 
-        SizedBox(
-          height: 160,
-          width: 160,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: usedPercent.toDouble(),
-                strokeWidth: 18,
-                backgroundColor: Colors.grey.shade300,
-                color: Colors.blueAccent,
+        return Column(
+          children: [
+            const SizedBox(height: 16),
+
+            SizedBox(
+              height: 180,
+              child: PieChart(
+                PieChartData(
+                  centerSpaceRadius: 48,
+                  sectionsSpace: 2,
+                  sections: [
+                    PieChartSectionData(
+                      value: usedPercent,
+                      color: isFull ? Colors.redAccent : Colors.blueAccent,
+                      radius: 32,
+                      title: "${(usedPercent * 100).toStringAsFixed(1)}%",
+                      titleStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    PieChartSectionData(
+                      value: freePercent,
+                      color: Colors.green,
+                      radius: 28,
+                      title: "",
+                    ),
+                  ],
+                ),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${(usedPercent * 100).toStringAsFixed(1)}%",
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    "Used",
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+            ),
 
-        const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-        Text(
-          "총 용량: ${(totalSpace / (1024 * 1024)).toStringAsFixed(1)} MB",
-          style: const TextStyle(fontSize: 14),
-        ),
-        Text(
-          "사용 중: ${(usedSpace / (1024 * 1024)).toStringAsFixed(1)} MB",
-          style: const TextStyle(fontSize: 14, color: Colors.blueAccent),
-        ),
-        Text(
-          "남은 용량: ${(freeSpace / (1024 * 1024)).toStringAsFixed(1)} MB",
-          style: const TextStyle(fontSize: 14, color: Colors.green),
-        ),
-      ],
+            _infoRow("총 용량", "${_bytesToGB(total)} GB", Colors.black87),
+            _infoRow("사용 중", "${_bytesToGB(used)} GB", Colors.blue),
+            _infoRow("가용 공간", "${_bytesToGB(free)} GB", Colors.green),
+            _infoRow("클립 사용량", "${_bytesToGB(clips)} GB", Colors.orange),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _infoRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 16)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        ],
+      ),
     );
   }
 }

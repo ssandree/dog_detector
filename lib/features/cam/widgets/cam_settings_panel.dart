@@ -13,45 +13,67 @@ class CamSettingsPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      constraints: const BoxConstraints(maxWidth: 400),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ]
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             "CAM Mode 설정",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(height: 28),
+
+          const Text( 
+            "저장 공간 현황",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black54),
+          ),
+          const SizedBox(height: 16),
+          const StoragePieChart(),
+          const SizedBox(height: 36),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 3,
+              ),
+              onPressed: () {
+                context.go("/mode-select");
+              },
+              child: const Text("모드 재선택", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
           ),
           const SizedBox(height: 16),
 
-          const Text(
-            "저장 공간 현황",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          const StoragePieChart(),
-          const SizedBox(height: 24),
-
-          ElevatedButton(
-            onPressed: () {
-              context.go("/mode-select");
-            },
-            child: const Text("모드 재선택"),
-          ),
-          const SizedBox(height: 12),
-
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
+          SizedBox(
+            width: double.infinity,
+            child: TextButton( 
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onPressed: () async {
+                await ref.read(appPrefsProvider.notifier).setAccessToken(null);
+                context.go("/login");
+              },
+              child: const Text("로그아웃", style: TextStyle(fontSize: 16)),
             ),
-            onPressed: () async {
-              await ref.read(appPrefsProvider.notifier).setAccessToken(null);
-              context.go("/login");
-            },
-            child: const Text("로그아웃"),
           ),
         ],
       ),

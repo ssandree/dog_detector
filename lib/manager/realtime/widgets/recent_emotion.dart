@@ -15,7 +15,7 @@ class RecentEmotionPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(
-      petEventsProvider(PetEventsRequest(petId: petId, limit: 10)),
+      petEventsProvider(PetEventsRequest(petId: petId, limit: 20)),
     );
 
     return eventsAsync.when(
@@ -27,19 +27,16 @@ class RecentEmotionPanel extends ConsumerWidget {
         final latest = events.first;
         final recentItems = events.take(3).toList();
 
-        // 오늘 날짜 확인
-        final today = DateTime.now();
-        final todayDate = DateTime(today.year, today.month, today.day);
-        final latestDate = DateTime(
-          latest.startTime.year,
-          latest.startTime.month,
-          latest.startTime.day,
-        );
+        // 24시간 이내인지 확인
+        final now = DateTime.now();
+        final timeDiff = now.difference(latest.startTime);
+        final isWithin24Hours = timeDiff.inHours < 24;
 
-        // 오늘이 아니면 날짜 메시지만 표시
-        if (!latestDate.isAtSameMomentAs(todayDate)) {
-          final dateStr = DateFormat('yy-MM-dd').format(latestDate);
-          return _buildDateMessageCard(dateStr);
+        // 24시간 이상 전이면 날짜/시간 메시지만 표시
+        if (!isWithin24Hours) {
+          final dateStr = DateFormat('yy-MM-dd').format(latest.startTime);
+          final hourStr = latest.startTime.hour.toString();
+          return _buildDateMessageCard(dateStr, hourStr);
         }
 
         final currentInfo = _emotionInfo(latest.finalEmotion);
@@ -201,12 +198,12 @@ class RecentEmotionPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildDateMessageCard(String dateStr) {
+  Widget _buildDateMessageCard(String dateStr, String hourStr) {
     return SizedBox(
       width: double.infinity,
       child: AppCards.basic(
         child: Text(
-          '최근 분석 날짜가 $dateStr입니다',
+          '최근 분석은 $dateStr, ${hourStr}시입니다',
           style: const TextStyle(
             fontSize: 14,
             color: AppColors.grey12,

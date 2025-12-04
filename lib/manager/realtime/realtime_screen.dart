@@ -25,11 +25,11 @@ class RealtimeScreen extends ConsumerStatefulWidget {
 
 class _RealtimeScreenState extends ConsumerState<RealtimeScreen> {
   final Map<String, Duration> _cameraUsage = {
-    'CAM-01': const Duration(hours: 2, minutes: 12),
-    'CAM-02': const Duration(hours: 1, minutes: 45),
-    'CAM-03': const Duration(hours: 3, minutes: 5),
+    'CAM-01': const Duration(minutes: 15, seconds: 14),
+    'CAM-02': const Duration(minutes: 15, seconds: 14),
+    'CAM-03': const Duration(minutes: 15, seconds: 14),
   };
-  final Duration _totalUptime = const Duration(hours: 142, minutes: 19);
+  final Duration _totalUptime = const Duration(hours: 3, minutes: 42, seconds: 29);
 
   late final List<String> _cameraIds;
   int _currentCameraIndex = 0;

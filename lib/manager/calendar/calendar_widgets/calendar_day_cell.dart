@@ -104,7 +104,7 @@ class CalendarDayCell extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: isToday
                     ? Border.all(
-                        color: AppColors.grey12,
+                        color: AppColors.grey5.withValues(alpha: 0.6),
                         width: 2,
                       )
                     : null,

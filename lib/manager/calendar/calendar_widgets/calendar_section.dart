@@ -91,6 +91,43 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
     );
   }
 
+  /// 날짜 셀 빌더 헬퍼 메서드
+  Widget _buildDayCell(DateTime day, DateTime focusedDay, Map<String, double> heatmapRatios) {
+    // 오늘 이후 날짜인지 확인
+    final isFutureDay = day.isAfter(_today);
+    
+    // 선택된 날짜인지 확인
+    final isSelected = isSameDay(_selectedDay, day);
+    
+    // 하이라이트할 주간에 포함된 날짜인지 확인
+    final dayOnly = DateTime(day.year, day.month, day.day);
+    final isHighlighted = _highlightedWeekDays.contains(dayOnly);
+    
+    // 주말인지 확인 (일요일=7, 토요일=6)
+    final isWeekend = day.weekday == DateTime.sunday || day.weekday == DateTime.saturday;
+    
+    // 날짜를 "MM-dd" 문자열 형태로 변환
+    final key = '${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+    final ratio = heatmapRatios[key];
+    
+    // 현재 포커스된 월과 같은 월인지 확인
+    final isCurrentMonth = day.month == focusedDay.month;
+    
+    // 오늘 날짜인지 확인
+    final isToday = isSameDay(day, _today);
+
+    return CalendarDayCell(
+      day: day,
+      ratio: ratio,
+      isSelected: isSelected,
+      isHighlighted: isHighlighted,
+      isFutureDay: isFutureDay,
+      isWeekend: isWeekend,
+      isCurrentMonth: isCurrentMonth,
+      isToday: isToday,
+    );
+  }
+
   Widget _buildCalendar(BuildContext context, MonthlyCalendarResponse response) {
     final heatmapRatios = response.toHeatmapRatios();
     return Container(
@@ -188,37 +225,12 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
 
         // 📦 각 날짜 셀의 커스텀 빌더
         calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) {
-            // 오늘 이후 날짜인지 확인
-            final isFutureDay = day.isAfter(_today);
-            
-            // 선택된 날짜인지 확인
-            final isSelected = isSameDay(_selectedDay, day);
-            
-            // 하이라이트할 주간에 포함된 날짜인지 확인
-            final dayOnly = DateTime(day.year, day.month, day.day);
-            final isHighlighted = _highlightedWeekDays.contains(dayOnly);
-            
-            // 주말인지 확인 (일요일=7, 토요일=6)
-            final isWeekend = day.weekday == DateTime.sunday || day.weekday == DateTime.saturday;
-            
-            // 날짜를 "MM-dd" 문자열 형태로 변환
-            final key = '${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
-            final ratio = heatmapRatios[key];
-            
-            // 현재 포커스된 월과 같은 월인지 확인
-            final isCurrentMonth = day.month == _focusedDay.month;
-
-            return CalendarDayCell(
-              day: day,
-              ratio: ratio,
-              isSelected: isSelected,
-              isHighlighted: isHighlighted,
-              isFutureDay: isFutureDay,
-              isWeekend: isWeekend,
-              isCurrentMonth: isCurrentMonth,
-            );
-          },
+          // 오늘 날짜 빌더 - CalendarDayCell 사용
+          todayBuilder: (context, day, focusedDay) => _buildDayCell(day, focusedDay, heatmapRatios),
+          // 선택된 날짜 빌더 - CalendarDayCell 사용
+          selectedBuilder: (context, day, focusedDay) => _buildDayCell(day, focusedDay, heatmapRatios),
+          // 기본 날짜 빌더
+          defaultBuilder: (context, day, focusedDay) => _buildDayCell(day, focusedDay, heatmapRatios),
         ),
       ),
     );

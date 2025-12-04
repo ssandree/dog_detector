@@ -28,14 +28,14 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
 
   Future<void> _initializeVideo() async {
     try {
-      final url = widget.event.videoUrl;
+    final url = widget.event.videoUrl;
       _controller = VideoPlayerController.networkUrl(Uri.parse(url));
       await _controller.initialize();
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-      }
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+        }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -125,22 +125,22 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
                           ),
                         )
                       : _isInitialized
-                          ? Stack(
-                              alignment: Alignment.bottomCenter,
-                              children: [
-                                VideoPlayer(_controller),
-                                _ControlsOverlay(controller: _controller),
-                                VideoProgressIndicator(
-                                  _controller,
-                                  allowScrubbing: true,
-                                  colors: const VideoProgressColors(
-                                    playedColor: AppColors.green4,
-                                    backgroundColor: Colors.black26,
-                                    bufferedColor: Colors.white24,
-                                  ),
-                                ),
-                              ],
-                            )
+                      ? Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            VideoPlayer(_controller),
+                            _ControlsOverlay(controller: _controller),
+                            VideoProgressIndicator(
+                              _controller,
+                              allowScrubbing: true,
+                              colors: const VideoProgressColors(
+                                playedColor: AppColors.green4,
+                                backgroundColor: Colors.black26,
+                                bufferedColor: Colors.white24,
+                              ),
+                            ),
+                          ],
+                        )
                           : Container(
                               color: Colors.black87,
                               child: const Center(
@@ -148,7 +148,7 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
                                   color: Colors.white,
                                 ),
                               ),
-                            ),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -230,41 +230,81 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
   }
 }
 
-class _ControlsOverlay extends StatelessWidget {
+class _ControlsOverlay extends StatefulWidget {
   final VideoPlayerController controller;
 
   const _ControlsOverlay({required this.controller});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (controller.value.isPlaying) {
-          controller.pause();
+  State<_ControlsOverlay> createState() => _ControlsOverlayState();
+}
+
+class _ControlsOverlayState extends State<_ControlsOverlay> {
+  bool _showPlayButton = true;
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPlaying = widget.controller.value.isPlaying;
+    widget.controller.addListener(_onPlayerStateChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onPlayerStateChanged);
+    super.dispose();
+  }
+
+  void _onPlayerStateChanged() {
+    if (mounted) {
+      final isPlaying = widget.controller.value.isPlaying;
+      setState(() {
+        _isPlaying = isPlaying;
+        // 재생 중이면 재생 버튼 숨기기, 일시정지면 다시 표시
+        if (isPlaying) {
+          _showPlayButton = false;
         } else {
-          controller.play();
+          _showPlayButton = true;
         }
-      },
+      });
+    }
+  }
+
+  void _handleTap() {
+    if (_isPlaying) {
+      widget.controller.pause();
+    } else {
+      // 재생 버튼을 누르는 순간 즉시 숨기기
+      setState(() {
+        _showPlayButton = false;
+      });
+      widget.controller.play();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_showPlayButton) {
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: _handleTap,
       child: Stack(
         children: [
           Align(
             alignment: Alignment.center,
-            child: AnimatedOpacity(
-              opacity: controller.value.isPlaying ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.black45,
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  controller.value.isPlaying
-                      ? Icons.pause
-                      : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 40,
-                ),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.black45,
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(12),
+              child: const Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 40,
               ),
             ),
           ),

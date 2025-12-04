@@ -15,8 +15,28 @@ class EventStats {
     List<EventInfo> events, {
     Duration window = const Duration(hours: 3),
   }) {
-    final threshold = DateTime.now().subtract(window);
-    return events.where((event) => event.startTime.isAfter(threshold)).length;
+    final now = DateTime.now();
+    final threshold = now.subtract(window);
+    
+    print('========== [EventStats.recentEventCount] 디버깅 ==========');
+    print('[EventStats] 현재 시간: $now');
+    print('[EventStats] threshold (3시간 전): $threshold');
+    print('[EventStats] 전체 이벤트 개수: ${events.length}');
+    
+    final filtered = events.where((event) {
+      final isIncluded = !event.startTime.isBefore(threshold);
+      if (!isIncluded) {
+        print('[EventStats] 제외된 이벤트: eventId=${event.eventId}, startTime=${event.startTime}, 차이=${now.difference(event.startTime).inHours}시간 ${now.difference(event.startTime).inMinutes % 60}분');
+      } else {
+        print('[EventStats] 포함된 이벤트: eventId=${event.eventId}, startTime=${event.startTime}, 차이=${now.difference(event.startTime).inHours}시간 ${now.difference(event.startTime).inMinutes % 60}분');
+      }
+      return isIncluded;
+    }).toList();
+    
+    print('[EventStats] 필터링된 이벤트 개수: ${filtered.length}');
+    print('==================================================');
+    
+    return filtered.length;
   }
 
   static int patellaAlertCount(List<EventInfo> events) {
@@ -47,21 +67,37 @@ class EventCountCard extends ConsumerWidget {
       );
     }
 
-    // 오늘 날짜의 이벤트만 가져오기
-    final today = DateTime.now();
-    final todayDate = DateTime(today.year, today.month, today.day);
-    final request = DailyEventRequest(
-      petId: petId,
-      date: todayDate,
-    );
+    // 최근 3시간 이벤트를 정확히 계산하기 위해 오늘과 어제 날짜의 이벤트를 모두 가져오기
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final yesterdayDate = todayDate.subtract(const Duration(days: 1));
+    
+    // 오늘과 어제 날짜의 이벤트를 모두 가져오기
+    final todayRequest = DailyEventRequest(petId: petId, date: todayDate);
+    final yesterdayRequest = DailyEventRequest(petId: petId, date: yesterdayDate);
+    
+    final todayEventsAsync = ref.watch(dailyEventsProvider(todayRequest));
+    final yesterdayEventsAsync = ref.watch(dailyEventsProvider(yesterdayRequest));
 
-    final eventsAsync = ref.watch(dailyEventsProvider(request));
-
-    return eventsAsync.when(
-      data: (dailyEvents) {
-        final events = dailyEvents.events;
-        final recentCount = EventStats.recentEventCount(events);
-        final patellaCount = EventStats.patellaAlertCount(events);
+    return todayEventsAsync.when(
+      data: (todayEvents) {
+        return yesterdayEventsAsync.when(
+          data: (yesterdayEvents) {
+            // 오늘과 어제 이벤트를 합쳐서 최근 3시간 계산
+            final allEvents = [...todayEvents.events, ...yesterdayEvents.events];
+            
+            print('========== [EventCountCard] 디버깅 ==========');
+            print('[EventCountCard] 오늘 이벤트 개수: ${todayEvents.events.length}');
+            print('[EventCountCard] 어제 이벤트 개수: ${yesterdayEvents.events.length}');
+            print('[EventCountCard] 전체 이벤트 개수: ${allEvents.length}');
+            if (allEvents.isNotEmpty) {
+              print('[EventCountCard] 가장 최근 이벤트: eventId=${allEvents.first.eventId}, startTime=${allEvents.first.startTime}');
+            }
+            print('==========================================');
+            
+            final recentCount = EventStats.recentEventCount(allEvents);
+            // 슬개골 이상은 오늘 날짜의 이벤트만 카운트
+            final patellaCount = EventStats.patellaAlertCount(todayEvents.events);
 
         return AppCards.basic(
           child: Column(
@@ -91,6 +127,45 @@ class EventCountCard extends ConsumerWidget {
                     patellaCount > 0 ? AppColors.coral4 : AppColors.grey6,
               ),
             ],
+          ),
+        );
+          },
+          loading: () => AppCards.basic(
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                AppConstants.w12,
+                const Expanded(
+                  child: Text(
+                    '이벤트 데이터를 불러오는 중...',
+                    style: TextStyle(color: AppColors.grey7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          error: (error, _) => AppCards.basic(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '건강 이벤트를 불러오지 못했어요',
+                  style: TextStyle(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                AppConstants.h8,
+                Text(
+                  error.toString(),
+                  style: const TextStyle(color: AppColors.grey8),
+                ),
+              ],
+            ),
           ),
         );
       },

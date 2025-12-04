@@ -235,7 +235,7 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
       ),
     );
   }
-
+                      
   Widget _buildErrorState(Object error) {
     return SizedBox(
       height: 400,

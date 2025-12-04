@@ -21,6 +21,20 @@ class DeviceApiService {
     return list.map((e) => DeviceInfo.fromJson(e)).toList();
   }
 
+  Future<DeviceInfo> createDevice({
+    required String deviceName,
+    required String deviceType,
+  }) async {
+    final res = await _dio.post(
+      '/devices/',
+      data: {
+        'device_name': deviceName,
+        'device_type': deviceType,
+      },
+    );
+    return DeviceInfo.fromJson(res.data as Map<String, dynamic>);
+  }
+
   Future<void> updateDeviceStatus(int deviceId, String status) async {
     await _dio.put(
       '/devices/$deviceId/status',

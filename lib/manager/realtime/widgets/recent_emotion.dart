@@ -7,6 +7,8 @@ import '../../../../core/config/app_colors.dart';
 import '../../logic/model/event_info.dart';
 import '../../logic/provider/event_provider.dart';
 import '../../../../core/widgets/app_cards.dart';
+import '../../manager_home/utils/emotion_classifier.dart';
+import '../../manager_home/utils/emotion_color_map.dart';
 
 class RecentEmotionPanel extends ConsumerWidget {
   final int petId;
@@ -39,6 +41,7 @@ class RecentEmotionPanel extends ConsumerWidget {
           return _buildDateMessageCard(dateStr, hourStr);
         }
 
+        // finalEmotion이 있으면 표시 (analysisStatus와 무관하게)
         final currentInfo = _emotionInfo(latest.finalEmotion);
         final delayText = _formatDelay(latest.startTime);
 
@@ -214,22 +217,100 @@ class RecentEmotionPanel extends ConsumerWidget {
   }
 
   _EmotionDisplay _emotionInfo(String? emotion) {
-    switch (emotion) {
-      case 'happy':
-        return const _EmotionDisplay('😄', '행복');
-      case 'calm':
-        return const _EmotionDisplay('🙂', '평온');
-      case 'anxious':
-        return const _EmotionDisplay('😟', '약간 불안');
-      case 'sad':
-        return const _EmotionDisplay('😢', '슬픔');
-      case 'angry':
-        return const _EmotionDisplay('😠', '화남');
-      case 'neutral':
-        return const _EmotionDisplay('😐', '중립');
-      default:
-        return const _EmotionDisplay('🤔', '분석 중');
+    if (emotion == null || emotion.trim().isEmpty) {
+      return const _EmotionDisplay('🤔', '분석 중');
     }
+    
+    // EmotionMapper.resolveColor()의 로직을 활용하여 감정 타입 추출
+    final emotionType = _normalizeEmotion(emotion);
+    
+    // 감정 타입을 이모지와 라벨로 매핑
+    return _emotionTypeToDisplay(emotionType);
+  }
+
+  /// EmotionMapper.resolveColor()의 로직을 활용하여 감정을 정규화
+  String _normalizeEmotion(String emotion) {
+    final raw = emotion.trim();
+    final lower = raw.toLowerCase();
+    
+    // 직접 매칭 (EmotionColorMap.base와 keywords 활용)
+    if (EmotionColorMap.base.containsKey(raw) || 
+        EmotionColorMap.base.containsKey(lower) ||
+        EmotionColorMap.keywords.containsKey(raw) ||
+        EmotionColorMap.keywords.containsKey(lower)) {
+      return raw;
+    }
+    
+    // `/`로 구분된 복합 감정 처리
+    if (raw.contains('/')) {
+      for (final part in raw.split('/')) {
+        final key = part.trim();
+        final keyLower = key.toLowerCase();
+        
+        if (EmotionColorMap.base.containsKey(key) ||
+            EmotionColorMap.base.containsKey(keyLower) ||
+            EmotionColorMap.keywords.containsKey(key) ||
+            EmotionColorMap.keywords.containsKey(keyLower)) {
+          return key;
+        }
+      }
+    }
+    
+    // 부분 문자열 매칭
+    for (final k in EmotionColorMap.keywords.keys) {
+      if (raw.contains(k) || lower.contains(k.toLowerCase())) {
+        return k;
+      }
+    }
+    
+    for (final k in EmotionColorMap.base.keys) {
+      if (raw.contains(k) || lower.contains(k.toLowerCase())) {
+        return k;
+      }
+    }
+    
+    return raw;
+  }
+
+  /// 정규화된 감정 타입을 이모지와 라벨로 변환
+  _EmotionDisplay _emotionTypeToDisplay(String emotionType) {
+    final normalized = emotionType.toLowerCase().trim();
+    
+    // 행복 관련
+    if (normalized == 'happy' || normalized == '행복') {
+      return const _EmotionDisplay('😄', '행복');
+    }
+    
+    // 평온/편안/안정 관련
+    if (normalized == 'calm' || normalized == '평온' || 
+        normalized == '편안' || normalized == '안정') {
+      return const _EmotionDisplay('🙂', '평온');
+    }
+    
+    // 불안 관련
+    if (normalized == 'anxious' || normalized == 'anxiety' || 
+        normalized == '불안') {
+      return const _EmotionDisplay('😟', '약간 불안');
+    }
+    
+    // 슬픔 관련
+    if (normalized == 'sad' || normalized == '슬픔') {
+      return const _EmotionDisplay('😢', '슬픔');
+    }
+    
+    // 화남 관련
+    if (normalized == 'angry' || normalized == 'aggressive' || 
+        normalized == '화남' || normalized == '공격성') {
+      return const _EmotionDisplay('😠', '화남');
+    }
+    
+    // 중립
+    if (normalized == 'neutral') {
+      return const _EmotionDisplay('😐', '중립');
+    }
+    
+    // 매칭되지 않는 경우
+    return const _EmotionDisplay('🤔', '분석 중');
   }
 
   String _formatDelay(DateTime startTime) {
@@ -264,6 +345,7 @@ class _RecentEmotionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // finalEmotion이 있으면 표시 (analysisStatus와 무관하게)
     final info = _emotionInfo(event.finalEmotion);
     final timeLabel = DateFormat('HH:mm').format(event.startTime);
 
@@ -289,22 +371,100 @@ class _RecentEmotionRow extends StatelessWidget {
   }
 
   static _EmotionDisplay _emotionInfo(String? emotion) {
-    switch (emotion) {
-      case 'happy':
-        return const _EmotionDisplay('😊', '행복');
-      case 'calm':
-        return const _EmotionDisplay('🙂', '평온');
-      case 'anxious':
-        return const _EmotionDisplay('😟', '약간 불안');
-      case 'sad':
-        return const _EmotionDisplay('😢', '슬픔');
-      case 'angry':
-        return const _EmotionDisplay('😠', '화남');
-      case 'neutral':
-        return const _EmotionDisplay('😐', '중립');
-      default:
-        return const _EmotionDisplay('🤔', '분석 중');
+    if (emotion == null || emotion.trim().isEmpty) {
+      return const _EmotionDisplay('🤔', '분석 중');
     }
+    
+    // EmotionMapper.resolveColor()의 로직을 활용하여 감정 타입 추출
+    final emotionType = _normalizeEmotion(emotion);
+    
+    // 감정 타입을 이모지와 라벨로 매핑
+    return _emotionTypeToDisplay(emotionType);
+  }
+
+  /// EmotionMapper.resolveColor()의 로직을 활용하여 감정을 정규화
+  static String _normalizeEmotion(String emotion) {
+    final raw = emotion.trim();
+    final lower = raw.toLowerCase();
+    
+    // 직접 매칭 (EmotionColorMap.base와 keywords 활용)
+    if (EmotionColorMap.base.containsKey(raw) || 
+        EmotionColorMap.base.containsKey(lower) ||
+        EmotionColorMap.keywords.containsKey(raw) ||
+        EmotionColorMap.keywords.containsKey(lower)) {
+      return raw;
+    }
+    
+    // `/`로 구분된 복합 감정 처리
+    if (raw.contains('/')) {
+      for (final part in raw.split('/')) {
+        final key = part.trim();
+        final keyLower = key.toLowerCase();
+        
+        if (EmotionColorMap.base.containsKey(key) ||
+            EmotionColorMap.base.containsKey(keyLower) ||
+            EmotionColorMap.keywords.containsKey(key) ||
+            EmotionColorMap.keywords.containsKey(keyLower)) {
+          return key;
+        }
+      }
+    }
+    
+    // 부분 문자열 매칭
+    for (final k in EmotionColorMap.keywords.keys) {
+      if (raw.contains(k) || lower.contains(k.toLowerCase())) {
+        return k;
+      }
+    }
+    
+    for (final k in EmotionColorMap.base.keys) {
+      if (raw.contains(k) || lower.contains(k.toLowerCase())) {
+        return k;
+      }
+    }
+    
+    return raw;
+  }
+
+  /// 정규화된 감정 타입을 이모지와 라벨로 변환
+  static _EmotionDisplay _emotionTypeToDisplay(String emotionType) {
+    final normalized = emotionType.toLowerCase().trim();
+    
+    // 행복 관련
+    if (normalized == 'happy' || normalized == '행복') {
+      return const _EmotionDisplay('😊', '행복');
+    }
+    
+    // 평온/편안/안정 관련
+    if (normalized == 'calm' || normalized == '평온' || 
+        normalized == '편안' || normalized == '안정') {
+      return const _EmotionDisplay('🙂', '평온');
+    }
+    
+    // 불안 관련
+    if (normalized == 'anxious' || normalized == 'anxiety' || 
+        normalized == '불안') {
+      return const _EmotionDisplay('😟', '약간 불안');
+    }
+    
+    // 슬픔 관련
+    if (normalized == 'sad' || normalized == '슬픔') {
+      return const _EmotionDisplay('😢', '슬픔');
+    }
+    
+    // 화남 관련
+    if (normalized == 'angry' || normalized == 'aggressive' || 
+        normalized == '화남' || normalized == '공격성') {
+      return const _EmotionDisplay('😠', '화남');
+    }
+    
+    // 중립
+    if (normalized == 'neutral') {
+      return const _EmotionDisplay('😐', '중립');
+    }
+    
+    // 매칭되지 않는 경우
+    return const _EmotionDisplay('🤔', '분석 중');
   }
 }
 

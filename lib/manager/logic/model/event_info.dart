@@ -50,8 +50,18 @@ class EventInfo {
     final videoUrl = json['video_url'] as String?;
     final thumbnailUrl = json['thumbnail_url'] as String?;
     
+    // final_emotion 필드 확인 및 디버깅
+    final rawFinalEmotion = json['final_emotion'];
+    final analysisStatus = AnalysisStatus.fromString(json['analysis_status']);
+    
     print('========== [EventInfo.fromJson] 디버깅 정보 ==========');
     print('[EventInfo.fromJson] event_id: ${json['event_id']}');
+    print('[EventInfo.fromJson] analysis_status: ${json['analysis_status']}');
+    print('[EventInfo.fromJson] raw final_emotion: $rawFinalEmotion');
+    print('[EventInfo.fromJson] raw final_emotion 타입: ${rawFinalEmotion.runtimeType}');
+    if (rawFinalEmotion != null) {
+      print('[EventInfo.fromJson] raw final_emotion.toString(): "${rawFinalEmotion.toString()}"');
+    }
     print('[EventInfo.fromJson] video_url: $videoUrl');
     print('[EventInfo.fromJson] thumbnail_url: $thumbnailUrl');
     
@@ -72,6 +82,13 @@ class EventInfo {
     }
     print('==================================================');
     
+    // final_emotion을 String?로 변환 (null이거나 빈 문자열인 경우 처리)
+    String? finalEmotion;
+    if (rawFinalEmotion != null) {
+      final emotionStr = rawFinalEmotion.toString().trim();
+      finalEmotion = emotionStr.isEmpty ? null : emotionStr;
+    }
+    
     return EventInfo(
       eventId: json['event_id'],
       petId: json['pet_id'],
@@ -81,9 +98,9 @@ class EventInfo {
       videoDurationSec: json['video_duration_sec'],
       videoUrl: videoUrl ?? '',
       thumbnailUrl: thumbnailUrl,
-      analysisStatus: AnalysisStatus.fromString(json['analysis_status']),
+      analysisStatus: analysisStatus,
       detectedFeatures: json['detected_features'],
-      finalEmotion: json['final_emotion'],
+      finalEmotion: finalEmotion,
       patellaAnalysisResult: json['patella_analysis_result'],
     );
   }

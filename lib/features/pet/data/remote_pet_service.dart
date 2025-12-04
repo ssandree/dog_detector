@@ -29,7 +29,6 @@ class RemotePetService implements PetService {
       }
       throw NetworkException("반려동물 목록 조회 실패");
     } on DioException catch (e) {
-      print('🐾 RemotePetService - 에러 발생: ${e.response?.statusCode} - ${e.response?.data}');
       throw _handleDioError(e, "반려동물 목록을 불러오는데 실패했습니다");
     }
   }

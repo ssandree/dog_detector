@@ -152,7 +152,7 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
                 ),
               ),
               const SizedBox(height: 16),
-              // 시작 시간 (시:분)
+              // 시작 시간 및 비디오 길이
               Row(
                 children: [
                   const Icon(
@@ -163,6 +163,21 @@ class _DetectionClueModalState extends State<DetectionClueModal> {
                   const SizedBox(width: 6),
                   Text(
                     startLabel,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.grey9,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '·',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.grey7,
+                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${event.videoDurationSec}초',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.grey9,
                           fontWeight: FontWeight.w500,

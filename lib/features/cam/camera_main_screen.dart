@@ -83,13 +83,13 @@ class CameraMainScreen extends HookConsumerWidget {
               top: 16,
               child: IconButton(
                 icon: const Icon(Icons.settings, color: Colors.white),
-                onPressed: () => showModalBottomSheet(
+                onPressed: () => showDialog(
                   context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CamSettingsPanel(),
+                  builder: (_) => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CamSettingsPanel(),
+                    ),
                   ),
                 ),
               ),

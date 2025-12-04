@@ -7,15 +7,26 @@ WORKDIR /app
 # 3. 라이브러리 설치 준비 (파일 먼저 복사)
 COPY requirements.txt requirements.txt
 
-# 4. 라이브러리 설치 (수정된 부분)
-#    - C 컴파일러(gcc) 및 빌드 도구들을 설치하고,
-#    - pip install을 실행한 뒤,
-#    - 불필요해진 컴파일러와 도구들을 다시 삭제하여 이미지 용량을 최적화합니다.
+# 1. OpenCV 및 동영상 처리를 위한 필수 시스템 라이브러리 설치
+# (libgl1만으로는 부족합니다. ffmpeg, libsm6, libxext6가 있어야 mp4를 읽습니다)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc build-essential python3-dev && \
+    apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    ffmpeg \
+    gcc \
+    build-essential \
+    python3-dev && \
+    \
+    # 2. 파이썬 패키지 설치
     pip install --no-cache-dir -r requirements.txt && \
+    \
+    # 3. 빌드 도구만 삭제 (라이브러리는 유지)
     apt-get purge -y --auto-remove gcc build-essential python3-dev && \
     rm -rf /var/lib/apt/lists/*
+
 # 5. 애플리케이션 코드 복사
 COPY . .
 

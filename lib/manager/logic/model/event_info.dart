@@ -49,38 +49,8 @@ class EventInfo {
   factory EventInfo.fromJson(Map<String, dynamic> json) {
     final videoUrl = json['video_url'] as String?;
     final thumbnailUrl = json['thumbnail_url'] as String?;
-    
-    // final_emotion 필드 확인 및 디버깅
     final rawFinalEmotion = json['final_emotion'];
     final analysisStatus = AnalysisStatus.fromString(json['analysis_status']);
-    
-    print('========== [EventInfo.fromJson] 디버깅 정보 ==========');
-    print('[EventInfo.fromJson] event_id: ${json['event_id']}');
-    print('[EventInfo.fromJson] analysis_status: ${json['analysis_status']}');
-    print('[EventInfo.fromJson] raw final_emotion: $rawFinalEmotion');
-    print('[EventInfo.fromJson] raw final_emotion 타입: ${rawFinalEmotion.runtimeType}');
-    if (rawFinalEmotion != null) {
-      print('[EventInfo.fromJson] raw final_emotion.toString(): "${rawFinalEmotion.toString()}"');
-    }
-    print('[EventInfo.fromJson] video_url: $videoUrl');
-    print('[EventInfo.fromJson] thumbnail_url: $thumbnailUrl');
-    
-    if (videoUrl != null && thumbnailUrl != null) {
-      print('[EventInfo.fromJson] video_url == thumbnail_url: ${videoUrl == thumbnailUrl}');
-      print('[EventInfo.fromJson] video_url 길이: ${videoUrl.length}');
-      print('[EventInfo.fromJson] thumbnail_url 길이: ${thumbnailUrl.length}');
-      
-      // URL 확장자 확인
-      final videoExt = _getFileExtension(videoUrl);
-      final thumbnailExt = _getFileExtension(thumbnailUrl);
-      print('[EventInfo.fromJson] video_url 확장자: $videoExt');
-      print('[EventInfo.fromJson] thumbnail_url 확장자: $thumbnailExt');
-      
-      // 비디오 파일인지 확인
-      final isVideoFile = _isVideoFile(thumbnailUrl);
-      print('[EventInfo.fromJson] thumbnail_url이 비디오 파일인가? $isVideoFile');
-    }
-    print('==================================================');
     
     // final_emotion을 String?로 변환 (null이거나 빈 문자열인 경우 처리)
     String? finalEmotion;
@@ -103,26 +73,6 @@ class EventInfo {
       finalEmotion: finalEmotion,
       patellaAnalysisResult: json['patella_analysis_result'],
     );
-  }
-  
-  static String? _getFileExtension(String url) {
-    try {
-      final uri = Uri.parse(url);
-      final path = uri.path;
-      final lastDot = path.lastIndexOf('.');
-      if (lastDot != -1 && lastDot < path.length - 1) {
-        return path.substring(lastDot).toLowerCase();
-      }
-    } catch (e) {
-      // URL 파싱 실패 시 무시
-    }
-    return null;
-  }
-  
-  static bool _isVideoFile(String url) {
-    final lowerUrl = url.toLowerCase();
-    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.m4v'];
-    return videoExtensions.any((ext) => lowerUrl.contains(ext));
   }
 
   Map<String, dynamic> toJson() {

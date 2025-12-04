@@ -1,55 +1,14 @@
+// lib/manager/logic/provider/ai_report_provider.dart
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/error/exceptions.dart';
 import '../../../core/network/dio_client.dart';
+import '../model/ai_report_info.dart';
 import '../service/remote_ai_report_service.dart';
 import '../service/report_ai_service.dart';
 
-/// 하루 AI 리포트 요청 파라미터
-class DailyReportRequest {
-  final int petId;
-  final DateTime date;
-
-  const DailyReportRequest({
-    required this.petId,
-    required this.date,
-  });
-
-  DateTime get normalizedDate => DateTime(date.year, date.month, date.day);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is DailyReportRequest &&
-        other.petId == petId &&
-        other.normalizedDate == normalizedDate;
-  }
-
-  @override
-  int get hashCode => Object.hash(
-        petId,
-        normalizedDate.year,
-        normalizedDate.month,
-        normalizedDate.day,
-      );
-}
-
-/// AI 리포트 응답 모델
-class DailyAiReport {
-  final int petId;
-  final DateTime date;
-  final String summary;
-  final DateTime? createdAt;
-
-  const DailyAiReport({
-    required this.petId,
-    required this.date,
-    required this.summary,
-    this.createdAt,
-  });
-
-  bool get hasSummary => summary.trim().isNotEmpty;
-}
+// 모델들을 re-export하여 다른 파일에서도 ai_report_provider를 통해 접근 가능하도록
+export '../model/ai_report_info.dart';
 
 /// ReportService provider
 final aiReportServiceProvider =
@@ -81,11 +40,7 @@ final dailyAiReportProvider =
     DateTime? _extractCreatedAt(Map<String, dynamic> json) {
       final createdAt = json['created_at'];
       if (createdAt is String) {
-        final parsed = DateTime.tryParse(createdAt);
-        if (parsed != null) {
-          // UTC를 UTC+9로 변환
-          return parsed.add(const Duration(hours: 9));
-        }
+        return DateTime.tryParse(createdAt);
       }
       return null;
     }
@@ -115,6 +70,127 @@ final dailyAiReportProvider =
       summary: '',
       createdAt: null,
     );
+  }
+});
+
+/// 월간 AI 리포트 Provider
+final monthlyAiReportProvider =
+    FutureProvider.autoDispose.family<MonthlyAiReport?, MonthlyReportRequest>(
+        (ref, request) async {
+  try {
+    final service = ref.watch(aiReportServiceProvider(request.petId));
+    final rawList = await service.getMonthlyReport(request.year, request.month);
+
+    if (rawList.isEmpty) {
+      return null;
+    }
+
+    // 첫 번째 리포트를 사용 (보통 월간 리포트는 하나만 반환됨)
+    final raw = rawList[0];
+
+    String _extractSummary(Map<String, dynamic> json) {
+      final summary = json['summary_text'];
+      if (summary is String && summary.isNotEmpty) {
+        return summary;
+      }
+      return '';
+    }
+
+    DateTime? _extractCreatedAt(Map<String, dynamic> json) {
+      final createdAt = json['created_at'];
+      if (createdAt is String) {
+        return DateTime.tryParse(createdAt);
+      }
+      return null;
+    }
+
+    final reportMonth = raw['report_month'] as String? ?? 
+        (request.year != null && request.month != null
+            ? "${request.year}-${request.month.toString().padLeft(2, '0')}"
+            : '');
+    final reportId = raw['report_id'] as int? ?? 0;
+
+    return MonthlyAiReport(
+      petId: request.petId,
+      reportMonth: reportMonth,
+      summary: _extractSummary(raw),
+      reportId: reportId,
+      createdAt: _extractCreatedAt(raw),
+    );
+  } on NetworkException catch (e) {
+    // 404 에러 (리포트가 없는 경우) - null 반환
+    if (e.toString().contains('404') || e.toString().contains('찾을 수 없습니다')) {
+      return null;
+    }
+    rethrow;
+  } catch (e, _) {
+    // 기타 에러도 null로 처리
+    return null;
+  }
+});
+
+/// 위클리 AI 리포트 Provider
+final weeklyAiReportProvider =
+    FutureProvider.autoDispose.family<WeeklyAiReport?, WeeklyReportRequest>(
+        (ref, request) async {
+  try {
+    final service = ref.watch(aiReportServiceProvider(request.petId));
+    final rawList = await service.getWeeklyReport(request.year, request.month, request.week);
+
+    if (rawList.isEmpty) {
+      return null;
+    }
+
+    // 첫 번째 리포트를 사용 (보통 위클리 리포트는 하나만 반환됨)
+    final raw = rawList[0];
+
+    String _extractSummary(Map<String, dynamic> json) {
+      final summary = json['summary_text'];
+      if (summary is String && summary.isNotEmpty) return summary;
+      return '';
+    }
+
+    DateTime? _extractCreatedAt(Map<String, dynamic> json) {
+      final createdAt = json['created_at'];
+      if (createdAt is String) {
+        return DateTime.tryParse(createdAt);
+      }
+      return null;
+    }
+
+    DateTime? _parseDate(String? dateStr) {
+      if (dateStr == null) return null;
+      return DateTime.tryParse(dateStr);
+    }
+
+    final startDateStr = raw['start_date'] as String?;
+    final endDateStr = raw['end_date'] as String?;
+    final startDate = _parseDate(startDateStr);
+    final endDate = _parseDate(endDateStr);
+    final reportId = raw['report_id'] as int? ?? 0;
+
+    // startDate나 endDate가 없으면 에러
+    if (startDate == null || endDate == null) {
+      return null;
+    }
+
+    return WeeklyAiReport(
+      petId: request.petId,
+      startDate: startDate,
+      endDate: endDate,
+      summary: _extractSummary(raw),
+      reportId: reportId,
+      createdAt: _extractCreatedAt(raw),
+    );
+  } on NetworkException catch (e) {
+    // 404 에러 (리포트가 없는 경우) - null 반환
+    if (e.toString().contains('404') || e.toString().contains('찾을 수 없습니다')) {
+      return null;
+    }
+    rethrow;
+  } catch (e) {
+    // 기타 에러도 null로 처리
+    return null;
   }
 });
 

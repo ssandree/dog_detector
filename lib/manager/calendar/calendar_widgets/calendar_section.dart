@@ -1,3 +1,4 @@
+// lib/manager/calendar/calendar_widgets/calendar_section.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -149,7 +150,8 @@ class _CalendarSectionState extends ConsumerState<CalendarSection> {
               _selectedDay = selectedDay;
               _focusedDay = focusedDay;
             });
-            _highlightWeek(_getWeekStart(selectedDay));
+            final weekStart = _getWeekStart(selectedDay);
+            _highlightWeek(weekStart);
             _showDateDetailModal(context, selectedDay.day);
           }
         },

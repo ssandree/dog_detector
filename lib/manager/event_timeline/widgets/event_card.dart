@@ -1,3 +1,4 @@
+// lib/manager/event_timeline/widgets/event_card.dart
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/app_constants.dart';
@@ -21,35 +22,7 @@ class EventCard extends StatelessWidget {
     final patellaResult = event.patellaAnalysisResult?.trim();
     final hasPatellaAbnormal = patellaResult == '이상';
     final thumbnailUrl = event.thumbnailUrl;
-    final videoUrl = event.videoUrl;
     
-    // 디버깅: 썸네일 URL과 동영상 URL 비교
-    print('========== [EventCard] 디버깅 정보 ==========');
-    print('[EventCard] eventId: ${event.eventId}');
-    print('[EventCard] videoUrl: $videoUrl');
-    print('[EventCard] thumbnailUrl: $thumbnailUrl');
-    
-    if (videoUrl.isNotEmpty && thumbnailUrl != null) {
-      print('[EventCard] videoUrl == thumbnailUrl: ${videoUrl == thumbnailUrl}');
-      print('[EventCard] videoUrl 길이: ${videoUrl.length}');
-      print('[EventCard] thumbnailUrl 길이: ${thumbnailUrl.length}');
-      
-      // URL 확장자 확인
-      final videoExt = _getFileExtension(videoUrl);
-      final thumbnailExt = _getFileExtension(thumbnailUrl);
-      print('[EventCard] videoUrl 확장자: $videoExt');
-      print('[EventCard] thumbnailUrl 확장자: $thumbnailExt');
-      
-      // 비디오 파일인지 확인
-      final isVideoFile = _isVideoFile(thumbnailUrl);
-      print('[EventCard] thumbnailUrl이 비디오 파일인가? $isVideoFile');
-      
-      if (isVideoFile) {
-        print('[EventCard] ⚠️ 경고: thumbnailUrl이 비디오 파일입니다! 이미지로 로드할 수 없습니다.');
-      }
-    }
-    print('==========================================');
-
     return InkWell(
       borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
       onTap: () {
@@ -86,18 +59,13 @@ class EventCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) {
-                          print('[EventCard] 이미지 로드 성공: $thumbnailUrl');
                           return child;
                         }
-                        print('[EventCard] 이미지 로딩 중: $thumbnailUrl');
                         return const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
                         );
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        print('[EventCard] 이미지 로드 실패: $thumbnailUrl');
-                        print('[EventCard] 에러: $error');
-                        print('[EventCard] 스택 트레이스: $stackTrace');
                         return _ThumbnailFallback(color: statusColor);
                       },
                     )
@@ -202,26 +170,6 @@ class EventCard extends StatelessWidget {
       case AnalysisStatus.failed:
         return AppColors.error;
     }
-  }
-  
-  String? _getFileExtension(String url) {
-    try {
-      final uri = Uri.parse(url);
-      final path = uri.path;
-      final lastDot = path.lastIndexOf('.');
-      if (lastDot != -1 && lastDot < path.length - 1) {
-        return path.substring(lastDot).toLowerCase();
-      }
-    } catch (e) {
-      // URL 파싱 실패 시 무시
-    }
-    return null;
-  }
-  
-  bool _isVideoFile(String url) {
-    final lowerUrl = url.toLowerCase();
-    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.m4v'];
-    return videoExtensions.any((ext) => lowerUrl.contains(ext));
   }
 }
 

@@ -1,3 +1,4 @@
+// lib/manager/logic/service/remote_ai_report_service.dart
 import 'package:dio/dio.dart';
 import '../../../core/error/exceptions.dart';
 import 'report_ai_service.dart';
@@ -13,19 +14,26 @@ class RemoteReportService implements ReportService {
     try {
       final dateStr = _format(date);
 
-      // API 명세에 따르면 POST /reports/generate만 호출하면 됩니다.
-      // 서버가 내부적으로 기존 리포트 존재 여부를 확인하고,
-      // 존재하면 기존 리포트를 반환하고, 없으면 새로 생성합니다.
-      final response = await _dio.post(
-        '/reports/generate',
+      // GET /reports/daily/{pet_id}?target_date={date}
+      final response = await _dio.get(
+        '/reports/daily/$petId',
         queryParameters: {
-          'pet_id': petId,
           'target_date': dateStr,
         },
       );
 
       if (response.statusCode == 200) {
-        return _convert(response.data as Map<String, dynamic>);
+        // 응답이 배열 형태이므로 첫 번째 요소를 가져옴
+        final data = response.data;
+        if (data is List && data.isNotEmpty) {
+          return _convert(data[0] as Map<String, dynamic>);
+        } else if (data is Map<String, dynamic>) {
+          // 단일 객체로 반환되는 경우도 처리
+          return _convert(data);
+        } else {
+          // 빈 배열인 경우 - 리포트가 없음
+          throw NetworkException("리포트를 찾을 수 없습니다");
+        }
       } else {
         throw NetworkException('리포트를 불러오는데 실패했습니다');
       }
@@ -41,6 +49,91 @@ class RemoteReportService implements ReportService {
     }
   }
 
+  @override
+  Future<List<Map<String, dynamic>>> getMonthlyReport(int? year, int? month) async {
+    try {
+      // GET /reports/monthly/{pet_id}?year={year}&month={month}
+      final queryParams = <String, dynamic>{};
+      if (year != null) {
+        queryParams['year'] = year;
+      }
+      if (month != null) {
+        queryParams['month'] = month;
+      }
+
+      final response = await _dio.get(
+        '/reports/monthly/$petId',
+        queryParameters: queryParams.isEmpty ? null : queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is List) {
+          return data
+              .map((item) => item as Map<String, dynamic>)
+              .toList();
+        } else {
+          return [];
+        }
+      } else {
+        throw NetworkException('월간 리포트를 불러오는데 실패했습니다');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e, "월간 리포트를 불러오는데 실패했습니다");
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException(
+        "월간 리포트를 불러오는데 실패했습니다",
+        e,
+      );
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getWeeklyReport(int? year, int? month, int? week) async {
+    try {
+      // GET /reports/weekly/{pet_id}?year={year}&month={month}&week={week}
+      final queryParams = <String, dynamic>{};
+      if (year != null) {
+        queryParams['year'] = year;
+      }
+      if (month != null) {
+        queryParams['month'] = month;
+      }
+      if (week != null) {
+        queryParams['week'] = week;
+      }
+
+      final response = await _dio.get(
+        '/reports/weekly/$petId',
+        queryParameters: queryParams.isEmpty ? null : queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is List) {
+          return data
+              .map((item) => item as Map<String, dynamic>)
+              .toList();
+        } else {
+          return [];
+        }
+      } else {
+        throw NetworkException('위클리 리포트를 불러오는데 실패했습니다');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e, "위클리 리포트를 불러오는데 실패했습니다");
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException(
+        "위클리 리포트를 불러오는데 실패했습니다",
+        e,
+      );
+    }
+  }
+
   String _format(DateTime d) =>
       "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
 
@@ -48,6 +141,8 @@ class RemoteReportService implements ReportService {
     return {
       "date": json["report_date"],
       "summary": json["summary_text"],
+      "summary_text": json["summary_text"], // provider에서 사용
+      "created_at": json["created_at"], // provider에서 사용
     };
   }
 

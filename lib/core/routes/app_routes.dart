@@ -18,7 +18,6 @@ import '../../manager/event_timeline/event_timeline_screen.dart';
 import '../../manager/notification/notification_screen.dart';
 import '../../manager/realtime/realtime_screen.dart';
 import '../../manager/today_report/today_report_screen.dart';
-
 class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';

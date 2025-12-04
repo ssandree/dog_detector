@@ -1,4 +1,3 @@
-android\app\src\main\kotlin\com\example\dog_telepathy\MainActivity.kt
 package com.example.dog_telepathy
 
 import android.os.Bundle

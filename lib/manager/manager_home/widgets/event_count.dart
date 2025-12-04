@@ -1,4 +1,4 @@
-// lib/features/home/widgets/event_count_card.dart
+// lib/manager/manager_home/widgets/event_count_card.dart
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -18,23 +18,9 @@ class EventStats {
     final now = DateTime.now();
     final threshold = now.subtract(window);
     
-    print('========== [EventStats.recentEventCount] 디버깅 ==========');
-    print('[EventStats] 현재 시간: $now');
-    print('[EventStats] threshold (3시간 전): $threshold');
-    print('[EventStats] 전체 이벤트 개수: ${events.length}');
-    
     final filtered = events.where((event) {
-      final isIncluded = !event.startTime.isBefore(threshold);
-      if (!isIncluded) {
-        print('[EventStats] 제외된 이벤트: eventId=${event.eventId}, startTime=${event.startTime}, 차이=${now.difference(event.startTime).inHours}시간 ${now.difference(event.startTime).inMinutes % 60}분');
-      } else {
-        print('[EventStats] 포함된 이벤트: eventId=${event.eventId}, startTime=${event.startTime}, 차이=${now.difference(event.startTime).inHours}시간 ${now.difference(event.startTime).inMinutes % 60}분');
-      }
-      return isIncluded;
+      return !event.startTime.isBefore(threshold);
     }).toList();
-    
-    print('[EventStats] 필터링된 이벤트 개수: ${filtered.length}');
-    print('==================================================');
     
     return filtered.length;
   }
@@ -85,15 +71,6 @@ class EventCountCard extends ConsumerWidget {
           data: (yesterdayEvents) {
             // 오늘과 어제 이벤트를 합쳐서 최근 3시간 계산
             final allEvents = [...todayEvents.events, ...yesterdayEvents.events];
-            
-            print('========== [EventCountCard] 디버깅 ==========');
-            print('[EventCountCard] 오늘 이벤트 개수: ${todayEvents.events.length}');
-            print('[EventCountCard] 어제 이벤트 개수: ${yesterdayEvents.events.length}');
-            print('[EventCountCard] 전체 이벤트 개수: ${allEvents.length}');
-            if (allEvents.isNotEmpty) {
-              print('[EventCountCard] 가장 최근 이벤트: eventId=${allEvents.first.eventId}, startTime=${allEvents.first.startTime}');
-            }
-            print('==========================================');
             
             final recentCount = EventStats.recentEventCount(allEvents);
             // 슬개골 이상은 오늘 날짜의 이벤트만 카운트

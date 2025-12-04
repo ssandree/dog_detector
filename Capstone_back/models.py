@@ -49,6 +49,8 @@ class Pet(Base):
     # 펫에 연결된 이벤트 목록 (새로 추가)
     events = relationship("Event", back_populates="pet")
     daily_reports = relationship("DailyReport", back_populates="pet")
+    weekly_reports = relationship("WeeklyReport", back_populates="pet", cascade="all, delete-orphan")
+    monthly_reports = relationship("MonthlyReport", back_populates="pet", cascade="all, delete-orphan")
 
 # --- 새로운 Device 모델 클래스를 추가합니다 ---
 class Device(Base):
@@ -120,3 +122,33 @@ class DailyReport(Base):
 
     # 관계 설정 (Pet 모델에 daily_reports가 정의되어 있어야 함)
     pet = relationship("Pet", back_populates="daily_reports")
+
+# 기존 DailyReport 아래에 추가
+
+class WeeklyReport(Base):
+    __tablename__ = "weekly_reports"
+    
+    report_id = Column(Integer, primary_key=True, index=True)
+    pet_id = Column(Integer, ForeignKey("pets.pet_id"))
+    start_date = Column(Date) # 주간 시작일 (예: 월요일)
+    end_date = Column(Date)   # 주간 종료일 (예: 일요일)
+    summary_text = Column(Text) # AI가 써준 주간 요약
+    created_at = Column(DateTime, default=datetime.now)
+
+    pet = relationship("Pet", back_populates="weekly_reports")
+
+class MonthlyReport(Base):
+    __tablename__ = "monthly_reports"
+    
+    report_id = Column(Integer, primary_key=True, index=True)
+    pet_id = Column(Integer, ForeignKey("pets.pet_id"))
+    report_month = Column(String(7)) # "2025-11" 형태 저장
+    summary_text = Column(Text) # AI가 써준 월간 요약
+    created_at = Column(DateTime, default=datetime.now)
+
+    pet = relationship("Pet", back_populates="monthly_reports")
+
+# User, Pet 모델에 relationship 추가도 잊지 마세요! (선택사항이지만 권장)
+# Pet 모델 안에:
+# weekly_reports = relationship("WeeklyReport", back_populates="pet")
+# monthly_reports = relationship("MonthlyReport", back_populates="pet")

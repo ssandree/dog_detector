@@ -197,6 +197,31 @@ class DailyReportResponse(BaseModel):
     class Config:
         orm_mode = True
 
+# [주간 리포트 스키마]
+class WeeklyReportCreate(BaseModel):
+    pet_id: int
+    start_date: date
+    end_date: date
+    summary_text: str
+
+class WeeklyReportResponse(WeeklyReportCreate):
+    report_id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+# [월간 리포트 스키마]
+class MonthlyReportCreate(BaseModel):
+    pet_id: int
+    report_month: str # "2025-11"
+    summary_text: str
+
+class MonthlyReportResponse(MonthlyReportCreate):
+    report_id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
 # 1. 상태 업데이트용 스키마 (새로 추가)
 class DeviceStatusUpdate(BaseModel):
     connection_status: str  # 'offline', 'connecting', 'connected' 중 하나

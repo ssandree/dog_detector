@@ -42,3 +42,46 @@ def generate_daily_summary(events: str, pet_name: str = "반려견", report_date
     except Exception as e:
         print(f"⚠️ Gemini 리포트 생성 실패: {e}")
         return f"죄송합니다. 오늘은 {pet_name}의 리포트를 생성할 수 없습니다."
+
+def generate_period_summary(pet_name: str, period_type: str, report_data: str):
+    """
+    주간/월간 리포트 생성 함수
+    :param pet_name: 반려동물 이름
+    :param period_type: '주간' 또는 '월간'
+    :param report_data: 날짜별 데일리 리포트 모음 텍스트
+    """
+    system_instruction = f"""
+    당신은 반려동물 행동 심리 및 건강 분석 전문가입니다. 
+    사용자가 제공하는 {pet_name}의 '{period_type} 기록'을 바탕으로 종합 리포트를 작성해야 합니다.
+    
+    [필수 포함 내용]
+    1. **감정 변화 추이**: {period_type} 동안 아이의 기분이 전반적으로 어땠는지, 특정 요일에 불안해하거나 행복해한 패턴이 있는지 분석하세요.
+    2. **건강 및 슬개골 상태**: 기록에 언급된 슬개골 탈구 위험이나 활동량을 바탕으로 건강 상태 변화를 서술하세요.
+    3. **주요 행동 패턴**: 짖음, 하울링, 활동량 등 특이했던 행동들을 요약하세요.
+    4. **보호자를 위한 조언**: 다음 {period_type} 동안 보호자가 특별히 신경 써야 할 점을 구체적으로 제안하세요.
+
+    [작성 톤]
+    - 전문적이면서도 보호자에게 따뜻하게 말하는 어조를 사용하세요.
+    - 너무 딱딱하지 않게, 구체적인 날짜나 사건을 언급하며 작성하세요.
+    - 한국어로 작성하세요.
+    """
+
+    prompt = f"""
+    다음은 {pet_name}의 {period_type} 동안의 데일리 리포트 요약본입니다:
+
+    {report_data}
+
+    위 데이터를 종합하여 상세한 {period_type} 분석 리포트를 작성해주세요.
+    """
+
+    try:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash-preview-09-2025", # 또는 사용중인 모델명
+            system_instruction=system_instruction
+        )
+        
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Gemini 기간 분석 실패: {e}")
+        return f"AI 분석 중 오류가 발생했습니다. (데이터 부족 또는 통신 오류) - {str(e)}"

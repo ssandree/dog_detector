@@ -30,6 +30,7 @@ import time
 # 썸네일 생성
 from utils.thumbnail import create_and_upload_thumbnail
 
+from typing import Optional # 주간 리포트 조회 일자 관련 함수
 # 임시 저장소 (메모리)
 
 # DB 테이블 생성 (앱 실행 시 한번만)
@@ -446,27 +447,246 @@ def generate_daily_report_api(
 
     return new_report
 
-@app.get("/reports/{pet_id}", response_model=List[schemas.DailyReportResponse], tags=["Reports"])
-def read_pet_reports(
+# =======================================================================
+# [2] 데일리 리포트 조회 (GET) - 날짜 필터링 추가
+# =======================================================================
+@app.get("/reports/daily/{pet_id}", response_model=List[schemas.DailyReportResponse], tags=["Reports"])
+def read_daily_reports(
     pet_id: int,
+    target_date: date = None,  # <--- 이 부분 추가 (선택 사항)
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
-    """
-    특정 반려동물의 생성된 모든 리포트를 조회합니다.
-    """
-    # 권한 확인
+    # 1. 권한 확인
     db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
     if not db_pet or db_pet.user_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="권한이 없습니다.")
 
-    reports = db.query(models.DailyReport).filter(
-        models.DailyReport.pet_id == pet_id
-    ).order_by(models.DailyReport.report_date.desc()).all()
+    # 2. 쿼리 작성
+    query = db.query(models.DailyReport).filter(models.DailyReport.pet_id == pet_id)
     
-    return reports
+    # 3. 날짜가 있으면 그 날짜만 필터링
+    if target_date:
+        query = query.filter(models.DailyReport.report_date == target_date)
+    
+    # 최신순 정렬
+    return query.order_by(models.DailyReport.report_date.desc()).all()
 
+# ---------------------------------------------------
+# [주간 리포트] 생성 (AI 연결 완료)
+# ---------------------------------------------------
+# [MISSING FUNCTION ADDED] 날짜 계산 도우미 함수
+def calculate_weekly_range(year: int, month: int, week: int):
+    """
+    년/월/주차를 입력받아 해당 주(월~일)의 시작일과 종료일을 계산합니다.
+    - 1주차의 기준: 해당 월의 1일이 포함된 주 (월요일 시작 기준)
+    """
+    # 1. 해당 월의 1일 구하기
+    first_day_of_month = date(year, month, 1)
+    
+    # 2. 그 주의 월요일 찾기 (weekday: 월=0, 일=6)
+    # 예: 1일이 수요일(2)이면, 2일 전인 월요일로 돌아감
+    start_of_first_week = first_day_of_month - timedelta(days=first_day_of_month.weekday())
+    
+    # 3. 사용자가 요청한 주차만큼 더하기 (week-1 주 만큼 점프)
+    target_start_date = start_of_first_week + timedelta(weeks=week-1)
+    target_end_date = target_start_date + timedelta(days=6) # 월~일 (6일 차이)
+    
+    return target_start_date, target_end_date
+
+# 1. 주간 리포트 생성 (년/월/주차 입력 방식)
+@app.post("/reports/weekly/generate", response_model=schemas.WeeklyReportResponse, tags=["Reports"])
+def generate_weekly_report(
+    pet_id: int,
+    year: int,   # 예: 2025
+    month: int,  # 예: 10
+    week: int,   # 예: 2 (2주차)
+    regenerate: bool = False,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    # 1. 날짜 계산 (함수 호출)
+    start_date, end_date = calculate_weekly_range(year, month, week)
+    print(f"DEBUG: 주간 리포트 범위 계산됨 - {start_date} ~ {end_date}")
+
+    # 2. 기존 리포트 확인
+    existing = db.query(models.WeeklyReport).filter(
+        models.WeeklyReport.pet_id == pet_id,
+        models.WeeklyReport.start_date == start_date
+    ).first()
+    
+    if existing:
+        if regenerate:
+            db.delete(existing)
+            db.commit()
+        else:
+            return existing
+
+    # 3. 해당 기간(월~일)의 데일리 리포트 조회
+    daily_reports = db.query(models.DailyReport).filter(
+        models.DailyReport.pet_id == pet_id,
+        models.DailyReport.report_date >= start_date,
+        models.DailyReport.report_date <= end_date
+    ).order_by(models.DailyReport.report_date.asc()).all()
+
+    if not daily_reports:
+        # 데이터가 없으면 안내 메시지를 띄우거나 에러 처리
+        raise HTTPException(status_code=404, detail=f"{month}월 {week}주차({start_date}~{end_date})에 생성된 데일리 리포트가 없습니다.")
+
+    # 4. AI에게 보낼 텍스트 합치기
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    combined_text = ""
+    for report in daily_reports:
+        combined_text += f"- [{report.report_date}]: {report.summary_text}\n"
+
+    # 5. Gemini 분석 요청
+    summary = gemini.generate_period_summary(
+        pet_name=db_pet.name,
+        period_type="주간",
+        report_data=combined_text
+    )
+
+    # 6. 저장
+    new_report = models.WeeklyReport(
+        pet_id=pet_id,
+        start_date=start_date,
+        end_date=end_date,
+        summary_text=summary
+    )
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+    return new_report
+
+# 2. [New] 주간 리포트 조회 (GET)
+@app.get("/reports/weekly/{pet_id}", response_model=List[schemas.WeeklyReportResponse], tags=["Reports"])
+def read_weekly_reports(
+    pet_id: int, 
+    year: Optional[int] = None,   # ?year=2025
+    month: Optional[int] = None,  # ?month=10
+    week: Optional[int] = None,   # ?week=2
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    주간 리포트를 조회합니다.
+    - 옵션 1 (전체 조회): 파라미터 없이 요청 -> 전체 리포트 최신순 반환
+    - 옵션 2 (특정 주차 조회): year, month, week를 모두 입력 -> 해당 주차 리포트만 반환
+    """
+    # 1. 권한 확인
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+    
+    # 2. 기본 쿼리
+    query = db.query(models.WeeklyReport).filter(models.WeeklyReport.pet_id == pet_id)
+
+    # 3. 특정 주차 필터링 (년/월/주 가 모두 들어왔을 때만 동작)
+    if year and month and week:
+        # 우리가 만든 계산 함수로 '시작일'을 역산해서 DB와 비교
+        target_start_date, _ = calculate_weekly_range(year, month, week)
+        query = query.filter(models.WeeklyReport.start_date == target_start_date)
+    
+    # 4. 최신순 정렬 및 반환
+    return query.order_by(models.WeeklyReport.start_date.desc()).all()
+
+
+# ---------------------------------------------------
+# [월간 리포트] 생성 (AI 연결 완료)
+# ---------------------------------------------------
+@app.post("/reports/monthly/generate", response_model=schemas.MonthlyReportResponse, tags=["Reports"])
+def generate_monthly_report(
+    pet_id: int,
+    year: int,
+    month: int,
+    regenerate: bool = False, # [옵션] 재생성 기능 추가
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    report_month_str = f"{year}-{month:02d}"
+
+    # 1. 기존 리포트 확인
+    existing = db.query(models.MonthlyReport).filter(
+        models.MonthlyReport.pet_id == pet_id,
+        models.MonthlyReport.report_month == report_month_str
+    ).first()
+    
+    if existing:
+        if regenerate:
+            db.delete(existing)
+            db.commit()
+        else:
+            return existing
+
+    # 2. 해당 월의 데일리 리포트 조회
+    from sqlalchemy import extract
+    daily_reports = db.query(models.DailyReport).filter(
+        models.DailyReport.pet_id == pet_id,
+        extract('year', models.DailyReport.report_date) == year,
+        extract('month', models.DailyReport.report_date) == month
+    ).order_by(models.DailyReport.report_date.asc()).all()
+
+    if not daily_reports:
+         raise HTTPException(status_code=404, detail="해당 월에 생성된 데일리 리포트가 없습니다.")
+
+    # 3. AI에게 보낼 데이터 가공
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    combined_text = ""
+    for report in daily_reports:
+        combined_text += f"- [{report.report_date}]: {report.summary_text}\n"
+
+    # 4. Gemini 호출
+    summary = gemini.generate_period_summary(
+        pet_name=db_pet.name,
+        period_type="월간",
+        report_data=combined_text
+    )
+
+    # 5. 저장
+    new_report = models.MonthlyReport(
+        pet_id=pet_id,
+        report_month=report_month_str,
+        summary_text=summary
+    )
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+    return new_report
+
+# 2. [New] 월간 리포트 조회 (GET)
+@app.get("/reports/monthly/{pet_id}", response_model=List[schemas.MonthlyReportResponse], tags=["Reports"])
+def read_monthly_reports(
+    pet_id: int, 
+    year: Optional[int] = None,   # ?year=2025
+    month: Optional[int] = None,  # ?month=10
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    월간 리포트를 조회합니다.
+    - 옵션 1 (전체 조회): 파라미터 없이 요청 -> 전체 리포트 최신순 반환
+    - 옵션 2 (특정 월 조회): year, month 입력 -> 해당 월 리포트만 반환
+    """
+    # 1. 권한 확인
+    db_pet = crud.get_pet_by_id(db, pet_id=pet_id)
+    if not db_pet or db_pet.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+
+    # 2. 기본 쿼리
+    query = db.query(models.MonthlyReport).filter(models.MonthlyReport.pet_id == pet_id)
+
+    # 3. 특정 월 필터링
+    if year and month:
+        target_month_str = f"{year}-{month:02d}" # "2025-10" 문자열 생성
+        query = query.filter(models.MonthlyReport.report_month == target_month_str)
+
+    # 4. 최신순 정렬 및 반환
+    return query.order_by(models.MonthlyReport.report_month.desc()).all()
+
+
+# ---------------------------------------------------
 # [2] 푸시 알림 기능 토큰 저장 API 추가 (프론트가 호출함)
+# ---------------------------------------------------
 @app.put("/users/fcm-token", tags=["Users"])
 def update_fcm_token(
     token: str = Body(..., embed=True),

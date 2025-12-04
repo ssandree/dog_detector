@@ -205,7 +205,7 @@ class DeviceStatusUpdate(BaseModel):
 # [WebRTC] 고급 시그널링 (New! 요청서 반영)
 # ==========================================
 
-# 1. TURN 서버 정보 응답용
+# 1. TURN 서버 정보 응답용 (유지)
 class IceServer(BaseModel):
     urls: List[str]
     username: Optional[str] = None
@@ -215,53 +215,51 @@ class WebRTCConfigResponse(BaseModel):
     iceServers: List[IceServer]
 
 # 2. Offer (Cam -> Server)
+# [수정] receiver_device_id 제거 (Viewer 없어도 방 생성 가능)
 class RTCOfferRequest(BaseModel):
     sender_device_id: str
-    receiver_device_id: str
     sdp_offer: str
 
 class RTCOfferResponse(BaseModel):
     session_id: str
 
-# 3. Answer (Manager <-> Server)
-class RTCAnswerRequest(BaseModel):
-    session_id: str
-    sdp_answer: str
-
-class RTCAnswerResponse(BaseModel):
-    sdp_answer: Optional[str]
-
-# 4. Candidate (양방향)
-class RTCCandidateRequest(BaseModel):
-    session_id: str
-    sender_device_id: str
-    receiver_device_id: str
-    candidate: str
-
-class RTCCandidateResponse(BaseModel):
-    from_device_id: str
-    candidate: str
-
-class RTCCandidateListResponse(BaseModel):
-    candidates: List[RTCCandidateResponse]
-
-# [추가] GET /stream/offer 응답용 모델 (DTO)
 class RTCOfferCheckResponse(BaseModel):
     session_id: Optional[str] = None
     sdp_offer: Optional[str] = None
 
-# [추가] 알림 설정 변경용 스키마
-class NotificationSetting(BaseModel):
-    enabled: bool
+# 3. Answer (Manager -> Server)
+# [수정] sender_device_id 추가 (Viewer가 누군지 식별용)
+class RTCAnswerRequest(BaseModel):
+    session_id: str
+    sender_device_id: str  # Viewer의 ID
+    sdp_answer: str
 
-# [추가] 세션 정보 요약 (조회용)
+class RTCAnswerResponse(BaseModel):
+    sdp_answer: Optional[str] = None
+
+# 4. Candidate (양방향 공용)
+# [수정] 누가 보내는지 구분 없이 session_id와 candidate만 전송
+class RTCCandidateRequest(BaseModel):
+    session_id: str
+    candidate: str
+
+# 5. Candidate 응답용 (단순 문자열 리스트)
+# [수정] 복잡한 객체 대신 리스트 반환 요청 반영
+class RTCCandidateListResponse(BaseModel):
+    candidates: List[str]
+
+# 6. 최신 세션 조회용 (유지)
+class RTCLatestSessionResponse(BaseModel):
+    session_id: Optional[str] = None
+    created_at: Optional[float] = None
+    
+# 7. 세션 목록 조회용 (유지)
 class SessionInfo(BaseModel):
     session_id: Optional[str] = None
     sender: Optional[str] = None
     receiver: Optional[str] = None
     created_at: Optional[float] = None
 
-# [추가] 1. 전체 세션 목록 응답
 class SessionListResponse(BaseModel):
     sessions: List[SessionInfo]
 
@@ -273,3 +271,7 @@ class SessionListResponse(BaseModel):
 class RTCLatestSessionResponse(BaseModel):
     session_id: Optional[str] = None
     created_at: Optional[float] = None
+
+# [추가] 알림 설정 변경용 스키마
+class NotificationSetting(BaseModel):
+    enabled: bool

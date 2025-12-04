@@ -2,8 +2,11 @@
 services:
   app:
     build: .
+
+    environment:
+      - TZ=Asia/Seoul  # [추가] 이 한 줄이면 서버 시간이 서울로 바뀜
+
     ports:
-      # (!!!) AI 서버(8000)와의 충돌을 피하기 위해 8001번 포트로 변경
       - "8000:8000" 
     env_file:
       - .env

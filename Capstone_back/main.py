@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Dict, List  # 리스트 형태의 응답을 위해 추가
 from datetime import *
+from zoneinfo import ZoneInfo
 import os
 from urllib.parse import urlparse
 
@@ -25,6 +26,9 @@ from schemas import DeviceStatusUpdate # import 추가
 
 import uuid
 import time
+
+# 썸네일 생성
+from utils.thumbnail import create_and_upload_thumbnail
 
 # 임시 저장소 (메모리)
 
@@ -223,6 +227,9 @@ async def upload_video_and_create_event(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
+
+    # ★★★ [여기입니다!] 프론트가 보낸 시간을 무시하고, 서버의 서울 시간으로 덮어씌웁니다. ★★★
+    start_time = datetime.now(ZoneInfo("Asia/Seoul"))
     print("====== [DEBUG START] 업로드 프로세스 시작 ======")
     
     # 1. 보안 검증
@@ -340,6 +347,8 @@ async def upload_video_and_create_event(
             final_emotion = analysis_result.get("emotion")
             patella_status = str(analysis_result.get("patella_status"))
 
+        real_thumbnail_url = create_and_upload_thumbnail(file_url)
+
         event_data = schemas.EventCreate(
             pet_id=pet_id,
             device_id=device_id,
@@ -347,7 +356,7 @@ async def upload_video_and_create_event(
             end_time=start_time + timedelta(seconds=video_duration_sec),
             video_duration_sec=video_duration_sec,
             video_url=file_url,
-            thumbnail_url=file_url,
+            thumbnail_url=real_thumbnail_url,
             final_emotion=final_emotion,
             patella_analysis_result=patella_status
         )
@@ -497,16 +506,15 @@ def update_fcm_token(
 # answers = {}
 # candidates = {}
 
+# 인메모리 저장소
 sessions: Dict[str, dict] = {}
 
-# 1. TURN 서버 정보 제공 (요청서 2번)
+# 1. TURN 서버 정보 제공
 @app.get("/webrtc/config", response_model=schemas.WebRTCConfigResponse, tags=["WebRTC"])
 def get_webrtc_config():
     return {
         "iceServers": [
-            {
-                "urls": ["stun:54.206.79.248:3478"] # STUN
-            },
+            {"urls": ["stun:54.206.79.248:3478"]},
             {
                 "urls": [
                     "turn:54.206.79.248:3478?transport=udp",
@@ -519,165 +527,103 @@ def get_webrtc_config():
     }
 
 # 2. Offer 전송 및 세션 생성 (Cam -> Server)
+# [수정] Viewer(receiver)가 없어도 세션을 생성합니다.
 @app.post("/stream/offer", response_model=schemas.RTCOfferResponse, tags=["WebRTC"])
 def send_offer(data: schemas.RTCOfferRequest):
-    # 세션 ID 생성
     session_id = str(uuid.uuid4())
     
-    # 세션 저장
     sessions[session_id] = {
         "sender": data.sender_device_id,
-        "receiver": data.receiver_device_id,
+        "receiver": None,  # 아직 Viewer가 없음
         "offer": data.sdp_offer,
         "answer": None,
-        "candidates": [], # 후보군 리스트
+        "candidates": [],  # ICE Candidates 저장소
         "created_at": time.time()
     }
     
     return {"session_id": session_id}
 
-# 2-1. [수정] Offer 조회 (Manager -> Server)
+# 2-1. Offer 조회 (Manager -> Server)
 @app.get("/stream/offer", response_model=schemas.RTCOfferCheckResponse, tags=["WebRTC"])
 def get_offer(session_id: str):
-    """
-    Session ID를 통해 저장된 SDP Offer를 조회합니다.
-    - Offer 존재 시: {"session_id": "...", "sdp_offer": "..."}
-    - Offer 대기 중: {"session_id": null, "sdp_offer": null}
-    """
-    # 세션이 존재하고, Offer가 있는 경우
+    # 세션이 있고 Offer가 있으면 반환
     if session_id in sessions and sessions[session_id].get("offer"):
         return {
             "session_id": session_id,
             "sdp_offer": sessions[session_id]["offer"]
         }
-    
-    # 세션이 없거나 Offer가 없는 경우 (JSON null 반환)
-    return {
-        "session_id": None,
-        "sdp_offer": None
-    }
+    return {"session_id": None, "sdp_offer": None}
 
 # 3. Answer 저장 (Manager -> Server)
+# [수정] Viewer가 들어오면 그때 receiver 정보를 업데이트합니다.
 @app.post("/stream/answer", tags=["WebRTC"])
 def send_answer(data: schemas.RTCAnswerRequest):
-    if data.session_id in sessions:
-        sessions[data.session_id]["answer"] = data.sdp_answer
-        return {"message": "Answer saved"}
-    raise HTTPException(status_code=404, detail="Session not found")
+    if data.session_id not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    sessions[data.session_id]["answer"] = data.sdp_answer
+    sessions[data.session_id]["receiver"] = data.sender_device_id # Viewer 등록
+    
+    return {"message": "Answer saved"}
 
 # 4. Answer 조회 (Cam -> Server)
 @app.get("/stream/answer", response_model=schemas.RTCAnswerResponse, tags=["WebRTC"])
 def get_answer(session_id: str):
     if session_id in sessions:
         return {"sdp_answer": sessions[session_id]["answer"]}
-    # 세션이 없거나 답장이 아직 없으면 null 반환
     return {"sdp_answer": None}
 
-# 5. Candidate 등록 (양방향)
+# 5. Candidate 등록 (양방향 공용)
+# [수정] sender/receiver 구분 없이 세션에 무조건 쌓습니다.
 @app.post("/stream/candidate", tags=["WebRTC"])
 def send_candidate(data: schemas.RTCCandidateRequest):
-    if data.session_id in sessions:
-        # 상대방이 읽어갈 수 있게 저장
-        sessions[data.session_id]["candidates"].append({
-            "from_device_id": data.sender_device_id,
-            "target_device_id": data.receiver_device_id, # 누가 읽어야 하는지
-            "candidate": data.candidate
-        })
-        return {"message": "Candidate saved"}
-    raise HTTPException(status_code=404, detail="Session not found")
+    if data.session_id not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    # 단순히 리스트에 문자열 그대로 추가
+    sessions[data.session_id]["candidates"].append(data.candidate)
+    return {"message": "Candidate saved"}
 
-# 6. Candidate 조회 및 삭제 (읽으면 사라짐)
+# 6. Candidate 조회 (양방향 공용)
+# [수정] 저장된 모든 Candidate를 반환합니다. (클라이언트가 본인 것은 필터링)
 @app.get("/stream/candidates", response_model=schemas.RTCCandidateListResponse, tags=["WebRTC"])
-def get_candidates(session_id: str, device_id: str):
+def get_candidates(session_id: str):
     if session_id not in sessions:
         return {"candidates": []}
     
-    all_candidates = sessions[session_id]["candidates"]
-    my_candidates = []
-    remaining_candidates = []
-    
-    # 나한테 온 메시지만 골라내기
-    for cand in all_candidates:
-        if cand["target_device_id"] == str(device_id):
-            my_candidates.append({
-                "from_device_id": cand["from_device_id"],
-                "candidate": cand["candidate"]
-            })
-        else:
-            remaining_candidates.append(cand)
-            
-    # 읽은 건 삭제하고 나머지만 다시 저장 (Queue 방식)
-    sessions[session_id]["candidates"] = remaining_candidates
-    
-    return {"candidates": my_candidates}
+    # 현재 세션에 쌓인 모든 후보군 반환
+    return {"candidates": sessions[data.session_id]["candidates"]}
 
 # ---------------------------------------------------------
-# [추가] 자동 연결을 위한 세션 조회 API (요청사항 반영)
+# [자동 연결] 세션 조회 API
 # ---------------------------------------------------------
 
-# 1. 활성 세션 목록 조회 (최신순 정렬)
+# 1. 활성 세션 목록 조회
 @app.get("/stream/sessions", response_model=schemas.SessionListResponse, tags=["WebRTC"])
 def get_active_sessions():
-    """
-    현재 서버 메모리에 저장된 모든 WebRTC 세션 목록을 반환합니다.
-    (created_at 기준 내림차순 정렬)
-    """
     active_list = []
-    
     for session_id, data in sessions.items():
         active_list.append({
             "session_id": session_id,
-            "sender": str(data.get("sender")),   # 혹시 int일까봐 str변환
-            "receiver": str(data.get("receiver")),
+            "sender": str(data.get("sender")),
+            "receiver": str(data.get("receiver")), # 없으면 None 나감
             "created_at": data.get("created_at")
         })
-    
-    # 최신순 정렬 (created_at이 큰 게 앞으로)
     active_list.sort(key=lambda x: x["created_at"] or 0, reverse=True)
-    
     return {"sessions": active_list}
 
-
-# 2. 가장 최신 세션 자동 반환
-@app.get("/stream/latest", response_model=schemas.SessionInfo, tags=["WebRTC"])
-def get_latest_session():
-    """
-    가장 최근에 생성된 세션 하나를 반환합니다. (Manager 자동 연결용)
-    세션이 없으면 null을 반환합니다.
-    """
-    if not sessions:
-        return {"session_id": None}
-    
-    # 딕셔너리에서 created_at이 가장 큰(최신) 키 찾기
-    latest_session_id = max(sessions, key=lambda k: sessions[k].get("created_at", 0))
-    data = sessions[latest_session_id]
-    
-    return {
-        "session_id": latest_session_id,
-        "sender": str(data.get("sender")),
-        "receiver": str(data.get("receiver")),
-        "created_at": data.get("created_at")
-    }
-
-# 3. [NEW!] 특정 디바이스의 최신 세션 (Manager 자동 연결용 - 권장)
+# 2. 특정 디바이스의 최신 세션 (Manager 자동 연결용)
 @app.get("/stream/latest-session", response_model=schemas.RTCLatestSessionResponse, tags=["WebRTC"])
 def get_latest_session_by_device(device_id: str):
-    """
-    특정 Cam(sender_device_id)이 생성한 세션 중 가장 최신 세션을 반환합니다.
-    FE가 session_id를 몰라도 자동으로 가져와 연결할 수 있습니다.
-    """
-    # 1. sender가 device_id인 세션들만 필터링
     found = [
         (sid, data)
         for sid, data in sessions.items()
         if str(data.get("sender")) == device_id
     ]
 
-    # 2. 없으면 null 반환
     if not found:
         return {"session_id": None, "created_at": None}
 
-    # 3. 그 중 created_at이 가장 큰(최신) 것 찾기
     latest = max(found, key=lambda item: item[1].get("created_at", 0))
 
     return {

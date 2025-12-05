@@ -40,9 +40,13 @@ class DeviceApiService {
   }
 
   Future<DeviceInfo> createDevice({
-    required String deviceName,
     required String deviceType,
   }) async {
+    // deviceType에 따라 하드코딩된 이름 사용
+    final deviceName = deviceType.toUpperCase() == 'CAMERA' 
+        ? 'My Camera Device' 
+        : 'My Monitor Device';
+    
     final res = await _dio.post(
       '/devices/',
       data: {

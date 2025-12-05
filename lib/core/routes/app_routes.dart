@@ -18,6 +18,8 @@ import '../../manager/event_timeline/event_timeline_screen.dart';
 import '../../manager/notification/notification_screen.dart';
 import '../../manager/realtime/realtime_screen.dart';
 import '../../manager/today_report/today_report_screen.dart';
+
+
 class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';
@@ -39,55 +41,25 @@ final appRouter = GoRouter(
       path: '/',
       builder: (_, __) => const EntryGate(),
     ),
-    GoRoute(
-      path: AppRoutes.onboarding,
-      builder: (_, __) => const OnboardingScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.login,
-      builder: (_, __) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.signup,
-      builder: (_, __) => const SignupScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.modeSelect,
-      builder: (_, __) => const ModeSelectScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.camera,
-      builder: (_, __) => const CameraMainScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.managerHome,
-      builder: (context, state) => MainNavigation(state: state),
-    ),
-    GoRoute(
-      path: AppRoutes.calendar,
-      builder: (_, __) => const CalendarScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.eventTimeline,
-      builder: (context, state) => EventTimelineRoutePage(state: state),
-    ),
-    GoRoute(
-      path: AppRoutes.notification,
-      builder: (_, __) => const NotificationScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.realtime,
-      builder: (_, __) => const RealtimeScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.todayReport,
-      builder: (_, __) => const TodayReportScreen(),
-    ),
+    GoRoute(path: AppRoutes.onboarding, builder: (_, __) => const OnboardingScreen()),
+    GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+    GoRoute(path: AppRoutes.signup, builder: (_, __) => const SignupScreen()),
+    GoRoute(path: AppRoutes.modeSelect, builder: (_, __) => const ModeSelectScreen()),
+    GoRoute(path: AppRoutes.camera, builder: (_, __) => const CameraMainScreen()),
+    GoRoute(path: AppRoutes.managerHome, builder: (context, state) => MainNavigation(state: state)),
+    GoRoute(path: AppRoutes.calendar, builder: (_, __) => const CalendarScreen()),
+    GoRoute(path: AppRoutes.eventTimeline, builder: (context, state) => EventTimelineRoutePage(state: state)),
+    GoRoute(path: AppRoutes.notification, builder: (_, __) => const NotificationScreen()),
+    GoRoute(path: AppRoutes.realtime, builder: (_, __) => const RealtimeScreen()),
+    GoRoute(path: AppRoutes.todayReport, builder: (_, __) => const TodayReportScreen()),
   ],
 );
 
+
 class EntryGate extends ConsumerWidget {
   const EntryGate({super.key});
+
+  static bool _navigated = false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -107,9 +79,7 @@ class EntryGate extends ConsumerWidget {
       future: ref.read(secureStorageServiceProvider).readToken(),
       builder: (context, tokenSnapshot) {
         if (tokenSnapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
         final token = tokenSnapshot.data;
@@ -117,6 +87,7 @@ class EntryGate extends ConsumerWidget {
         final auto = prefs.autoLogin;
         final mode = prefs.mode;
 
+        // 목적지 결정
         String next = AppRoutes.login;
 
         if (!hasSeen) {
@@ -129,12 +100,14 @@ class EntryGate extends ConsumerWidget {
           } else if (mode == 'manager') {
             next = AppRoutes.managerHome;
           }
-        } else {
-          next = AppRoutes.login;
         }
 
-        Future.microtask(() {
-          if (context.mounted) context.go(next);
+        // '/'에서만 단 1번 redirect
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_navigated && context.mounted) {
+            _navigated = true;
+            GoRouter.of(context).go(next);
+          }
         });
 
         return const Scaffold(

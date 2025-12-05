@@ -22,6 +22,7 @@ class CameraMainScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 가로 모드 고정
     useEffect(() {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
@@ -52,15 +53,33 @@ class CameraMainScreen extends HookConsumerWidget {
 
     final camRunning = camState.cameraInitialized && camState.detecting;
 
+    // 정확한 디버깅 로그
+    useEffect(() {
+      print("[CAM SCREEN] 상태 업데이트:");
+      print("  - camId: '$camId'");
+      print("  - pet: $pet");
+      print("  - petId: '$petId'");
+      print("  - camRunning: $camRunning");
+      print("  - bootstrap: isLoading=${bootstrap.isLoading}, hasError=${bootstrap.hasError}, hasValue=${bootstrap.hasValue}");
+      return null;
+    }, [camId, pet, petId, camRunning]);
+
     Future<void> _start() async {
+      print("[CAM START] 버튼 클릭됨");
+
       if (camId.isEmpty) return _show(context, "cameraId 없음");
       if (petId == null) return _show(context, "petId 없음");
 
-      await runtime.start(
-        cameraId: camId,
-        petId: petId,
-        deviceId: camId,
-      );
+      try {
+        await runtime.start(
+          cameraId: camId,
+          petId: petId,
+          deviceId: camId,
+        );
+      } catch (e) {
+        print("[CAM START] 에러: $e");
+        _show(context, "시작 실패: $e");
+      }
     }
 
     Future<void> _stop() async {
@@ -115,7 +134,13 @@ class CameraMainScreen extends HookConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: camRunning ? Colors.red : Colors.green,
                   ),
-                  onPressed: () => camRunning ? _stop() : _start(),
+                  onPressed: () {
+                    if (camRunning) {
+                      _stop();
+                    } else {
+                      _start();
+                    }
+                  },
                   child: Text(
                     camRunning ? "CAM 종료" : "CAM 시작",
                     style: const TextStyle(fontSize: 18, color: Colors.white),
